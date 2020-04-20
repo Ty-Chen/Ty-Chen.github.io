@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="随笔," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="联机系统简介&amp;emsp;&amp;emsp;集合啦动物森友会是最近NS的大爆款，我也第一时间入坑玩的不亦乐乎。在最近一周的游玩过程中，唯一被大家抱怨的问题大概就是这个联机系统了。首先我来简单介绍一下动物森友会的网络联机流程和中间的一些机制。  需要开通NS会员这肯定没啥好说的 去别的岛上逛或者别人来自己岛上逛只能二选一，不可以自己开着岛让别人来玩同时自己跑别人岛上玩 如果想去别人岛上玩，此时不允许岛上有人">
+<meta property="og:type" content="article">
+<meta property="og:title" content="NS《集合啦动物森友会》联机系统硬核分析及优化讨论">
+<meta property="og:url" content="https://ty-chen.github.io/2020/04/18/NS%E3%80%8A%E9%9B%86%E5%90%88%E5%95%A6%E5%8A%A8%E7%89%A9%E6%A3%AE%E5%8F%8B%E4%BC%9A%E3%80%8B%E8%81%94%E6%9C%BA%E7%B3%BB%E7%BB%9F%E7%A1%AC%E6%A0%B8%E5%88%86%E6%9E%90%E5%8F%8A%E4%BC%98%E5%8C%96%E8%AE%A8%E8%AE%BA/index.html">
+<meta property="og:site_name" content="Ty-Chen&#39;s Home">
+<meta property="og:description" content="联机系统简介&amp;emsp;&amp;emsp;集合啦动物森友会是最近NS的大爆款，我也第一时间入坑玩的不亦乐乎。在最近一周的游玩过程中，唯一被大家抱怨的问题大概就是这个联机系统了。首先我来简单介绍一下动物森友会的网络联机流程和中间的一些机制。  需要开通NS会员这肯定没啥好说的 去别的岛上逛或者别人来自己岛上逛只能二选一，不可以自己开着岛让别人来玩同时自己跑别人岛上玩 如果想去别人岛上玩，此时不允许岛上有人">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200329152545223.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTMzNTQ0ODY=,size_16,color_FFFFFF,t_70">
+<meta property="article:published_time" content="2020-04-18T01:54:33.000Z">
+<meta property="article:modified_time" content="2020-04-20T15:03:13.365Z">
+<meta property="article:author" content="Ty Chen">
+<meta property="article:tag" content="随笔">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/20200329152545223.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTMzNTQ0ODY=,size_16,color_FFFFFF,t_70">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://ty-chen.github.io/2020/04/18/NS《集合啦动物森友会》联机系统硬核分析及优化讨论/"/>
+
+
+
+
+
+  <title>NS《集合啦动物森友会》联机系统硬核分析及优化讨论 | Ty-Chen's Home</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Ty-Chen's Home</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Collecting, sharing and creating knowledge</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://ty-chen.github.io/2020/04/18/NS%E3%80%8A%E9%9B%86%E5%90%88%E5%95%A6%E5%8A%A8%E7%89%A9%E6%A3%AE%E5%8F%8B%E4%BC%9A%E3%80%8B%E8%81%94%E6%9C%BA%E7%B3%BB%E7%BB%9F%E7%A1%AC%E6%A0%B8%E5%88%86%E6%9E%90%E5%8F%8A%E4%BC%98%E5%8C%96%E8%AE%A8%E8%AE%BA/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Ty Chen">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ty-Chen's Home">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">NS《集合啦动物森友会》联机系统硬核分析及优化讨论</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-04-18T09:54:33+08:00">
+                2020-04-18
+              </time>
+            
+
+            
+
+            
+          </span>
+          
+            <span class="post-updated">
+              &nbsp; | &nbsp; post.updated
+              <time itemprop="dateUpdated" datetime="2020-04-20T23:03:13+08:00" content="2020-04-20">
+                2020-04-20
+              </time>
+            </span>
+          
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2020/04/18/NS%E3%80%8A%E9%9B%86%E5%90%88%E5%95%A6%E5%8A%A8%E7%89%A9%E6%A3%AE%E5%8F%8B%E4%BC%9A%E3%80%8B%E8%81%94%E6%9C%BA%E7%B3%BB%E7%BB%9F%E7%A1%AC%E6%A0%B8%E5%88%86%E6%9E%90%E5%8F%8A%E4%BC%98%E5%8C%96%E8%AE%A8%E8%AE%BA/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2020/04/18/NS%E3%80%8A%E9%9B%86%E5%90%88%E5%95%A6%E5%8A%A8%E7%89%A9%E6%A3%AE%E5%8F%8B%E4%BC%9A%E3%80%8B%E8%81%94%E6%9C%BA%E7%B3%BB%E7%BB%9F%E7%A1%AC%E6%A0%B8%E5%88%86%E6%9E%90%E5%8F%8A%E4%BC%98%E5%8C%96%E8%AE%A8%E8%AE%BA/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2020/04/18/NS%E3%80%8A%E9%9B%86%E5%90%88%E5%95%A6%E5%8A%A8%E7%89%A9%E6%A3%AE%E5%8F%8B%E4%BC%9A%E3%80%8B%E8%81%94%E6%9C%BA%E7%B3%BB%E7%BB%9F%E7%A1%AC%E6%A0%B8%E5%88%86%E6%9E%90%E5%8F%8A%E4%BC%98%E5%8C%96%E8%AE%A8%E8%AE%BA/" class="leancloud_visitors" data-flag-title="NS《集合啦动物森友会》联机系统硬核分析及优化讨论">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="联机系统简介"><a href="#联机系统简介" class="headerlink" title="联机系统简介"></a>联机系统简介</h3><p>&emsp;&emsp;集合啦动物森友会是最近NS的大爆款，我也第一时间入坑玩的不亦乐乎。在最近一周的游玩过程中，唯一被大家抱怨的问题大概就是这个联机系统了。首先我来简单介绍一下动物森友会的网络联机流程和中间的一些机制。<br><img src="https://img-blog.csdnimg.cn/20200329152545223.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTMzNTQ0ODY=,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<ol>
+<li>需要开通NS会员这肯定没啥好说的</li>
+<li>去别的岛上逛或者别人来自己岛上逛只能二选一，不可以自己开着岛让别人来玩同时自己跑别人岛上玩</li>
+<li>如果想去别人岛上玩，此时不允许岛上有人开着窗口</li>
+<li>人数有限制，最多8人联机</li>
+<li>岛上每来一个新游客，所有人都必须停下活动强行进入一个读取界面和一个从机场出来的动画界面</li>
+<li>岛上每走一个游客，所有人都必须进入读取界面</li>
+<li>当岛上一个人数据出现错误断开时，所有人均会断开并回档</li>
+<li>当网络异常后，会自动关闭大门，想再让人过来需要再次开放</li>
+<li>休眠自动关闭网络连接</li>
+<li>动森没有云存档，所有存档存在本地 ，去别人岛玩的过程中只有在自己或别的游客进入、离开的时候才会触发存档</li>
+<li>别人上岛玩的时候不可以装饰自己家、不可以改变地形、不可以进终端机操作</li>
+<li>开启邀请别人上岛不可以寄明信片</li>
+<li>岛主掉线大家都会断开</li>
+</ol>
+<a id="more"></a>
+
+
+<h3 id="联机系统分析"><a href="#联机系统分析" class="headerlink" title="联机系统分析"></a>联机系统分析</h3><p>&emsp;&emsp;根据以上联机的流程和限制，我们可以大致做以下的猜测：</p>
+<ol>
+<li>联机系统一般分为两种，占用服务器资源的联机或P2P联机，根据机制4，12，13可以猜测大概率为P2P连接，具体需要后续wireshark抓包确认，由于采取科学上网+游戏加速器，这里可能会比较艰难。</li>
+<li>如果是P2P的话，一般是用C/S模拟成peer，根据机制2可以知道此处不支持同时开启c和s模型，而是仅可以启动client或者server完成联机过程。如果是服务器联机，则说明这里会映射到一个服务端申请空间建立岛的备份或者进入一个别人建立的服务端备份岛中进行联机。在映射的整个过程中，发起者不允许访问别的映射而是必须等释放资源才可以。</li>
+<li>机制3、5、6、7反应了动森的数据一致性处理机制，从中我们可以总结一下动森的一致性维护方式：我们用log表示每人的的存档状态，每次有人进来之前需要停止活动、关闭窗口以便于记录当前的log，如果有人掉线断开连接则所有人的log回滚到上一次有人进入时的状态（最后一次保存状态），如果有人离开则再次更新当前的log并保存。</li>
+</ol>
+<h3 id="改进分析"><a href="#改进分析" class="headerlink" title="改进分析"></a>改进分析</h3><p>&emsp;&emsp;很显然，这套联机系统是比较蛋疼的，最蛋疼的地方就在于每次有人来所有人都需要停下手中的活等着，有人掉线的话所有人都会回个档，那么有没有办法做改进呢？下面给出一些个人的想法。首先申明，怎么样做到不掉线不在本文讨论范围内，这个属于网络性能优化、科学上网和游戏加速器代理的知识，有空再单独聊。本文只针对掉线和不掉线可能带来的问题展开讨论。</p>
+<h4 id="P2P联机系统"><a href="#P2P联机系统" class="headerlink" title="P2P联机系统"></a>P2P联机系统</h4><h5 id="实现方式分析"><a href="#实现方式分析" class="headerlink" title="实现方式分析"></a>实现方式分析</h5><p>&emsp;&emsp;如果是P2P联机，其实就是所有人以client方式连接开放权限的server，然后通过tcp(适合局域网)、udp或者utp等方式进行通信。这里又有两种实现方式</p>
+<p>（1）以server为轴心和其他玩家通信：入岛玩家发消息、走路、做动作会实时发送数据包给server，并得到server回复其他几名玩家的位置信息、动作从而实现联机功能。</p>
+<ul>
+<li><p>优点：利于管理，小型server可以做到数据的汇总和一致性。</p>
+</li>
+<li><p>缺点：server本身会有比较大的负载，而且一旦崩了所有人GG。</p>
+</li>
+</ul>
+<p>（2）中央服务器或者边缘CDN协调各个client和server的IP/PORT实现多点之间p2p，每次玩家移动会向其他的peer发送消息并得到其他玩家的回复，从而实现联机功能。</p>
+<ul>
+<li><p>优点：岛主所在的岛只是提供一个岛的数据，其他数据均来自于各个玩家，对server来说会压力较小，而且崩了也不会有太大影响。</p>
+</li>
+<li><p>缺点：数据会较为凌乱，无法很好地进行一致性处理。网络本身是不稳定的，每个玩家的延迟也不同，比如玩家A发送给BCD自己向前跑了十步并丢下了1000颗大头菜，BC玩家在几百毫秒内收到并出现了动画，而D玩家迟迟没有收到。</p>
+</li>
+</ul>
+<h5 id="实现方式改进"><a href="#实现方式改进" class="headerlink" title="实现方式改进"></a>实现方式改进</h5><p>&emsp;&emsp;根据动森的联机表现来看，如果是P2P联机系统则采用的显然是第一种方式。而这里有必要做log的一致性到这种地步吗？我觉得是没有的。下面针对岛主、游客来分析可能存在哪些问题，以及可能有哪些解决方案。</p>
+<p>（1）关于数据一致性和先后顺序的判定</p>
+<p>&emsp;&emsp;对于分布式系统，解决数据一致性和先后顺序显然是有很多方法的。针对这里最多8人的设定，采取raft或paxos的思想做一致性保证，由岛主发布其他接收即可。如果出现log丢失，只需要照着最新的log写入就行，甚至不需要做leader election。而玩家操作的先后顺序就更简单了，采取lamport clock或者vector clock可以轻松解决。</p>
+<p>（2）对于岛主来说，其他玩家登陆岛的操作过程和自身操作修改岛可以共存吗？</p>
+<p>&emsp;&emsp;应该是可以的。这里我们可以在开启了server后，定时记录岛的变化，如果有玩家的client连入，发送最新的岛status，如果在玩家连入过程中出现对岛status的操作，则追加一个包。玩家的坐飞机过程为载入原status，落地动画阶段读取是否有新的变化，如果有的话立刻改变也不会有任何影响。</p>
+<p>（3）对于岛主来说，其他玩家对岛的操作会实时发送消息，而这些消息可以收到立刻处理并发送给其他玩家。这里面可能出现的问题包括：</p>
+<ul>
+<li>没有收到消息</li>
+<li>收到了消息，但是处理并发送时，其他玩家有些没有收到</li>
+<li>新入岛的玩家正在接收当前岛的资料、岛上玩家信息和分布等，没有及时收到消息或者消息太多、消息排队过长被丢弃</li>
+</ul>
+<p>如何解决以上问题呢：</p>
+<ul>
+<li>没有收到消息可能是断线或者网络丢包。如果是断线直接回滚记录即可，如果是丢包没有收到ACK则重复发送几次，若依然没有收到则判断为断线，走断线逻辑操作</li>
+<li>解决方法类似于上一条，利用ACK判断掉线逻辑</li>
+<li>这里是NS的机制规避的一大问题，我们可以参考（1）中的做法，在坐飞机过程读取来之前那一刻server的数据集，然后在这过程中发生的变化则依次记录，最后在统一在动画时间发送给新来的玩家。</li>
+</ul>
+<p>（4）对于岛主来说，游客上岛可以自己离岛去玩耍吗？</p>
+<p>&emsp;&emsp;这里任天堂之所以没有做C/S并发，可能考虑到NS的机能限制决定，不然的话同时开启一个server套接字和一个client套接字并走两套逻辑应该不会有太大的问题。岛的数据状态和人物数据状态本身就是两套分开的体系。如果机能允许，我想不出任何理由不做该系统。虽然会较为复杂，但是对玩法提升会极为巨大。</p>
+<p>（5）对于游客来说，上岛过程读取数据，动画结束后实时根据server发送的数据来处理各个玩家的操作、消息并刷新。这里没必要每一笔操作都发过去，而是只发去最后状态即可，所以数据量并不会大。离岛时保存自身状态即可，对岛屿其实没有太多影响，只是删去该人物的信息而已。这部分我想不到任何理由需要让所有人目送他离开。哪怕是要存档，也着实没理由一起观看动画。</p>
+<p>（6）关于数据统一和存档的问题。</p>
+<p>&emsp;&emsp;目前动森采取有人进入、离开时统一存档的方式。优点就在于简单不容易出岔子，缺点太多了不说了。其实动森已经实现了闲时保存和主动保存功能，但是并没有提供给联机模式。如果直接提供给联机模式用会有问题吗？其实我觉得不会有问题。</p>
+<p>&emsp;&emsp;有人会说如果不严格管理的话，玩家存档不一致怎么办？其实是不存在这个问题的。</p>
+<p>&emsp;&emsp;岛的数据（玩家定位、玩家穿着、岛的装饰、玩家扔东西采东西等）可以单独维护，每个人的操作都会修改岛的数据并发送给其他玩家来改变其他玩家当前显示的岛的表现，这一过程只要不掉线一定是可以维持的，只是延迟问题，如果掉线更不用考虑。而岛的数据仅属于岛主，和其他人的存档毫无关系。由于岛的数据仅有一份在岛主这里，其他人的写入过程只有岛主收到了才有效。</p>
+<p>&emsp;&emsp;假设有人在地上丢了个东西，岛主保存游戏并退出，在岛主退出时如果有人捡了东西，则岛主重连后东西还在发生了错误，这种情况其实是不存在的。因为有人捡东西是需要岛主ACK才可以的，不然会触发掉线回档，没有ACK的情况下是不允许立刻保存的，或者说点击保存会触发尚未ACK的消息再次请求回应的过程。</p>
+<p>&emsp;&emsp;每个玩家的数据（包裹，金钱，衣服）即我们关心的存档是存在本地的，在别人岛上游玩过程中，对该存档可能产生的变化就是别人给你东西或者你给别人东西。比如A丢个东西在地上，让B拾取，大致是这么个流程：A丢东西动作—-&gt;server接收到发给所有其他玩家—–&gt;B看到东西被A丢地上，捡起来——&gt;server接收到B的动作发给所有其他玩家，server断线没啥好说的，大家都GG，存档也会回档到上一次存档，如果server正常，A或者B掉线对自身影响是动作失效并断开连接，对对方来说其实并无影响。</p>
+<h4 id="服务器联机系统"><a href="#服务器联机系统" class="headerlink" title="服务器联机系统"></a>服务器联机系统</h4><p>&emsp;&emsp;服务器联机和P2P的区别在于服务端位于服务器还是岛主上。服务器联机的话，机房是一笔很大的开销，而如果能将每个岛开岛的时候映射到服务器，或者干脆每个岛都直接搭在服务器上，则是对整个联机过程最大的提升（没错MMORPG新游，集合啦动物森友会）。其实优化提升的分析和P2P相似，但是对于岛主来说更为自由，对于游客来说也是如此。岛主的掉线不再会直接导致所有人的掉线。缺点在于成本高，所以短时间内大概不要想啦，就算有，国服也是遥遥无期，也许任天堂的下一代动森作品会出呢。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>&emsp;&emsp;综上，任天堂其实是有很多选择的方案将动森的联机系统做的更加出众，让玩家玩起来更为舒心的。但是他没有做，原因大概只有赶工期，迁就一下了，毕竟做如此精妙的博物馆、家具系统、岛屿生态系统、玩法系统还是极为不容易的，所以只能用最简单的做法做到还可以接受的效果，满足一下大家联机的心愿。但是不论如何，作为世界的主宰，这个联机系统还是挺让人失望的。</p>
+<p>&emsp;&emsp;本文是我在玩游戏之余因为买不到大头菜的愤懑而做，可能存在很多偏颇和缺陷，也可能因为自身知识能力的关系视野狭隘没有看清任天堂的设计思维。所以还请多多包涵指点，聊以娱乐。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/%E9%9A%8F%E7%AC%94/" rel="tag"># 随笔</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/04/19/%E5%85%B3%E4%BA%8EMMORPG%E5%A4%9A%E4%BA%BA%E5%AF%B9%E6%88%98%E4%B8%AD%E7%83%AD%E7%82%B9%E9%97%AE%E9%A2%98%E7%9A%84%E8%A7%A3%E5%86%B3%E6%80%9D%E8%B7%AF%E8%AE%A8%E8%AE%BA/" rel="prev" title="关于MMORPG多人对战中热点问题的解决思路讨论">
+                关于MMORPG多人对战中热点问题的解决思路讨论 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Ty Chen</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives">
+              
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#联机系统简介"><span class="nav-number">1.</span> <span class="nav-text">联机系统简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#联机系统分析"><span class="nav-number">2.</span> <span class="nav-text">联机系统分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#改进分析"><span class="nav-number">3.</span> <span class="nav-text">改进分析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#P2P联机系统"><span class="nav-number">3.1.</span> <span class="nav-text">P2P联机系统</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#实现方式分析"><span class="nav-number">3.1.1.</span> <span class="nav-text">实现方式分析</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#实现方式改进"><span class="nav-number">3.1.2.</span> <span class="nav-text">实现方式改进</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#服务器联机系统"><span class="nav-number">3.2.</span> <span class="nav-text">服务器联机系统</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ty Chen</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item=>{
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'aTqo2eFkO2Bn0AGX008uKDV7-gzGzoHsz',
+        appKey: 'uJ6nxqW7RHWpAILCtttkJfJu',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("", "");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
