@@ -301,7 +301,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-04-25T12:14:50+08:00" content="2020-04-25">
+              <time itemprop="dateUpdated" datetime="2020-04-25T12:22:24+08:00" content="2020-04-25">
                 2020-04-25
               </time>
             </span>
@@ -398,39 +398,18 @@
 
       
         
-          
-            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>&emsp;&emsp;Linux操作系统内核是服务端学习的根基，也是提高编程能力、源码阅读能力和进阶知识学习能力的重要部分，本文开始将记录Linux操作系统中的各个部分源码学习历程。</p>
+          <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>&emsp;&emsp;Linux操作系统内核是服务端学习的根基，也是提高编程能力、源码阅读能力和进阶知识学习能力的重要部分，本文开始将记录Linux操作系统中的各个部分源码学习历程。</p>
 <p>&emsp;&emsp;关于如何学习源码，个人觉得可以从以下角度入手，有效地提高阅读和学习的效率。（学习语言就不说了，这是基本功。学习IDE推荐Source Insight或者Visual Studio）</p>
 <ul>
-<li><p><strong>理解代码的组织结构。</strong> 以Linux源码举例，首先你得知道操作系统分为哪几个部分，他们单独做了什么功能，如何进行配合完成更为具体的功能。建立整体的印象有助于后续深入学习的时候方便理解，毕竟<strong>代码是用的不是看的</strong>，理解他的作用有利于理解为什么要这么做。</p>
-</li>
-<li><p><strong>深入各个模块学习</strong>。</p>
-<ul>
-<li><p><strong>模块接口</strong>： 这里推荐一个vsio studio，用其画图可以将各个模块的接口列出，并绘制各个模块之间的关系，通过了解接口可以清楚各个模块之间的关系，即绘制<strong>模块组织图</strong></p>
-</li>
-<li><p><strong>工作流程</strong>：通过上面一步得到各模块间的关系，然后实际用断点或log等方式看一看整体的工作流程，在模块组织图的基础上绘制<strong>程序流程图</strong></p>
-</li>
-<li><p><strong>模块粘合层</strong>：我们的代码有很多都是用来粘合代码的，比如中间件（middleware）、Promises 模式、回调（Callback）、代理委托、依赖注入等。这些代码模块间的粘合技术是非常重要的，因为它们会把本来平铺直述的代码给分裂开来，让你不容易看明白它们的关系。这些可以作为程序流程图的补充，让其中本来无法顺畅衔接的地方变得通畅无阻。</p>
-</li>
-<li><p><strong>模块具体实现</strong> ：这是最难得地方，涉及到大量具体源码的学习。深入细节容易迷失在细节的海洋里，因此需要有一些重点去关注，将非重点的内容省略。通过学习绘制<strong>模块具体架构图</strong>和模块的<strong>算法时序图</strong>，可以帮助你更好的掌握源码的精髓。</p>
-<p>需要关注的包括</p>
-<ul>
-<li><strong>代码逻辑</strong>。代码有两种逻辑，一种是业务逻辑，这种逻辑是真正的业务处理逻辑；另一种是控制逻辑，这种逻辑只是用控制程序流转的，不是业务逻辑。比如：flag 之类的控制变量，多线程处理的代码，异步控制的代码，远程通讯的代码，对象序列化反序列化的代码等。这两种逻辑你要分开，很多代码之所以混乱就是把这两种逻辑混在一起了。</li>
-<li><strong>重要的算法</strong>。一般来说，我们的代码里会有很多重要的算法，我说的并不一定是什么排序或是搜索算法，可能会是一些其它的核心算法，比如一些索引表的算法，全局唯一 ID 的算法、信息推荐的算法、统计算法、通读算法（如 Gossip）等。这些比较核心的算法可能会非常难读，但它们往往是最有技术含量的部分。</li>
-<li><strong>底层交互</strong>。有一些代码是和底层系统的交互，一般来说是和操作系统或是 JVM 的交互。因此，读这些代码通常需要一定的底层技术知识，不然，很难读懂。</li>
+<li><strong>理解代码的组织结构。</strong> 以Linux源码举例，首先你得知道操作系统分为哪几个部分，他们单独做了什么功能，如何进行配合完成更为具体的功能。建立整体的印象有助于后续深入学习的时候方便理解，毕竟<strong>代码是用的不是看的</strong>，理解他的作用有利于理解为什么要这么做。</li>
 </ul>
-<p>可以忽略的包括</p>
-<ul>
-<li><strong>出错处理</strong>。根据二八原则，20% 的代码是正常的逻辑，80% 的代码是在处理各种错误，所以，你在读代码的时候，完全可以把处理错误的代码全部删除掉，这样就会留下比较干净和简单的正常逻辑的代码。排除干扰因素，可以更高效地读代码。</li>
-<li><strong>数据处理</strong>。只要你认真观察，就会发现，我们好多代码就是在那里倒腾数据。比如 DAO、DTO，比如 JSON、XML，这些代码冗长无聊，不是主要逻辑，可以不理。</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<p>&emsp;&emsp;说了一大堆的废话，下面就正式开始操作系统的深入学习记录之旅了。</p>
-<h2 id="操作系统：混沌初开"><a href="#操作系统：混沌初开" class="headerlink" title="操作系统：混沌初开"></a>操作系统：混沌初开</h2>
-          
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2020/04/24/linux-kernel-bootstrap/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -520,7 +499,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-04-25T12:16:05+08:00" content="2020-04-25">
+              <time itemprop="dateUpdated" datetime="2020-04-25T12:21:01+08:00" content="2020-04-25">
                 2020-04-25
               </time>
             </span>
@@ -617,8 +596,7 @@
 
       
         
-          
-            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>&emsp;&emsp;本文挖个新坑，记录分布式系统设计中的点点滴滴，主要包括</p>
+          <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>&emsp;&emsp;本文挖个新坑，记录分布式系统设计中的点点滴滴，主要包括</p>
 <ul>
 <li>分布式系统技术栈</li>
 <li>分布式系统关键技术</li>
@@ -627,8 +605,13 @@
 <li>分布式系统性能设计</li>
 </ul>
 <p>&emsp;&emsp;每一个部分展开都有着宏伟壮阔的篇章，不是一时半会能够学完学透的，必须沉下心来扎扎实实学习，并通过不断地实践巩固和提高。</p>
-<h2 id="分布式系统技术栈"><a href="#分布式系统技术栈" class="headerlink" title="分布式系统技术栈"></a>分布式系统技术栈</h2><h2 id="关键技术"><a href="#关键技术" class="headerlink" title="关键技术"></a>关键技术</h2><h2 id="弹力设计"><a href="#弹力设计" class="headerlink" title="弹力设计"></a>弹力设计</h2><h2 id="管理设计"><a href="#管理设计" class="headerlink" title="管理设计"></a>管理设计</h2><h2 id="性能设计"><a href="#性能设计" class="headerlink" title="性能设计"></a>性能设计</h2>
-          
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2020/04/24/distributed-system-design/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -718,7 +701,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-04-25T12:18:43+08:00" content="2020-04-25">
+              <time itemprop="dateUpdated" datetime="2020-04-25T12:22:01+08:00" content="2020-04-25">
                 2020-04-25
               </time>
             </span>
@@ -815,10 +798,14 @@
 
       
         
-          
-            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>&emsp;&emsp;本文记录各种不同的编程范式及他们之间的联系和区别，由于经验尚浅可能无法写的十分入味，后续待资历渐长再慢慢修改润色。</p>
-
-          
+          <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>&emsp;&emsp;本文记录各种不同的编程范式及他们之间的联系和区别，由于经验尚浅可能无法写的十分入味，后续待资历渐长再慢慢修改润色。</p>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2020/04/24/paradigms/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -1103,7 +1090,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-04-25T12:18:51+08:00" content="2020-04-25">
+              <time itemprop="dateUpdated" datetime="2020-04-25T12:21:36+08:00" content="2020-04-25">
                 2020-04-25
               </time>
             </span>
@@ -1200,7 +1187,7 @@
 
       
         
-          <h3 id="联机系统简介"><a href="#联机系统简介" class="headerlink" title="联机系统简介"></a>联机系统简介</h3><p>&emsp;&emsp;集合啦动物森友会是最近NS的大爆款，我也第一时间入坑玩的不亦乐乎。在最近一周的游玩过程中，唯一被大家抱怨的问题大概就是这个联机系统了。首先我来简单介绍一下动物森友会的网络联机流程和中间的一些机制。<br><img src="https://img-blog.csdnimg.cn/20200329152545223.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTMzNTQ0ODY=,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+          <h3 id="联机系统简介"><a href="#联机系统简介" class="headerlink" title="联机系统简介"></a>联机系统简介</h3><p>&emsp;&emsp;集合啦动物森友会是最近NS的大爆款，我也第一时间入坑玩的不亦乐乎。在最近一周的游玩过程中，唯一被大家抱怨的问题大概就是这个联机系统了。首先我来简单介绍一下动物森友会的网络联机流程和中间的一些机制。</p>
 <ol>
 <li>需要开通NS会员这肯定没啥好说的</li>
 <li>去别的岛上逛或者别人来自己岛上逛只能二选一，不可以自己开着岛让别人来玩同时自己跑别人岛上玩</li>
