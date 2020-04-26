@@ -79,14 +79,14 @@
 
 
 
-<meta name="description" content="前言&amp;emsp;&amp;emsp;上文中，我们分析了从按下电源键到BootLoader完成加载的过程。加载完成之后，就要正式启动Linux内核了，而在这之前首先要完成从实模式到保护模式的切换。本文主要分析以下几部分内容  新旧中断的交替 打开A20 PE和PG 分段和分页 内核初始化  &amp;emsp;&amp;emsp;下面就开始潜入Linux源码的海洋畅游啦。 新旧中断的交替&amp;emsp;&amp;emsp;在实模式下的">
+<meta name="description" content="前言&amp;emsp;&amp;emsp;上文中，我们分析了从按下电源键到BootLoader完成加载的过程。加载完成之后，就要正式启动Linux内核了，而在这之前首先要完成从实模式到保护模式的切换。本文主要分析以下几部分内容  新旧中断的交替 打开A20 PE和PG 分段和分页 内核初始化  &amp;emsp;&amp;emsp;下面就开始潜入Linux源码的海洋畅游啦。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux操作系统学习笔记（二）内核运行">
 <meta property="og:url" content="https://ty-chen.github.io/linux-kernel-protecd-mode/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
-<meta property="og:description" content="前言&amp;emsp;&amp;emsp;上文中，我们分析了从按下电源键到BootLoader完成加载的过程。加载完成之后，就要正式启动Linux内核了，而在这之前首先要完成从实模式到保护模式的切换。本文主要分析以下几部分内容  新旧中断的交替 打开A20 PE和PG 分段和分页 内核初始化  &amp;emsp;&amp;emsp;下面就开始潜入Linux源码的海洋畅游啦。 新旧中断的交替&amp;emsp;&amp;emsp;在实模式下的">
+<meta property="og:description" content="前言&amp;emsp;&amp;emsp;上文中，我们分析了从按下电源键到BootLoader完成加载的过程。加载完成之后，就要正式启动Linux内核了，而在这之前首先要完成从实模式到保护模式的切换。本文主要分析以下几部分内容  新旧中断的交替 打开A20 PE和PG 分段和分页 内核初始化  &amp;emsp;&amp;emsp;下面就开始潜入Linux源码的海洋畅游啦。">
 <meta property="article:published_time" content="2020-04-26T11:59:35.000Z">
-<meta property="article:modified_time" content="2020-04-26T13:09:24.566Z">
+<meta property="article:modified_time" content="2020-04-26T13:13:40.562Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -304,7 +304,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-04-26T21:09:24+08:00" content="2020-04-26">
+              <time itemprop="dateUpdated" datetime="2020-04-26T21:13:40+08:00" content="2020-04-26">
                 2020-04-26
               </time>
             </span>
@@ -414,6 +414,8 @@
 <li>内核初始化</li>
 </ul>
 <p>&emsp;&emsp;下面就开始潜入Linux源码的海洋畅游啦。</p>
+<a id="more"></a>
+
 <h2 id="新旧中断的交替"><a href="#新旧中断的交替" class="headerlink" title="新旧中断的交替"></a>新旧中断的交替</h2><p>&emsp;&emsp;在实模式下的中断显然不可以和保护模式的中断同日而语，因此我们需要关闭旧的中断（cli）并确立新的中断（sti）。<code>main</code>函数能够适应保护模式的中断服务体系被重建完毕才会打开中断，而那时候响应中断的服务程序将不再是BIOS提供的中断服务程序，取而代之的是由系统自身提供的中断服务程序。</p>
 <p>&emsp;&emsp;cli、sti总是在一个完整操作过程的两头出现，目的是避免中断在此期间的介入。接下来的代码将为操作系统进入保护模式做准备。此处即将进行实模式下中断向量表和保护模式下<a href="https://en.wikipedia.org/wiki/Interrupt_descriptor_table" target="_blank" rel="noopener">中断描述符表</a>（IDT）的交接工作。试想，如果没有cli，又恰好发生中断，如用户不小心碰了一下键盘，中断就要切进来，就不得不面对实模式的中断机制已经废除、保护模式的中断机制尚未完成的尴尬局面，结果就是系统崩溃。cli、sti保证了这个过程中，IDT能够完整创建，以避免不可预料中断的进入造成IDT创建不完整或新老中断机制混用。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">#boot&#x2F;setup.s</span><br><span class="line">……</span><br><span class="line">do _move：</span><br><span class="line">mov es,ax！destination segment</span><br><span class="line">add ax，#0x1000</span><br><span class="line">cmp ax，#0x9000</span><br><span class="line">jz end_move</span><br><span class="line">mov ds,ax！source segment</span><br><span class="line">sub di,di</span><br><span class="line">sub si,si</span><br><span class="line">mov cx，#0x8000</span><br><span class="line">rep</span><br><span class="line">movsw</span><br><span class="line">jmp do_move</span><br></pre></td></tr></table></figure>
