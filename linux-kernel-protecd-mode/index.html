@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="前言&amp;emsp;&amp;emsp;上文中，我们分析了从按下电源键到BootLoader完成加载的过程。加载完成之后，就要正式启动Linux内核了，而在这之前首先要完成从实模式到保护模式的切换。本文主要分析以下几部分内容  新旧中断的交替 打开A20 进入main函数 内核初始化  &amp;emsp;&amp;emsp;下面就开始潜入Linux源码的海洋畅游啦。">
 <meta property="article:published_time" content="2020-04-26T11:59:35.000Z">
-<meta property="article:modified_time" content="2020-04-27T14:39:19.054Z">
+<meta property="article:modified_time" content="2020-04-27T16:22:11.191Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -304,8 +304,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-04-27T22:39:19+08:00" content="2020-04-27">
-                2020-04-27
+              <time itemprop="dateUpdated" datetime="2020-04-28T00:22:11+08:00" content="2020-04-28">
+                2020-04-28
               </time>
             </span>
           
@@ -453,12 +453,7 @@
 <p>&emsp;&emsp;除此之外，head程序要废除已有的GDT，并在内核中的新位置重新创建GDT。原来GDT所在的位置是设计代码时在setup.s里面设置的数据，将来这个setup模块所在的内存位置会在设计缓冲区时被覆盖。如果不改变位置，将来GDT的内容肯定会被缓冲区覆盖掉，从而影响系统的运行。这样一来，将来整个内存中唯一安全的地方就是现在head.s所在的位置了。</p>
 <p>&emsp;&emsp;最终完成了分页机制初始化后，PG（Paging) 标志位将会置1，表示地址映射模式采取分页机制，最终跳转至main函数，内核开始初始化工作。</p>
 <h2 id="内核初始化"><a href="#内核初始化" class="headerlink" title="内核初始化"></a>内核初始化</h2><p>&emsp;&emsp;注意，至此为止，我们尚未打开中断，而必须通过main函数完成一系列的初始化后才会打开新的中断，从而使内核正式运行起来。</p>
-<ol>
-<li>栈初始化</li>
-</ol>
-<ol start="2">
-<li>BSS初始化</li>
-</ol>
+<p>1. </p>
 
       
     </div>
