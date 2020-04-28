@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="前言&amp;emsp;&amp;emsp;上文中，我们分析了从按下电源键到BootLoader完成加载的过程。加载完成之后，就要正式启动Linux内核了，而在这之前首先要完成从实模式到保护模式的切换。本文主要分析以下几部分内容  新旧中断的交替 打开A20 进入main函数 内核初始化  &amp;emsp;&amp;emsp;其实整个过程中还有很多内容，比如检查各种硬件设备等，在此略过不提。下面就开始潜入Linux源码的海洋">
 <meta property="article:published_time" content="2020-04-26T11:59:35.000Z">
-<meta property="article:modified_time" content="2020-04-28T14:27:45.566Z">
+<meta property="article:modified_time" content="2020-04-28T16:13:53.264Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -304,8 +304,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-04-28T22:27:45+08:00" content="2020-04-28">
-                2020-04-28
+              <time itemprop="dateUpdated" datetime="2020-04-29T00:13:53+08:00" content="2020-04-29">
+                2020-04-29
               </time>
             </span>
           
@@ -368,7 +368,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  3k
+                  3.2k
                 </span>
               
 
@@ -384,7 +384,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  10
+                  11
                 </span>
               
             </div>
@@ -451,24 +451,31 @@
 <p>&emsp;&emsp;head程序是进入main之前的最后一步了。head在空间创建了内核分页机制，即在0x000000的位置创建了页目录表、页表、缓冲区、GDT、IDT，并将head程序已经执行过的代码所占内存空间覆盖。这意味着head程序自己将自己废弃，main函数即将开始执行。具体的分页机制因为较为复杂，所以打算<strong>放在后续介绍内存管理的部分再单独介绍</strong>。</p>
 <p>&emsp;&emsp;head构造IDT，使中断机制的整体架构先搭建起来（实际的中断服务程序挂接则在main函数中完成），并使所有中断服务程序指向同一段只显示一行提示信息就返回的服务程序。从编程技术上讲，这种初始化操作，既可以防止无意中覆盖代码或数据而引起的逻辑混乱，也可以对开发过程中的误操作给出及时的提示。IDT有256个表项，实际只使用了几十个，对于误用未使用的中断描述符，这样的提示信息可以提醒开发人员注意错误。</p>
 <p>&emsp;&emsp;除此之外，head程序要废除已有的GDT，并在内核中的新位置重新创建GDT。原来GDT所在的位置是设计代码时在setup.s里面设置的数据，将来这个setup模块所在的内存位置会在设计缓冲区时被覆盖。如果不改变位置，将来GDT的内容肯定会被缓冲区覆盖掉，从而影响系统的运行。这样一来，将来整个内存中唯一安全的地方就是现在head.s所在的位置了。</p>
-<p>&emsp;&emsp;最终完成了分页机制初始化后，PG（Paging) 标志位将会置1，表示地址映射模式采取分页机制，最终跳转至main函数，内核开始初始化工作。</p>
-<h2 id="内核初始化"><a href="#内核初始化" class="headerlink" title="内核初始化"></a>内核初始化</h2><p>&emsp;&emsp;注意，至此为止，我们尚未打开中断，而必须通过main函数完成一系列的初始化后才会打开新的中断，从而使内核正式运行起来。该部分主要包括：</p>
+<p>&emsp;&emsp;下来步骤主要包括</p>
 <ol>
 <li>初始化段寄存器和堆栈</li>
 <li>清零eflag寄存器以及内核未初始化数据区</li>
 <li>调用<code>decompress_kernel()</code>解压内核映像并跳转至0X00100000处。</li>
-</ol>
-<p>解压完成后也有一系列初始化环境过程</p>
-<ol>
 <li>段寄存器初始化为最终值并填充BSS字段为0</li>
 <li>初始化临时内核页表</li>
-<li>设置PG启动分页</li>
+</ol>
+<p>&emsp;&emsp;最终完成了分页机制初始化后，PG（Paging) 标志位将会置1，表示地址映射模式采取分页机制，最终跳转至main函数，内核开始初始化工作。</p>
+<h2 id="内核初始化"><a href="#内核初始化" class="headerlink" title="内核初始化"></a>内核初始化</h2><p>&emsp;&emsp;注意，至此为止，我们尚未打开中断，而必须通过main函数完成一系列的初始化后才会打开新的中断，从而使内核正式运行起来。该部分主要包括：</p>
+<ol start="4">
 <li>为进程0建立内核态堆栈</li>
 <li>清零eflags寄存器</li>
 <li>调用<code>setup_idt()</code>用空的中断处理程序填充IDT</li>
 <li>把BIOS中获得的参数传递给第一个页框</li>
 <li>用GDT和IDT表填充寄存器</li>
 </ol>
+<p>&emsp;&emsp;完成这些之后，内核就正式运行，开始创建0号进程了。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>&emsp;&emsp;本文介绍了实模式到保护模式的整个切换过程，完成了内核的加载并开始正式准备创建0号进程。后续将继续分析启动内核创建0号、1号、2号进程的整个过程。本文介绍过程中忽略了很多汇编代码以及一些虽然很重要但是不属于基本流程的知识，有兴趣了解的可以根据文中链接、文末的源码和参考资料进行更深入的学习研究。</p>
+<h2 id="源码资料"><a href="#源码资料" class="headerlink" title="源码资料"></a>源码资料</h2><p>[1] <a href="https://www.gnu.org/software/grub/" target="_blank" rel="noopener">GURB 2</a></p>
+<p>[2] <a href="http://www.syslinux.org/wiki/index.php/The_Syslinux_Project" target="_blank" rel="noopener">syslinux</a></p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1] Linux-insides</p>
+<p>[2] 深入理解Linux内核源码</p>
+<p>[3] Linux内核设计的艺术</p>
+<p>[4] 极客时间 趣谈Linux操作系统</p>
 
       
     </div>
@@ -749,7 +756,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#新旧中断的交替"><span class="nav-number">2.</span> <span class="nav-text">新旧中断的交替</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#A20"><span class="nav-number">3.</span> <span class="nav-text">A20</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#进入main函数"><span class="nav-number">4.</span> <span class="nav-text">进入main函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#内核初始化"><span class="nav-number">5.</span> <span class="nav-text">内核初始化</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#新旧中断的交替"><span class="nav-number">2.</span> <span class="nav-text">新旧中断的交替</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#A20"><span class="nav-number">3.</span> <span class="nav-text">A20</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#进入main函数"><span class="nav-number">4.</span> <span class="nav-text">进入main函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#内核初始化"><span class="nav-number">5.</span> <span class="nav-text">内核初始化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源码资料"><span class="nav-number">7.</span> <span class="nav-text">源码资料</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-number">8.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
             
 
           </div>
@@ -783,7 +790,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">11.8k</span>
+    <span title="Site words total count">12k</span>
   
 </div>
 
