@@ -79,14 +79,14 @@
 
 
 
-<meta name="description" content="前言&amp;emsp;&amp;emsp;上文中，我们分析了从按下电源键到BootLoader完成加载的过程。加载完成之后，就要正式启动Linux内核了，而在这之前首先要完成从实模式到保护模式的切换。本文主要分析以下几部分内容  新旧中断的交替 打开A20 进入main函数 内核初始化  &amp;emsp;&amp;emsp;下面就开始潜入Linux源码的海洋畅游啦。">
+<meta name="description" content="前言&amp;emsp;&amp;emsp;上文中，我们分析了从按下电源键到BootLoader完成加载的过程。加载完成之后，就要正式启动Linux内核了，而在这之前首先要完成从实模式到保护模式的切换。本文主要分析以下几部分内容  新旧中断的交替 打开A20 进入main函数 内核初始化  &amp;emsp;&amp;emsp;其实整个过程中还有很多内容，比如检查各种硬件设备等，在此略过不提。下面就开始潜入Linux源码的海洋">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux操作系统学习笔记（二）内核运行">
 <meta property="og:url" content="https://ty-chen.github.io/linux-kernel-protecd-mode/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
-<meta property="og:description" content="前言&amp;emsp;&amp;emsp;上文中，我们分析了从按下电源键到BootLoader完成加载的过程。加载完成之后，就要正式启动Linux内核了，而在这之前首先要完成从实模式到保护模式的切换。本文主要分析以下几部分内容  新旧中断的交替 打开A20 进入main函数 内核初始化  &amp;emsp;&amp;emsp;下面就开始潜入Linux源码的海洋畅游啦。">
+<meta property="og:description" content="前言&amp;emsp;&amp;emsp;上文中，我们分析了从按下电源键到BootLoader完成加载的过程。加载完成之后，就要正式启动Linux内核了，而在这之前首先要完成从实模式到保护模式的切换。本文主要分析以下几部分内容  新旧中断的交替 打开A20 进入main函数 内核初始化  &amp;emsp;&amp;emsp;其实整个过程中还有很多内容，比如检查各种硬件设备等，在此略过不提。下面就开始潜入Linux源码的海洋">
 <meta property="article:published_time" content="2020-04-26T11:59:35.000Z">
-<meta property="article:modified_time" content="2020-04-27T16:22:11.191Z">
+<meta property="article:modified_time" content="2020-04-28T14:27:45.566Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -304,7 +304,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-04-28T00:22:11+08:00" content="2020-04-28">
+              <time itemprop="dateUpdated" datetime="2020-04-28T22:27:45+08:00" content="2020-04-28">
                 2020-04-28
               </time>
             </span>
@@ -368,7 +368,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  2.8k
+                  3k
                 </span>
               
 
@@ -412,7 +412,7 @@
 <li>进入main函数</li>
 <li>内核初始化</li>
 </ul>
-<p>&emsp;&emsp;下面就开始潜入Linux源码的海洋畅游啦。</p>
+<p>&emsp;&emsp;其实整个过程中还有很多内容，比如检查各种硬件设备等，在此略过不提。下面就开始潜入Linux源码的海洋畅游啦。</p>
 <a id="more"></a>
 
 <h2 id="新旧中断的交替"><a href="#新旧中断的交替" class="headerlink" title="新旧中断的交替"></a>新旧中断的交替</h2><p>&emsp;&emsp;在实模式下的中断显然不可以和保护模式的中断同日而语，因此我们需要关闭旧的中断（cli）并确立新的中断（sti）。<code>main</code>函数能够适应保护模式的中断服务体系被重建完毕才会打开中断，而那时候响应中断的服务程序将不再是BIOS提供的中断服务程序，取而代之的是由系统自身提供的中断服务程序。</p>
@@ -452,8 +452,23 @@
 <p>&emsp;&emsp;head构造IDT，使中断机制的整体架构先搭建起来（实际的中断服务程序挂接则在main函数中完成），并使所有中断服务程序指向同一段只显示一行提示信息就返回的服务程序。从编程技术上讲，这种初始化操作，既可以防止无意中覆盖代码或数据而引起的逻辑混乱，也可以对开发过程中的误操作给出及时的提示。IDT有256个表项，实际只使用了几十个，对于误用未使用的中断描述符，这样的提示信息可以提醒开发人员注意错误。</p>
 <p>&emsp;&emsp;除此之外，head程序要废除已有的GDT，并在内核中的新位置重新创建GDT。原来GDT所在的位置是设计代码时在setup.s里面设置的数据，将来这个setup模块所在的内存位置会在设计缓冲区时被覆盖。如果不改变位置，将来GDT的内容肯定会被缓冲区覆盖掉，从而影响系统的运行。这样一来，将来整个内存中唯一安全的地方就是现在head.s所在的位置了。</p>
 <p>&emsp;&emsp;最终完成了分页机制初始化后，PG（Paging) 标志位将会置1，表示地址映射模式采取分页机制，最终跳转至main函数，内核开始初始化工作。</p>
-<h2 id="内核初始化"><a href="#内核初始化" class="headerlink" title="内核初始化"></a>内核初始化</h2><p>&emsp;&emsp;注意，至此为止，我们尚未打开中断，而必须通过main函数完成一系列的初始化后才会打开新的中断，从而使内核正式运行起来。</p>
-<p>1. </p>
+<h2 id="内核初始化"><a href="#内核初始化" class="headerlink" title="内核初始化"></a>内核初始化</h2><p>&emsp;&emsp;注意，至此为止，我们尚未打开中断，而必须通过main函数完成一系列的初始化后才会打开新的中断，从而使内核正式运行起来。该部分主要包括：</p>
+<ol>
+<li>初始化段寄存器和堆栈</li>
+<li>清零eflag寄存器以及内核未初始化数据区</li>
+<li>调用<code>decompress_kernel()</code>解压内核映像并跳转至0X00100000处。</li>
+</ol>
+<p>解压完成后也有一系列初始化环境过程</p>
+<ol>
+<li>段寄存器初始化为最终值并填充BSS字段为0</li>
+<li>初始化临时内核页表</li>
+<li>设置PG启动分页</li>
+<li>为进程0建立内核态堆栈</li>
+<li>清零eflags寄存器</li>
+<li>调用<code>setup_idt()</code>用空的中断处理程序填充IDT</li>
+<li>把BIOS中获得的参数传递给第一个页框</li>
+<li>用GDT和IDT表填充寄存器</li>
+</ol>
 
       
     </div>
@@ -768,7 +783,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">11.7k</span>
+    <span title="Site words total count">11.8k</span>
   
 </div>
 
