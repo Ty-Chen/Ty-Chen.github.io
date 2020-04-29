@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="前言&amp;emsp;&amp;emsp;上文中，我们分析了从按下电源键到BootLoader完成加载的过程。加载完成之后，就要正式启动Linux内核了，而在这之前首先要完成从实模式到保护模式的切换。本文主要分析以下几部分内容  新旧中断的交替 打开A20 进入main函数 内核初始化  &amp;emsp;&amp;emsp;其实整个过程中还有很多内容，比如检查各种硬件设备等，在此略过不提。下面就开始潜入Linux源码的海洋">
 <meta property="article:published_time" content="2020-04-26T11:59:35.000Z">
-<meta property="article:modified_time" content="2020-04-28T16:13:53.264Z">
+<meta property="article:modified_time" content="2020-04-29T14:24:26.173Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -304,7 +304,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-04-29T00:13:53+08:00" content="2020-04-29">
+              <time itemprop="dateUpdated" datetime="2020-04-29T22:24:26+08:00" content="2020-04-29">
                 2020-04-29
               </time>
             </span>
@@ -453,11 +453,17 @@
 <p>&emsp;&emsp;除此之外，head程序要废除已有的GDT，并在内核中的新位置重新创建GDT。原来GDT所在的位置是设计代码时在setup.s里面设置的数据，将来这个setup模块所在的内存位置会在设计缓冲区时被覆盖。如果不改变位置，将来GDT的内容肯定会被缓冲区覆盖掉，从而影响系统的运行。这样一来，将来整个内存中唯一安全的地方就是现在head.s所在的位置了。</p>
 <p>&emsp;&emsp;下来步骤主要包括</p>
 <ol>
-<li>初始化段寄存器和堆栈</li>
-<li>清零eflag寄存器以及内核未初始化数据区</li>
-<li>调用<code>decompress_kernel()</code>解压内核映像并跳转至0X00100000处。</li>
-<li>段寄存器初始化为最终值并填充BSS字段为0</li>
-<li>初始化临时内核页表</li>
+<li><p>初始化段寄存器和堆栈</p>
+<p>主要包括将DS和ES寄存器指向相同的地址，并将DS和CS设置为相同的值。</p>
+</li>
+<li><p>清零eflag寄存器以及内核未初始化数据区</p>
+</li>
+<li><p>调用<code>decompress_kernel()</code>解压内核映像并跳转至0X00100000处。</p>
+</li>
+<li><p>段寄存器初始化为最终值并填充BSS字段为0</p>
+</li>
+<li><p>初始化临时内核页表</p>
+</li>
 </ol>
 <p>&emsp;&emsp;最终完成了分页机制初始化后，PG（Paging) 标志位将会置1，表示地址映射模式采取分页机制，最终跳转至main函数，内核开始初始化工作。</p>
 <h2 id="内核初始化"><a href="#内核初始化" class="headerlink" title="内核初始化"></a>内核初始化</h2><p>&emsp;&emsp;注意，至此为止，我们尚未打开中断，而必须通过main函数完成一系列的初始化后才会打开新的中断，从而使内核正式运行起来。该部分主要包括：</p>
@@ -790,7 +796,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">12k</span>
+    <span title="Site words total count">12.1k</span>
   
 </div>
 
