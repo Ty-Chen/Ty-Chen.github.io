@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="前言&amp;emsp;&amp;emsp;上文中，我们分析了从按下电源键到BootLoader完成加载的过程。加载完成之后，就要正式启动Linux内核了，而在这之前首先要完成从实模式到保护模式的切换。本文主要分析以下几部分内容  新旧中断的交替 打开A20 进入main函数 内核初始化  &amp;emsp;&amp;emsp;其实整个过程中还有很多内容，比如检查各种硬件设备等，在此略过不提。下面就开始潜入Linux源码的海洋">
 <meta property="article:published_time" content="2020-04-26T11:59:35.000Z">
-<meta property="article:modified_time" content="2020-04-29T14:24:26.173Z">
+<meta property="article:modified_time" content="2020-05-04T15:21:24.188Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -304,8 +304,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-04-29T22:24:26+08:00" content="2020-04-29">
-                2020-04-29
+              <time itemprop="dateUpdated" datetime="2020-05-04T23:21:24+08:00" content="2020-05-04">
+                2020-05-04
               </time>
             </span>
           
@@ -467,12 +467,17 @@
 </ol>
 <p>&emsp;&emsp;最终完成了分页机制初始化后，PG（Paging) 标志位将会置1，表示地址映射模式采取分页机制，最终跳转至main函数，内核开始初始化工作。</p>
 <h2 id="内核初始化"><a href="#内核初始化" class="headerlink" title="内核初始化"></a>内核初始化</h2><p>&emsp;&emsp;注意，至此为止，我们尚未打开中断，而必须通过main函数完成一系列的初始化后才会打开新的中断，从而使内核正式运行起来。该部分主要包括：</p>
-<ol start="4">
-<li>为进程0建立内核态堆栈</li>
-<li>清零eflags寄存器</li>
-<li>调用<code>setup_idt()</code>用空的中断处理程序填充IDT</li>
-<li>把BIOS中获得的参数传递给第一个页框</li>
-<li>用GDT和IDT表填充寄存器</li>
+<ol>
+<li><p>为进程0建立内核态堆栈</p>
+</li>
+<li><p>清零eflags寄存器</p>
+</li>
+<li><p>调用<code>setup_idt()</code>用空的中断处理程序填充IDT</p>
+</li>
+<li><p>把BIOS中获得的参数传递给第一个页框</p>
+</li>
+<li><p>用GDT和IDT表填充寄存器</p>
+</li>
 </ol>
 <p>&emsp;&emsp;完成这些之后，内核就正式运行，开始创建0号进程了。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>&emsp;&emsp;本文介绍了实模式到保护模式的整个切换过程，完成了内核的加载并开始正式准备创建0号进程。后续将继续分析启动内核创建0号、1号、2号进程的整个过程。本文介绍过程中忽略了很多汇编代码以及一些虽然很重要但是不属于基本流程的知识，有兴趣了解的可以根据文中链接、文末的源码和参考资料进行更深入的学习研究。</p>
