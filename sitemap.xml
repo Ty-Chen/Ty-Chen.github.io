@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://ty-chen.github.io/linux-kernel-zero-process/</loc>
+    
+    <lastmod>2020-05-05T15:42:20.903Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://ty-chen.github.io/linux-kernel-protecd-mode/</loc>
     
     <lastmod>2020-05-04T15:21:24.188Z</lastmod>
