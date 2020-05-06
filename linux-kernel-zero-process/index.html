@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="前言&amp;emsp;&amp;emsp;前文分析到Linux内核正式启动，完成了实模式到保护模式的切换，并做好了各种准备工作。下来就要看开始内核初始化工作了，源码位置位于init&#x2F;main.c中的start_kernel()，源码如附录所示。这包括了一系列重要的初始化工作，本文会介绍其中一部分较为重要的，但是详细的介绍依然会留在后文各个模块的源码学习中单独进行。本文的目的在于承接上文给出一个从内核启动到各个模">
 <meta property="article:published_time" content="2020-05-05T14:46:22.000Z">
-<meta property="article:modified_time" content="2020-05-06T16:14:41.068Z">
+<meta property="article:modified_time" content="2020-05-06T16:16:45.959Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -304,7 +304,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-05-07T00:14:41+08:00" content="2020-05-07">
+              <time itemprop="dateUpdated" datetime="2020-05-07T00:16:45+08:00" content="2020-05-07">
                 2020-05-07
               </time>
             </span>
@@ -407,12 +407,20 @@
       
         <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>&emsp;&emsp;前文分析到Linux内核正式启动，完成了实模式到保护模式的切换，并做好了各种准备工作。下来就要看开始内核初始化工作了，源码位置位于init/main.c中的<code>start_kernel()</code>，源码如附录所示。这包括了一系列重要的初始化工作，本文会介绍其中一部分较为重要的，但是详细的介绍依然会留在后文各个模块的源码学习中单独进行。本文的目的在于承接上文给出一个从内核启动到各个模块开始运转的过程介绍，而不是详细的各部分内容介绍。</p>
 <ul>
-<li>内存初始化：<code>mm_init()</code></li>
-<li>异常处理类中断服务程序挂接：<code>trap_init()</code></li>
-<li>创建0号进程：<code>INIT_TASK(init_task)</code>以及<code>sched_init()</code></li>
-<li>初始化缓冲区管理结构：<code>buffer_init()</code></li>
-<li>初始化虚拟磁盘、硬盘及软盘：<code>rd_init()</code>， <code>hd_init()</code> ，<code>floppy_init()</code></li>
-<li>剩余初始化：<code>rest_init()</code></li>
+<li><p>内存初始化：<code>mm_init()</code></p>
+</li>
+<li><p>异常处理类中断服务程序挂接：<code>trap_init()</code></p>
+</li>
+<li><p>创建0号进程：<code>INIT_TASK(init_task)</code>以及<code>sched_init()</code></p>
+</li>
+<li><p>初始化缓冲区管理结构：<code>buffer_init()</code></p>
+</li>
+<li><p>初始化虚拟磁盘、硬盘及软盘：<code>rd_init()</code>， <code>hd_init()</code> ，<code>floppy_init()</code></p>
+</li>
+<li><p>剩余初始化：<code>rest_init()</code></p>
+<a id="more"></a>
+
+</li>
 </ul>
 <h2 id="内存初始化"><a href="#内存初始化" class="headerlink" title="内存初始化"></a>内存初始化</h2><p>&emsp;&emsp;内存相关的初始化内容放在<code>mm_init()</code>中进行，代码如下所示</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// init/main.c</span></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * Set up kernel memory allocators</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> __init <span class="title">mm_init</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="comment">/*</span></span><br><span class="line"><span class="comment">	 * page_ext requires contiguous pages,</span></span><br><span class="line"><span class="comment">	 * bigger than MAX_ORDER unless SPARSEMEM.</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	page_ext_init_flatmem();</span><br><span class="line">	mem_init();</span><br><span class="line">	kmem_cache_init();</span><br><span class="line">	pgtable_init();</span><br><span class="line">	vmalloc_init();</span><br><span class="line">	ioremap_huge_init();</span><br><span class="line">	<span class="comment">/* Should be run before the first non-init thread is created */</span></span><br><span class="line">	init_espfix_bsp();</span><br><span class="line">	<span class="comment">/* Should be run after espfix64 is set up. */</span></span><br><span class="line">	pti_init();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
