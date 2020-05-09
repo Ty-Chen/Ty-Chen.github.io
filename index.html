@@ -301,8 +301,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-05-08T23:13:26+08:00" content="2020-05-08">
-                2020-05-08
+              <time itemprop="dateUpdated" datetime="2020-05-10T00:29:24+08:00" content="2020-05-10">
+                2020-05-10
               </time>
             </span>
           
@@ -360,7 +360,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  992
+                  2.5k
                 </span>
               
 
@@ -376,7 +376,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  4
+                  10
                 </span>
               
             </div>
@@ -400,15 +400,13 @@
         
           <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>&emsp;&emsp;前文分析到Linux内核正式启动，完成了实模式到保护模式的切换，并做好了各种准备工作。下来就要看开始内核初始化工作了，源码位置位于init/main.c中的<code>start_kernel()</code>，源码如附录所示。这包括了一系列重要的初始化工作，本文会介绍其中一部分较为重要的，但是详细的介绍依然会留在后文各个模块的源码学习中单独进行。本文的目的在于承接上文给出一个从内核启动到各个模块开始运转的过程介绍，而不是详细的各部分内容介绍。</p>
 <ul>
-<li><p>内存初始化：<code>mm_init()</code></p>
+<li><p>创建0号进程：<code>INIT_TASK(init_task)</code></p>
 </li>
 <li><p>异常处理类中断服务程序挂接：<code>trap_init()</code></p>
 </li>
-<li><p>创建0号进程：<code>INIT_TASK(init_task)</code>以及<code>sched_init()</code></p>
+<li><p>内存初始化：<code>mm_init()</code></p>
 </li>
-<li><p>初始化缓冲区管理结构：<code>buffer_init()</code></p>
-</li>
-<li><p>初始化虚拟磁盘、硬盘及软盘：<code>rd_init()</code>， <code>hd_init()</code> ，<code>floppy_init()</code></p>
+<li><p>调度器初始化<code>sched_init()</code></p>
 </li>
 <li><p>剩余初始化：<code>rest_init()</code></p>
           <!--noindex-->
@@ -1789,7 +1787,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">13.1k</span>
+    <span title="Site words total count">14.6k</span>
   
 </div>
 
