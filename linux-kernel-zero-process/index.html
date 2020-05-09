@@ -87,7 +87,7 @@
 <meta property="og:description" content="前言&amp;emsp;&amp;emsp;前文分析到Linux内核正式启动，完成了实模式到保护模式的切换，并做好了各种准备工作。下来就要看开始内核初始化工作了，源码位置位于init&#x2F;main.c中的start_kernel()，源码如附录所示。这包括了一系列重要的初始化工作，本文会介绍其中一部分较为重要的，但是详细的介绍依然会留在后文各个模块的源码学习中单独进行。本文的目的在于承接上文给出一个从内核启动到各个模">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/2b/42/2b53b470673cde8f9d8e2573f7d07242.jpg">
 <meta property="article:published_time" content="2020-05-05T14:46:22.000Z">
-<meta property="article:modified_time" content="2020-05-09T16:29:24.044Z">
+<meta property="article:modified_time" content="2020-05-09T16:33:29.607Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -306,7 +306,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-05-10T00:29:24+08:00" content="2020-05-10">
+              <time itemprop="dateUpdated" datetime="2020-05-10T00:33:29+08:00" content="2020-05-10">
                 2020-05-10
               </time>
             </span>
@@ -370,7 +370,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  2.5k
+                  2.7k
                 </span>
               
 
@@ -447,7 +447,15 @@
 <li><code>init_espfix_bsp()</code>和<code>pti_init()</code>完成PTI（page table isolation）的初始化</li>
 </ul>
 <p>&emsp;&emsp;此处不展开说明这些函数，留待后面内存管理部分详细分析各个部分。</p>
-<h2 id="调度器初始化"><a href="#调度器初始化" class="headerlink" title="调度器初始化"></a>调度器初始化</h2><h2 id="剩余初始化"><a href="#剩余初始化" class="headerlink" title="剩余初始化"></a>剩余初始化</h2><p>&emsp;&emsp;<code>rest_init</code>是非常重要的一步，主要包括了区分内核态和用户态、初始化1号进程和初始化2号进程。</p>
+<h2 id="调度器初始化"><a href="#调度器初始化" class="headerlink" title="调度器初始化"></a>调度器初始化</h2><p>&emsp;&emsp;调度器初始化通过<code>sched_init()</code>完成，其主要工作包括</p>
+<ul>
+<li>对相关数据结构分配内存</li>
+<li>初始化<code>root_task_group</code></li>
+<li>初始化每个CPU的rq队列(包括其中的cfs队列和实时进程队列)</li>
+<li>将<code>init_task</code>进程转变为idle进程</li>
+</ul>
+<p>　　需要说明的是<code>init_task</code>在这里会被转变为<code>idle</code>进程，但是它还会继续执行初始化工作，相当于这里只是给<code>init_task</code>挂个<code>idle</code>进程的名号，它其实还是<code>init_task</code>进程，只有到最后<code>init_task</code>进程开启了<code>kernel_init</code>和<code>kthreadd</code>进程之后，才转变为真正意义上的<code>idle</code>进程。</p>
+<h2 id="剩余初始化"><a href="#剩余初始化" class="headerlink" title="剩余初始化"></a>剩余初始化</h2><p>&emsp;&emsp;<code>rest_init</code>是非常重要的一步，主要包括了区分内核态和用户态、初始化1号进程和初始化2号进程。</p>
 <h3 id="内核态和用户态"><a href="#内核态和用户态" class="headerlink" title="内核态和用户态"></a>内核态和用户态</h3><p>&emsp;&emsp;在运行用户进程之前，尚需要完成一件事：区分内核态和用户态。x86 提供了分层的权限机制，把区域分成了四个 Ring，越往里权限越高，越往外权限越低。操作系统很好地利用了这个机制，将能够访问关键资源的代码放在 Ring0，我们称为内核态（Kernel Mode）；将普通的程序代码放在 Ring3，我们称为用户态（User Mode）。</p>
 <p><img src="https://static001.geekbang.org/resource/image/2b/42/2b53b470673cde8f9d8e2573f7d07242.jpg" alt="img"></p>
 <h3 id="初始化1号进程"><a href="#初始化1号进程" class="headerlink" title="初始化1号进程"></a>初始化1号进程</h3><p>&emsp;&emsp;<code>rest_init</code> 的第一大工作是，用 <code>kernel_thread(kernel_init, NULL, CLONE_FS)</code>创建第二个进程，这个是 1 号进程。1 号进程对于操作系统来讲，有“划时代”的意义，因为它将运行一个用户进程，并从此开始形成用户态进程树。这里主要需要分析的是如何完成从内核态到用户态切换的过程。</p>
@@ -789,7 +797,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">14.6k</span>
+    <span title="Site words total count">14.8k</span>
   
 </div>
 
