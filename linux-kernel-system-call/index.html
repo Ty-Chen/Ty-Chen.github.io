@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="前言&amp;emsp;通过前面几篇文章，我们分析了从按下电源键到内核启动、完成初始化的整个过程。在后面的文章中我们将分别深入剖析Linux内核各个重要部分的源码。考虑到后面的部分我们会从用户态的代码开始入手一步一步深入，因此在分析这些之前，我们需要仔细看一看如何实现一个从用户态到内核态再回到用户态的系统调用的全过程，即系统调用的实现。">
 <meta property="article:published_time" content="2020-05-10T16:11:56.000Z">
-<meta property="article:modified_time" content="2020-05-13T16:12:47.450Z">
+<meta property="article:modified_time" content="2020-05-14T16:47:08.945Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -304,8 +304,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-05-14T00:12:47+08:00" content="2020-05-14">
-                2020-05-14
+              <time itemprop="dateUpdated" datetime="2020-05-15T00:47:08+08:00" content="2020-05-15">
+                2020-05-15
               </time>
             </span>
           
@@ -368,7 +368,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  283
+                  1.2k
                 </span>
               
 
@@ -384,7 +384,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  1
+                  5
                 </span>
               
             </div>
@@ -411,8 +411,31 @@
 <h2 id="GLIC标准库的调用"><a href="#GLIC标准库的调用" class="headerlink" title="GLIC标准库的调用"></a>GLIC标准库的调用</h2><p>&emsp;&emsp;让我们从一个简单的程序开始</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> **argv)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">   FILE *fp;</span><br><span class="line">   <span class="keyword">char</span> buff[<span class="number">255</span>];</span><br><span class="line"></span><br><span class="line">   fp = fopen(<span class="string">"test.txt"</span>, <span class="string">"r"</span>);</span><br><span class="line">   fgets(buff, <span class="number">255</span>, fp);</span><br><span class="line">   <span class="built_in">printf</span>(<span class="string">"%s\n"</span>, buff);</span><br><span class="line">   fclose(fp);</span><br><span class="line"></span><br><span class="line">   <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>&emsp;&emsp;如上所示的程序主要调用了glibc中的函数，然后在其上进行了封装而成。比如<code>fopen</code>实际使用的是<code>open</code>，这里我们就以该函数为例来说明整个调用过程。</p>
-<h2 id="32位系统调用过程"><a href="#32位系统调用过程" class="headerlink" title="32位系统调用过程"></a>32位系统调用过程</h2><h2 id="64位系统调用过程"><a href="#64位系统调用过程" class="headerlink" title="64位系统调用过程"></a>64位系统调用过程</h2><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2>
+<p>&emsp;&emsp;如上所示的程序主要调用了glibc中的函数，然后在其上进行了封装而成。比如<code>fopen</code>实际使用的是<code>open</code>，这里我们就以该函数为例来说明整个调用过程。首先<code>open</code>函数的系统调用在<code>syscalls.list</code>表中定义</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># <span class="built_in">File</span> name Caller Syscall name Args Strong name Weak names</span><br><span class="line"><span class="built_in">open</span> - <span class="built_in">open</span> Ci:siv __libc_open __open <span class="built_in">open</span></span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;根据此配置文件，glibc会调用脚本<code>make_syscall.sh</code>将其封装为宏，如<code>SYSCALL_NAME open</code>的形式。这些宏会通过<code>T_PSEUDO</code>来调用（位于<code>syscall-template.S</code>），而实际上使用的则是<code>DO_CALL(syscall_name, args)</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">T_PSEUDO (SYSCALL_SYMBOL, SYSCALL_NAME, SYSCALL_NARGS)</span><br><span class="line">    ret</span><br><span class="line">T_PSEUDO_END (SYSCALL_SYMBOL)</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> T_PSEUDO(SYMBOL, NAME, N)    PSEUDO (SYMBOL, NAME, N)</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> PSEUDO(name, syscall_name, args)      \</span></span><br><span class="line">  .<span class="built_in">text</span>;                                      \</span><br><span class="line">  ENTRY (name)                                \</span><br><span class="line">    DO_CALL (syscall_name, args);             \</span><br><span class="line">    cmpl $<span class="number">-4095</span>, %eax;                        \</span><br><span class="line">    jae SYSCALL_ERROR_LABEL</span><br></pre></td></tr></table></figure>
+
+<h3 id="32位系统调用过程"><a href="#32位系统调用过程" class="headerlink" title="32位系统调用过程"></a>32位系统调用过程</h3><p>&emsp;&emsp;考虑到32位和64位代码结构有一些区别，因此这里需要分开讨论。在32位系统中，<code>DO_CALL()</code>位于i386 目录下的<code>sysdep.h</code>文件中</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">/* Linux takes system call arguments in registers:</span></span><br><span class="line"><span class="comment">  syscall number  %eax       call-clobbered</span></span><br><span class="line"><span class="comment">  arg 1    %ebx       call-saved</span></span><br><span class="line"><span class="comment">  arg 2    %ecx       call-clobbered</span></span><br><span class="line"><span class="comment">  arg 3    %edx       call-clobbered</span></span><br><span class="line"><span class="comment">  arg 4    %esi       call-saved</span></span><br><span class="line"><span class="comment">  arg 5    %edi       call-saved</span></span><br><span class="line"><span class="comment">  arg 6    %ebp       call-saved</span></span><br><span class="line"><span class="comment">......</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DO_CALL(syscall_name, args)               \</span></span><br><span class="line">    PUSHARGS_#<span class="meta">#args                               \</span></span><br><span class="line">    DOARGS_#<span class="meta">#args                                 \</span></span><br><span class="line">    movl $SYS_ify (syscall_name), %eax;           \</span><br><span class="line">    ENTER_KERNEL                                  \</span><br><span class="line">    POPARGS_#<span class="meta">#args</span></span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;这里，我们将请求参数放在寄存器里面，根据系统调用的名称，得到系统调用号，放在寄存器 eax 里面，然后执行<code>ENTER_KERNEL</code>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"># <span class="meta-keyword">define</span> ENTER_KERNEL int $0x80</span></span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;<code>ENTER_KERNEL</code>实际调用的是80软中断，以此陷入内核。这些中断在<code>trap_init()</code>中被定义并初始化。在前文中对<code>trap_init()</code>已有一些简单的叙述，后面再中断部分会再详细介绍。</p>
+<p>&emsp;&emsp;初始化好的中断表会等待到中断触发，触发的时候则调用对应的回调函数，这里的话就是<code>entry_INT80_32</code>。该中断首先通过<code>push</code>和<code>SAVE_ALL</code>保存所有的寄存器，存储在<code>pt_regs</code>中，然后调用<code>do_syscall_32_irqs_on()</code>函数。该函数将系统调用号从<code>eax</code>里面取出来，然后根据系统调用号，在系统调用表中找到相应的函数进行调用，并将寄存器中保存的参数取出来，作为函数参数。最后调用<code>INTERRUPT_RETURN</code>将原来用户保存的现场恢复，返回至用户态执行。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">ENTRY(entry_INT80_32)</span><br><span class="line">        ASM_CLAC</span><br><span class="line">        pushl   %eax                    <span class="comment">/* pt_regs-&gt;orig_ax */</span></span><br><span class="line">        SAVE_ALL pt_regs_ax=$-ENOSYS    <span class="comment">/* save rest */</span></span><br><span class="line">        movl    %esp, %eax</span><br><span class="line">        call    do_syscall_32_irqs_on</span><br><span class="line">.Lsyscall_32_done:</span><br><span class="line">......</span><br><span class="line">.Lirq_return:</span><br><span class="line">  INTERRUPT_RETURN</span><br><span class="line"></span><br><span class="line">      </span><br><span class="line">......</span><br><span class="line">      </span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> __always_inline <span class="keyword">void</span> do_syscall_32_irqs_on(struct pt_regs *regs)</span><br><span class="line">&#123;</span><br><span class="line">  struct thread_info *ti = current_thread_info();</span><br><span class="line">  <span class="keyword">unsigned</span> <span class="keyword">int</span> nr = (<span class="keyword">unsigned</span> <span class="keyword">int</span>)regs-&gt;orig_ax;</span><br><span class="line">......</span><br><span class="line">  <span class="keyword">if</span> (likely(nr &lt; IA32_NR_syscalls)) &#123;</span><br><span class="line">    regs-&gt;ax = ia32_sys_call_table[nr](</span><br><span class="line">      (<span class="keyword">unsigned</span> <span class="keyword">int</span>)regs-&gt;bx, (<span class="keyword">unsigned</span> <span class="keyword">int</span>)regs-&gt;cx,</span><br><span class="line">      (<span class="keyword">unsigned</span> <span class="keyword">int</span>)regs-&gt;dx, (<span class="keyword">unsigned</span> <span class="keyword">int</span>)regs-&gt;si,</span><br><span class="line">      (<span class="keyword">unsigned</span> <span class="keyword">int</span>)regs-&gt;di, (<span class="keyword">unsigned</span> <span class="keyword">int</span>)regs-&gt;bp);</span><br><span class="line">  &#125;</span><br><span class="line">  syscall_return_slowpath(regs);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="64位系统调用过程"><a href="#64位系统调用过程" class="headerlink" title="64位系统调用过程"></a>64位系统调用过程</h3><p>x86_64 下的 sysdep.h 文件</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">/* The Linux/x86-64 kernel expects the system call parameters in</span></span><br><span class="line"><span class="comment">   registers according to the following table:</span></span><br><span class="line"><span class="comment">    syscall number  rax</span></span><br><span class="line"><span class="comment">    arg 1    rdi</span></span><br><span class="line"><span class="comment">    arg 2    rsi</span></span><br><span class="line"><span class="comment">    arg 3    rdx</span></span><br><span class="line"><span class="comment">    arg 4    r10</span></span><br><span class="line"><span class="comment">    arg 5    r8</span></span><br><span class="line"><span class="comment">    arg 6    r9</span></span><br><span class="line"><span class="comment">......</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DO_CALL(syscall_name, args)                \</span></span><br><span class="line">  lea SYS_ify (syscall_name), %rax;                \</span><br><span class="line">  syscall</span><br></pre></td></tr></table></figure>
+
+<p>和之前一样，还是将系统调用名称转换为系统调用号，放到寄存器 rax。这里是真正进行调用，不是用中断了，而是改用 syscall 指令了。并且，通过注释我们也可以知道，传递参数的寄存器也变了。syscall 指令还使用了一种特殊的寄存器，我们叫特殊模块寄存器（Model Specific Registers，简称 MSR）。这种寄存器是 CPU 为了完成某些特殊控制功能为目的的寄存器，其中就有系统调用。</p>
+<p>在系统初始化的时候，trap_init 除了初始化上面的中断模式，这里面还会调用 cpu_init-&gt;syscall_init。这里面有这样的代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wrmsrl(MSR_LSTAR, (<span class="keyword">unsigned</span> <span class="keyword">long</span>)entry_SYSCALL_64);</span><br></pre></td></tr></table></figure>
+
+<p>rdmsr 和 wrmsr 是用来读写特殊模块寄存器的。MSR_LSTAR 就是这样一个特殊的寄存器，当 syscall 指令调用的时候，会从这个寄存器里面拿出函数地址来调用，也就是调用 entry_SYSCALL_64。在 arch/x86/entry/entry_64.S 中定义了 entry_SYSCALL_64。</p>
+<h2 id="系统调用表的生成"><a href="#系统调用表的生成" class="headerlink" title="系统调用表的生成"></a>系统调用表的生成</h2><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2>
       
     </div>
     
@@ -692,7 +715,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GLIC标准库的调用"><span class="nav-number">2.</span> <span class="nav-text">GLIC标准库的调用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#32位系统调用过程"><span class="nav-number">3.</span> <span class="nav-text">32位系统调用过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#64位系统调用过程"><span class="nav-number">4.</span> <span class="nav-text">64位系统调用过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GLIC标准库的调用"><span class="nav-number">2.</span> <span class="nav-text">GLIC标准库的调用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#32位系统调用过程"><span class="nav-number">2.1.</span> <span class="nav-text">32位系统调用过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#64位系统调用过程"><span class="nav-number">2.2.</span> <span class="nav-text">64位系统调用过程</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#系统调用表的生成"><span class="nav-number">3.</span> <span class="nav-text">系统调用表的生成</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li></ol></div>
             
 
           </div>
@@ -726,7 +749,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">16.4k</span>
+    <span title="Site words total count">17.3k</span>
   
 </div>
 
