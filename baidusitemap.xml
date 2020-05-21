@@ -1,20 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://ty-chen.github.io/linux-kernel-task-struct/</loc>
+    <loc>https://ty-chen.github.io/linux-kernel-process-schedule/</loc>
     <lastmod>2020-05-21</lastmod>
   </url>  <url>
     <loc>https://ty-chen.github.io/linux-kernel-system-call/</loc>
-    <lastmod>2020-05-17</lastmod>
+    <lastmod>2020-05-21</lastmod>
   </url>  <url>
     <loc>https://ty-chen.github.io/linux-kernel-zero-process/</loc>
-    <lastmod>2020-05-10</lastmod>
+    <lastmod>2020-05-21</lastmod>
   </url>  <url>
-    <loc>https://ty-chen.github.io/linux-kernel-protecd-mode/</loc>
-    <lastmod>2020-05-04</lastmod>
+    <loc>https://ty-chen.github.io/linux-kernel-task-struct/</loc>
+    <lastmod>2020-05-21</lastmod>
   </url>  <url>
     <loc>https://ty-chen.github.io/linux-kernel-bootstrap/</loc>
-    <lastmod>2020-04-25</lastmod>
+    <lastmod>2020-05-21</lastmod>
+  </url>  <url>
+    <loc>https://ty-chen.github.io/linux-kernel-protecd-mode/</loc>
+    <lastmod>2020-05-21</lastmod>
   </url>  <url>
     <loc>https://ty-chen.github.io/paradigms/</loc>
     <lastmod>2020-04-25</lastmod>

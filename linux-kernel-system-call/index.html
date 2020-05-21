@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="Linux,操作系统," />
+  <meta name="keywords" content="Linux,操作系统,syscall," />
 
 
 
@@ -86,10 +86,11 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="前言&amp;emsp;&amp;emsp;通过前面几篇文章，我们分析了从按下电源键到内核启动、完成初始化的整个过程。在后面的文章中我们将分别深入剖析Linux内核各个重要部分的源码。考虑到后面的部分我们会从用户态的代码开始入手一步一步深入，因此在分析这些之前，我们需要仔细看一看如何实现一个从用户态到内核态再回到用户态的系统调用的全过程，即系统调用的实现。">
 <meta property="article:published_time" content="2020-05-10T16:11:56.000Z">
-<meta property="article:modified_time" content="2020-05-17T12:52:20.346Z">
+<meta property="article:modified_time" content="2020-05-21T16:47:03.221Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
+<meta property="article:tag" content="syscall">
 <meta name="twitter:card" content="summary">
 
 
@@ -304,8 +305,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-05-17T20:52:20+08:00" content="2020-05-17">
-                2020-05-17
+              <time itemprop="dateUpdated" datetime="2020-05-22T00:47:03+08:00" content="2020-05-22">
+                2020-05-22
               </time>
             </span>
           
@@ -616,6 +617,8 @@
           
             <a href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" rel="tag"># 操作系统</a>
           
+            <a href="/tags/syscall/" rel="tag"># syscall</a>
+          
         </div>
       
 
@@ -761,7 +764,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">9</span>
+                  <span class="site-state-item-count">10</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -783,7 +786,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">10</span>
+                  <span class="site-state-item-count">21</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -866,7 +869,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">24.3k</span>
+    <span title="Site words total count">24.4k</span>
   
 </div>
 
