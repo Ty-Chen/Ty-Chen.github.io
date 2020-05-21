@@ -89,7 +89,7 @@
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/31/2d/31d15bcd2a053235b5590977d12ffa2d.jpeg">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/1c/bc/1c91956b52574b62a4418a7c6993d8bc.jpeg">
 <meta property="article:published_time" content="2020-05-17T13:02:31.000Z">
-<meta property="article:modified_time" content="2020-05-20T16:29:31.073Z">
+<meta property="article:modified_time" content="2020-05-21T16:39:05.770Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -308,8 +308,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-05-21T00:29:31+08:00" content="2020-05-21">
-                2020-05-21
+              <time itemprop="dateUpdated" datetime="2020-05-22T00:39:05+08:00" content="2020-05-22">
+                2020-05-22
               </time>
             </span>
           
@@ -372,7 +372,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  3.2k
+                  4.4k
                 </span>
               
 
@@ -388,7 +388,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  13
+                  18
                 </span>
               
             </div>
@@ -429,7 +429,16 @@
 
 <p>&emsp;&emsp;之所以有<code>pid(process id)</code>，<code>tgid(thread group ID)</code>以及<code>group_leader</code>，是因为线程和进程在内核中是统一管理，视为相同的任务（task）。</p>
 <p>&emsp;&emsp;任何一个进程，如果只有主线程，那 <code>pid</code> 和<code>tgid</code>相同，<code>group_leader</code> 指向自己。但是，如果一个进程创建了其他线程，那就会有所变化了。线程有自己的<code>pid</code>，<code>tgid</code> 就是进程的主线程的 <code>pid</code>，<code>group_leader</code> 指向的进程的主线程。因此根据<code>pid</code>和<code>tgid</code>是否相等我们可以判断该任务是进程还是线程。</p>
-<h3 id="亲缘关系"><a href="#亲缘关系" class="headerlink" title="亲缘关系"></a>亲缘关系</h3><h3 id="任务状态"><a href="#任务状态" class="headerlink" title="任务状态"></a>任务状态</h3><p>&emsp;&emsp;任务状态部分主要涉及以下变量</p>
+<h3 id="亲缘关系"><a href="#亲缘关系" class="headerlink" title="亲缘关系"></a>亲缘关系</h3><p>&emsp;&emsp;除了0号进程以外，其他进程都是有父进程的。全部进程其实就是一颗进程树，相关成员变量如下所示</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">task_struct</span> __<span class="title">rcu</span> *<span class="title">real_parent</span>;</span> <span class="comment">/* real parent process */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">task_struct</span> __<span class="title">rcu</span> *<span class="title">parent</span>;</span> <span class="comment">/* recipient of SIGCHLD, wait4() reports */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">list_head</span> <span class="title">children</span>;</span>      <span class="comment">/* list of my children */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">list_head</span> <span class="title">sibling</span>;</span>       <span class="comment">/* linkage in my parent's children list */</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>parent</code> 指向其父进程。当它终止时，必须向它的父进程发送信号。</li>
+<li><code>children</code> 指向子进程链表的头部。链表中的所有元素都是它的子进程。</li>
+<li><code>sibling</code> 用于把当前进程插入到兄弟链表中。</li>
+</ul>
+<p>&emsp;&emsp;通常情况下，real_parent 和 parent 是一样的，但是也会有另外的情况存在。例如，bash 创建一个进程，那进程的 parent 和 real_parent 就都是 bash。如果在 bash 上使用 GDB 来 debug 一个进程，这个时候 GDB 是 parent，bash 是这个进程的 real_parent。</p>
+<h3 id="任务状态"><a href="#任务状态" class="headerlink" title="任务状态"></a>任务状态</h3><p>&emsp;&emsp;任务状态部分主要涉及以下变量</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">volatile</span> <span class="keyword">long</span> state;    <span class="comment">/* -1 unrunnable, 0 runnable, &gt;0 stopped */</span></span><br><span class="line"><span class="keyword">int</span> exit_state;</span><br><span class="line"><span class="keyword">unsigned</span> <span class="keyword">int</span> flags;</span><br></pre></td></tr></table></figure>
 
 <p>&emsp;&emsp;其中状态<code>state</code>通过设置比特位的方式来赋值，具体值在<code>include/linux/sched.h</code>中定义</p>
@@ -453,7 +462,31 @@
 <p>&emsp;&emsp;<code>PF_FORKNOEXEC</code> 表示 <code>fork</code> 完了，还没有 <code>exec</code>。在 <code>_do_fork ()</code>函数里面调用 <code>copy_process()</code>，这个时候把 flag 设置为 <code>PF_FORKNOEXEC()</code>。当 <code>exec</code> 中调用了 <code>load_elf_binary()</code> 的时候，又把这个 flag 去掉。</p>
 <img src="https://static001.geekbang.org/resource/image/e2/88/e2fa348c67ce41ef730048ff9ca4c988.jpeg" alt="img" style="zoom:50%;" />
 
-<h3 id="任务权限"><a href="#任务权限" class="headerlink" title="任务权限"></a>任务权限</h3><h3 id="运行统计"><a href="#运行统计" class="headerlink" title="运行统计"></a>运行统计</h3><h3 id="进程调度"><a href="#进程调度" class="headerlink" title="进程调度"></a>进程调度</h3><h3 id="信号处理"><a href="#信号处理" class="headerlink" title="信号处理"></a>信号处理</h3><p>&emsp;&emsp;信号处理相关的数据结构如下所示</p>
+<h3 id="任务权限"><a href="#任务权限" class="headerlink" title="任务权限"></a>任务权限</h3><p>&emsp;&emsp;任务权限主要包括以下两个变量，<code>real_cred</code>是指可以操作本任务的对象，而<code>red</code>是指本任务可以操作的对象。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* Objective and real subjective task credentials (COW): */</span></span><br><span class="line"><span class="keyword">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">cred</span> __<span class="title">rcu</span>         *<span class="title">real_cred</span>;</span></span><br><span class="line"><span class="comment">/* Effective (overridable) subjective task credentials (COW): */</span></span><br><span class="line"><span class="keyword">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">cred</span> __<span class="title">rcu</span>         *<span class="title">cred</span>;</span></span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;cred定义如下所示</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">cred</span> &#123;</span></span><br><span class="line">......</span><br><span class="line">        <span class="keyword">kuid_t</span>          uid;            <span class="comment">/* real UID of the task */</span></span><br><span class="line">        <span class="keyword">kgid_t</span>          gid;            <span class="comment">/* real GID of the task */</span></span><br><span class="line">        <span class="keyword">kuid_t</span>          suid;           <span class="comment">/* saved UID of the task */</span></span><br><span class="line">        <span class="keyword">kgid_t</span>          sgid;           <span class="comment">/* saved GID of the task */</span></span><br><span class="line">        <span class="keyword">kuid_t</span>          euid;           <span class="comment">/* effective UID of the task */</span></span><br><span class="line">        <span class="keyword">kgid_t</span>          egid;           <span class="comment">/* effective GID of the task */</span></span><br><span class="line">        <span class="keyword">kuid_t</span>          fsuid;          <span class="comment">/* UID for VFS ops */</span></span><br><span class="line">        <span class="keyword">kgid_t</span>          fsgid;          <span class="comment">/* GID for VFS ops */</span></span><br><span class="line">......</span><br><span class="line">        <span class="keyword">kernel_cap_t</span>    cap_inheritable; <span class="comment">/* caps our children can inherit */</span></span><br><span class="line">        <span class="keyword">kernel_cap_t</span>    cap_permitted;  <span class="comment">/* caps we're permitted */</span></span><br><span class="line">        <span class="keyword">kernel_cap_t</span>    cap_effective;  <span class="comment">/* caps we can actually use */</span></span><br><span class="line">        <span class="keyword">kernel_cap_t</span>    cap_bset;       <span class="comment">/* capability bounding set */</span></span><br><span class="line">        <span class="keyword">kernel_cap_t</span>    cap_ambient;    <span class="comment">/* Ambient capability set */</span></span><br><span class="line">......</span><br><span class="line">&#125; __randomize_layout;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;从这里的定义可以看出，大部分是关于用户和用户所属的用户组信息。</p>
+<ul>
+<li><code>uid</code>和 <code>gid</code>，注释是 real user/group id。一般情况下，谁启动的进程，就是谁的 ID。但是权限审核的时候，往往不比较这两个，也就是说不大起作用。</li>
+<li><code>euid</code> 和 <code>egid</code>，注释是 effective user/group id。一看这个名字，就知道这个是起“作用”的。当这个进程要操作消息队列、共享内存、信号量等对象的时候，其实就是在比较这个用户和组是否有权限。</li>
+<li><code>fsuid</code> 和<code>fsgid</code>，也就是 filesystem user/group id。这个是对文件操作会审核的权限。</li>
+</ul>
+<p>&emsp;&emsp;在Linux中，我们可以通过<code>chmod u+s program</code>命令更改更改<code>euid</code>和<code>fsuid</code>来获取权限。</p>
+<p>&emsp;&emsp;除了以用户和用户组控制权限，Linux 还有另一个机制就是 <code>capabilities</code>。</p>
+<p>&emsp;&emsp;原来控制进程的权限，要么是高权限的 root 用户，要么是一般权限的普通用户，这时候的问题是，root 用户权限太大，而普通用户权限太小。有时候一个普通用户想做一点高权限的事情，必须给他整个 root 的权限。这个太不安全了。于是，我们引入新的机制 capabilities，用位图表示权限，在<code>capability.h</code>可以找到定义的权限。我这里列举几个。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> CAP_CHOWN            0</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> CAP_KILL             5</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> CAP_NET_BIND_SERVICE 10</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> CAP_NET_RAW          13</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> CAP_SYS_MODULE       16</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> CAP_SYS_RAWIO        17</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> CAP_SYS_BOOT         22</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> CAP_SYS_TIME         25</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> CAP_AUDIT_READ          37</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> CAP_LAST_CAP         CAP_AUDIT_READ</span></span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;对于普通用户运行的进程，当有这个权限的时候，就能做这些操作；没有的时候，就不能做，这样粒度要小很多。</p>
+<h3 id="运行统计"><a href="#运行统计" class="headerlink" title="运行统计"></a>运行统计</h3><p>&emsp;&emsp;运行统计从宏观来说也是一种状态变量，但是和任务状态不同，其存储的主要是运行时间相关的成员变量，具体如下所示</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">u64        utime;<span class="comment">//用户态消耗的CPU时间</span></span><br><span class="line">u64        stime;<span class="comment">//内核态消耗的CPU时间</span></span><br><span class="line"><span class="keyword">unsigned</span> <span class="keyword">long</span>      nvcsw;<span class="comment">//自愿(voluntary)上下文切换计数</span></span><br><span class="line"><span class="keyword">unsigned</span> <span class="keyword">long</span>      nivcsw;<span class="comment">//非自愿(involuntary)上下文切换计数</span></span><br><span class="line">u64        start_time;<span class="comment">//进程启动时间，不包含睡眠时间</span></span><br><span class="line">u64        real_start_time;<span class="comment">//进程启动时间，包含睡眠时间</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="进程调度"><a href="#进程调度" class="headerlink" title="进程调度"></a>进程调度</h3><p>&emsp;&emsp;进程调度部分较为复杂，会单独拆分讲解，这里先简单罗列成员变量。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//是否在运行队列上</span></span><br><span class="line"><span class="keyword">int</span>        on_rq;</span><br><span class="line"><span class="comment">//优先级</span></span><br><span class="line"><span class="keyword">int</span>        prio;</span><br><span class="line"><span class="keyword">int</span>        static_prio;</span><br><span class="line"><span class="keyword">int</span>        normal_prio;</span><br><span class="line"><span class="keyword">unsigned</span> <span class="keyword">int</span>      rt_priority;</span><br><span class="line"><span class="comment">//调度器类</span></span><br><span class="line"><span class="keyword">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">sched_class</span>  *<span class="title">sched_class</span>;</span></span><br><span class="line"><span class="comment">//调度实体</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sched_entity</span>    <span class="title">se</span>;</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sched_rt_entity</span>    <span class="title">rt</span>;</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sched_dl_entity</span>    <span class="title">dl</span>;</span></span><br><span class="line"><span class="comment">//调度策略</span></span><br><span class="line"><span class="keyword">unsigned</span> <span class="keyword">int</span>      policy;</span><br><span class="line"><span class="comment">//可以使用哪些CPU</span></span><br><span class="line"><span class="keyword">int</span>        nr_cpus_allowed;</span><br><span class="line"><span class="keyword">cpumask_t</span>      cpus_allowed;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sched_info</span>    <span class="title">sched_info</span>;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="信号处理"><a href="#信号处理" class="headerlink" title="信号处理"></a>信号处理</h3><p>&emsp;&emsp;信号处理相关的数据结构如下所示</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* Signal handlers: */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">signal_struct</span>    *<span class="title">signal</span>;</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sighand_struct</span>    *<span class="title">sighand</span>;</span></span><br><span class="line"><span class="keyword">sigset_t</span>      blocked;</span><br><span class="line"><span class="keyword">sigset_t</span>      real_blocked;</span><br><span class="line"><span class="keyword">sigset_t</span>      saved_sigmask;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sigpending</span>    <span class="title">pending</span>;</span></span><br><span class="line"><span class="keyword">unsigned</span> <span class="keyword">long</span>      sas_ss_sp;</span><br><span class="line"><span class="keyword">size_t</span>        sas_ss_size;</span><br><span class="line"><span class="keyword">unsigned</span> <span class="keyword">int</span>      sas_ss_flags;</span><br></pre></td></tr></table></figure>
 
 <p>&emsp;&emsp;这里将信号分为三类</p>
@@ -463,7 +496,14 @@
 <li>正在通过信号处理函数处理的信号（sighand）</li>
 </ul>
 <p>&emsp;&emsp;信号处理函数默认使用用户态的函数栈，当然也可以开辟新的栈专门用于信号处理，这就是 <code>sas_ss_xxx</code> 这三个变量的作用。</p>
-<h3 id="内存管理"><a href="#内存管理" class="headerlink" title="内存管理"></a>内存管理</h3><h3 id="文件与文件系统"><a href="#文件与文件系统" class="headerlink" title="文件与文件系统"></a>文件与文件系统</h3><h3 id="内核栈"><a href="#内核栈" class="headerlink" title="内核栈"></a>内核栈</h3><p>&emsp;&emsp;内核栈相关的成员变量如下所示。为了介绍清楚其作用，我们需要从为什么需要内核栈开始逐步讨论。</p>
+<h3 id="内存管理"><a href="#内存管理" class="headerlink" title="内存管理"></a>内存管理</h3><p>&emsp;&emsp;内存管理部分成员变量如下所示</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">mm_struct</span>                *<span class="title">mm</span>;</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">mm_struct</span>                *<span class="title">active_mm</span>;</span></span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;由于内存部分较为复杂，会放在后面单独介绍，这里了先不做详细说明。</p>
+<h3 id="文件与文件系统"><a href="#文件与文件系统" class="headerlink" title="文件与文件系统"></a>文件与文件系统</h3><p>&emsp;&emsp;文件系统部分也会在后面详细说明，这里先简单列举成员变量</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* Filesystem information: */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">fs_struct</span>                *<span class="title">fs</span>;</span></span><br><span class="line"><span class="comment">/* Open file information: */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">files_struct</span>             *<span class="title">files</span>;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="内核栈"><a href="#内核栈" class="headerlink" title="内核栈"></a>内核栈</h3><p>&emsp;&emsp;内核栈相关的成员变量如下所示。为了介绍清楚其作用，我们需要从为什么需要内核栈开始逐步讨论。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">thread_info</span>    <span class="title">thread_info</span>;</span></span><br><span class="line"><span class="keyword">void</span>  *<span class="built_in">stack</span>;</span><br></pre></td></tr></table></figure>
 
 <p>&emsp;&emsp;当进程产生系统调用时，会利用中断陷入内核态。而内核态中也存在着各种函数的调用，因此我们需要有内核态函数栈。Linux 给每个 task 都分配了内核栈。在 32 位系统上 <code>arch/x86/include/asm/page_32_types.h</code>，是这样定义的：一个 <code>PAGE_SIZE</code>是 4K，左移一位就是乘以 2，也就是 8K。</p>
@@ -516,12 +556,17 @@
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> this_cpu_read_stable(var)       percpu_stable_op(<span class="meta-string">"mov"</span>, var)</span></span><br></pre></td></tr></table></figure>
 
 <p>&emsp;&emsp;通过这种方式，即可轻松的获得<code>task_struct</code>的地址。</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><img src="https://static001.geekbang.org/resource/image/1c/bc/1c91956b52574b62a4418a7c6993d8bc.jpeg" style="zoom:50%;" />
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>&emsp;&emsp;本文大体介绍了<code>task_struct</code>的整体结构，对于很多涉及到复杂模块的部分并未展开讲解，在后文中会一一叙述。</p>
+<img src="https://static001.geekbang.org/resource/image/1c/bc/1c91956b52574b62a4418a7c6993d8bc.jpeg" style="zoom:50%;" />
 
 
 
 <h2 id="相关源码"><a href="#相关源码" class="headerlink" title="相关源码"></a>相关源码</h2><p>[1] <a href="https://elixir.bootlin.com/linux/v5.7-rc1/source/include/linux/sched.h#L632" target="_blank" rel="noopener"><code>task_struct</code></a></p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] Linux-insides</p>
+<p>[2] 深入理解Linux内核源码</p>
+<p>[3] Linux内核设计的艺术</p>
+<p>[4] 极客时间 趣谈Linux操作系统</p>
+
       
     </div>
     
@@ -835,7 +880,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">23.1k</span>
+    <span title="Site words total count">24.3k</span>
   
 </div>
 
