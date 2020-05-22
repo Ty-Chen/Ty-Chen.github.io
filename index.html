@@ -258,7 +258,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://ty-chen.github.io/linux-kernel-process-schedule/">
+    <link itemprop="mainEntityOfPage" href="https://ty-chen.github.io/linux-kernel-process-create/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Ty Chen">
@@ -277,7 +277,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/linux-kernel-process-schedule/" itemprop="url">Linux操作系统学习笔记（六）进程调度</a></h1>
+                <a class="post-title-link" href="/linux-kernel-process-create/" itemprop="url">Linux操作系统学习笔记（六）进程、线程的创建和派生</a></h1>
         
 
         <div class="post-meta">
@@ -301,8 +301,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-05-22T00:48:17+08:00" content="2020-05-22">
-                2020-05-22
+              <time itemprop="dateUpdated" datetime="2020-05-23T00:13:36+08:00" content="2020-05-23">
+                2020-05-23
               </time>
             </span>
           
@@ -337,8 +337,8 @@
                 <span class="post-meta-item-icon">
                   <i class="fa fa-comment-o"></i>
                 </span>
-                <a href="/linux-kernel-process-schedule/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count valine-comment-count" data-xid="/linux-kernel-process-schedule/" itemprop="commentCount"></span>
+                <a href="/linux-kernel-process-create/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/linux-kernel-process-create/" itemprop="commentCount"></span>
                 </a>
               </span>
             
@@ -360,7 +360,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  48
+                  257
                 </span>
               
 
@@ -398,10 +398,10 @@
 
       
         
-          <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>&emsp;&emsp;在前文中，我们分析了内核中进程和线程的统一结构体<code>task_struct</code>，本文将继续分析进程、线程的创建和调度的过程。</p>
+          <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>&emsp;&emsp;在前文中，我们分析了内核中进程和线程的统一结构体<code>task_struct</code>，本文将继续分析进程、线程的创建和派生的过程。首先介绍如何将一个程序编辑为执行文件最后成为进程执行，然后会介绍线程的执行，最后会分析如何通过已有的进程、线程实现多进程、多线程。因为进程和线程有诸多相似之处，也有一些不同之处，因此本文会对比进程和线程来加深理解和记忆。</p>
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/linux-kernel-process-schedule/#more" rel="contents">
+            <a class="btn" href="/linux-kernel-process-create/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -2302,7 +2302,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">21</span>
+                  <span class="site-state-item-count">22</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -2369,7 +2369,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">24.4k</span>
+    <span title="Site words total count">24.6k</span>
   
 </div>
 
