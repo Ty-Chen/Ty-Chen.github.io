@@ -85,14 +85,17 @@
 <meta property="og:url" content="https://ty-chen.github.io/linux-kernel-process-create/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="前言&amp;emsp;&amp;emsp;在前文中，我们分析了内核中进程和线程的统一结构体task_struct，本文将继续分析进程、线程的创建和派生的过程。首先介绍如何将一个程序编辑为执行文件最后成为进程执行，然后会介绍线程的执行，最后会分析如何通过已有的进程、线程实现多进程、多线程。因为进程和线程有诸多相似之处，也有一些不同之处，因此本文会对比进程和线程来加深理解和记忆。">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/e9/d6/e9c2b4c67f8784a8eec7392628ce6cd6.jpg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/1d/60/1d8de36a58a98a53352b40efa81e9660.jpg">
 <meta property="article:published_time" content="2020-05-21T16:44:17.000Z">
-<meta property="article:modified_time" content="2020-05-22T16:59:26.815Z">
+<meta property="article:modified_time" content="2020-05-23T16:03:47.714Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
 <meta property="article:tag" content="进程">
 <meta property="article:tag" content="线程">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://static001.geekbang.org/resource/image/e9/d6/e9c2b4c67f8784a8eec7392628ce6cd6.jpg">
 
 
 
@@ -306,8 +309,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-05-23T00:59:26+08:00" content="2020-05-23">
-                2020-05-23
+              <time itemprop="dateUpdated" datetime="2020-05-24T00:03:47+08:00" content="2020-05-24">
+                2020-05-24
               </time>
             </span>
           
@@ -370,7 +373,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  272
+                  4.2k
                 </span>
               
 
@@ -386,7 +389,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  1
+                  15
                 </span>
               
             </div>
@@ -410,13 +413,162 @@
         <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>&emsp;&emsp;在前文中，我们分析了内核中进程和线程的统一结构体<code>task_struct</code>，本文将继续分析进程、线程的创建和派生的过程。首先介绍如何将一个程序编辑为执行文件最后成为进程执行，然后会介绍线程的执行，最后会分析如何通过已有的进程、线程实现多进程、多线程。因为进程和线程有诸多相似之处，也有一些不同之处，因此本文会对比进程和线程来加深理解和记忆。</p>
 <a id="more"></a>
 
-<h2 id="进程的创建"><a href="#进程的创建" class="headerlink" title="进程的创建"></a>进程的创建</h2><p>&emsp;&emsp;以C语言为例，我们在Linux下编写C语言代码，然后通过<code>gcc</code>编译，生成可执行文件后直接执行即可完成一个进程的创建和工作。下面将详细展开介绍这个创建进程的过程。</p>
-<h3 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h3><p>&emsp;&emsp;</p>
-<h3 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h3><p>&emsp;&emsp;</p>
-<h3 id="加载运行"><a href="#加载运行" class="headerlink" title="加载运行"></a>加载运行</h3><p>&emsp;&emsp;</p>
-<h2 id="线程的创建"><a href="#线程的创建" class="headerlink" title="线程的创建"></a>线程的创建</h2><p>&emsp;&emsp;</p>
-<h2 id="进程的派生"><a href="#进程的派生" class="headerlink" title="进程的派生"></a>进程的派生</h2><p>&emsp;&emsp;</p>
-<h2 id="线程的派生"><a href="#线程的派生" class="headerlink" title="线程的派生"></a>线程的派生</h2><p>&emsp;&emsp;</p>
+<h2 id="进程的创建"><a href="#进程的创建" class="headerlink" title="进程的创建"></a>进程的创建</h2><p>&emsp;&emsp;以C语言为例，我们在Linux下编写C语言代码，然后通过<code>gcc</code>编译和链接生成可执行文件后直接执行即可完成一个进程的创建和工作。下面将详细展开介绍这个创建进程的过程。在 Linux 下面，二进制的程序也要有严格的格式，这个格式我们称为 ELF（Executable and Linkable Format，可执行与可链接格式）。这个格式可以根据编译的结果不同，分为不同的格式。主要包括</p>
+<ol>
+<li><p>可重定位的对象文件(Relocatable file)</p>
+<p>由汇编器汇编生成的 .o 文件</p>
+</li>
+<li><p>可执行的对象文件(Executable file)</p>
+<p>可执行应用程序</p>
+</li>
+<li><p>可被共享的对象文件(Shared object file)</p>
+<p>动态库文件，也即 .so 文件</p>
+<p>下面在进程创建过程中会详细说明三种文件。</p>
+</li>
+</ol>
+<h3 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h3><p>&emsp;&emsp;写完C程序后第一步就是程序编译（其实还有IDE的预编译，那些属于编辑器操作这里不表）。编译指令如下所示</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcc -c -fPIC xxxx.c</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;<code>-c</code>表示编译、汇编指定的源文件，不进行链接。<code>-fPIC</code>表示生成与位置无关（Position-Independent Code）代码，即采用相对地址而非绝对地址，从而满足共享库加载需求。在编译的时候，先做预处理工作，例如将头文件嵌入到正文中，将定义的宏展开，然后就是真正的编译过程，最终编译成为.o 文件，这就是 <strong>ELF 的第一种类型，可重定位文件（Relocatable File）</strong>。之所以叫做可重定位文件，是因为对于编译好的代码和变量，将来加载到内存里面的时候，都是要加载到一定位置的。比如说，调用一个函数，其实就是跳到这个函数所在的代码位置执行；再比如修改一个全局变量，也是要到变量的位置那里去修改。但是现在这个时候，还是.o 文件，不是一个可以直接运行的程序，这里面只是部分代码片段。因此.o 里面的位置是不确定的，但是必须是可重新定位的以适应需求。</p>
+<img src="https://static001.geekbang.org/resource/image/e9/d6/e9c2b4c67f8784a8eec7392628ce6cd6.jpg" alt="img" style="zoom:30%;" />
+
+<p>&emsp;&emsp;ELF 文件的头是用于描述整个文件的。这个文件格式在内核中有定义，分别为 <code>struct elf32_hdr</code> 和<code>struct elf64_hdr</code>。其他各个section作用如下所示</p>
+<ul>
+<li>.text：放编译好的二进制可执行代码</li>
+<li>.rodata：只读数据，例如字符串常量、const 的变量</li>
+<li>.data：已经初始化好的全局变量</li>
+<li>.bss：未初始化全局变量，运行时会置 0</li>
+<li>.symtab：符号表，记录的则是函数和变量</li>
+<li>.rel.text： .text部分的重定位表</li>
+<li>.rel.data：.data部分的重定位表</li>
+<li>.strtab：字符串表、字符串常量和变量名</li>
+</ul>
+<p>&emsp;&emsp;这些节的元数据信息也需要有一个地方保存，就是最后的节头部表（Section Header Table）。在这个表里面，每一个 section 都有一项，在代码里面也有定义 <code>struct elf32_shdr</code>和<code>struct elf64_shdr</code>。在 ELF 的头里面，有描述这个文件的节头部表的位置，有多少个表项等等信息。</p>
+<h3 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h3><p>&emsp;&emsp;链接分为静态链接和动态链接。静态链接库会和目标文件通过链接生成一个可执行文件，而动态链接则会通过链接形成动态连接器，在可执行文件执行的时候动态的选择并加载其中的部分或全部函数。二者的各自优缺点如下所示</p>
+<ul>
+<li><p><strong>静态链接库的优点</strong> </p>
+<p>   (1) 代码装载速度快，执行速度略比动态链接库快； </p>
+<p>   (2) 只需保证在开发者的计算机中有正确的.LIB文件，在以二进制形式发布程序时不需考虑在用户的计算机上.LIB文件是否存在及版本问题，可避免DLL地狱等问题。 </p>
+</li>
+<li><p><strong>静态链接库的缺点</strong></p>
+<p>使用静态链接生成的可执行文件体积较大，包含相同的公共代码，造成浪费</p>
+</li>
+<li><p><strong>动态链接库的优点</strong> </p>
+<p>   (1) 更加节省内存并减少页面交换；</p>
+<p>   (2) DLL文件与EXE文件独立，只要输出接口不变（即名称、参数、返回值类型和调用约定不变），更换DLL文件不会对EXE文件造成任何影响，因而极大地提高了可维护性和可扩展性；</p>
+<p>   (3) 不同编程语言编写的程序只要按照函数调用约定就可以调用同一个DLL函数；</p>
+<p>   (4)适用于大规模的软件开发，使开发过程独立、耦合度小，便于不同开发者和开发组织之间进行开发和测试。</p>
+</li>
+<li><p><strong>动态链接库的缺点</strong></p>
+<p>使用动态链接库的应用程序不是自完备的，它依赖的DLL模块也要存在，如果使用载入时动态链接，程序启动时发现DLL不存在，系统将终止程序并给出错误信息。而使用运行时动态链接，系统不会终止，但由于DLL中的导出函数不可用，程序会加载失败；速度比静态链接慢。当某个模块更新后，如果新模块与旧的模块不兼容，那么那些需要该模块才能运行的软件均无法执行。这在早期Windows中很常见。</p>
+</li>
+</ul>
+<p>&emsp;&emsp;下面分别介绍静态链接和动态链接</p>
+<h4 id="静态链接"><a href="#静态链接" class="headerlink" title="静态链接"></a>静态链接</h4><p>&emsp;&emsp;静态链接库.a文件（Archives）的执行指令如下</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ar cr libXXX.a XXX.o XXXX.o</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;当需要使用该静态库的时候，会将.o文件从.a文件中依次抽取并链接到程序中，指令如下</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcc -o XXXX XXX.O -L. -lsXXX</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;<code>-L</code>表示在当前目录下找.a 文件，<code>-lsXXXX</code>会自动补全文件名，比如加前缀 <code>lib</code>，后缀<code>.a</code>，变成<code>libXXX.a</code>，找到这个<code>.a</code>文件后，将里面的 <code>XXXX.o</code> 取出来，和 <code>XXX.o</code> 做一个链接，形成二进制执行文件<code>XXXX</code>。在这里，重定位会从.o中抽取函数并和.a中的文件抽取的函数进行合并，找到实际的调用位置，形成最终的<strong>可执行文件(Executable file)，即ELF的第二种格式文件</strong>。</p>
+<img src="https://static001.geekbang.org/resource/image/1d/60/1d8de36a58a98a53352b40efa81e9660.jpg" alt="img" style="zoom:30%;" />
+
+<p>&emsp;&emsp;对比ELF第一种格式可重定位文件，这里可执行文件略去了重定位表相关段落。此处将ELF文件分为了代码段、数据段和不加载到内存中的部分，并加上了段头表（Segment Header Table）用以记录管理，在代码中定义为<code>struct elf32_phdr</code>和 <code>struct elf64_phdr</code>，这里面除了有对于段的描述之外，最重要的是 <code>p_vaddr</code>，这个是这个段加载到内存的虚拟地址。这部分会在内存篇章详细介绍。</p>
+<h4 id="动态链接"><a href="#动态链接" class="headerlink" title="动态链接"></a>动态链接</h4><p>&emsp;&emsp;动态链接库（Shared Libraries)的作用主要是为了解决静态链接大量使用会造成空间浪费的问题，因此这里设计成了可以被多个程序共享的形式，其执行命令如下</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcc -shared -fPIC -o libXXX.so XXX.o</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;当一个动态链接库被链接到一个程序文件中的时候，最后的程序文件并不包括动态链接库中的代码，而仅仅包括对动态链接库的引用，并且不保存动态链接库的全路径，仅仅保存动态链接库的名称。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcc -o XXX XXX.O -L. -lXXX</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;当运行这个程序的时候，首先寻找动态链接库，然后加载它。默认情况下，系统在 <code>/lib</code> 和<code>/usr/lib</code> 文件夹下寻找动态链接库。如果找不到就会报错，我们可以设定 <code>LD_LIBRARY_PATH</code>环境变量，程序运行时会在此环境变量指定的文件夹下寻找动态链接库。动态链接库，就是 <strong>ELF 的第三种类型，共享对象文件（Shared Object）。</strong></p>
+<p>&emsp;&emsp;动态链接的ELF相对于静态链接主要多了以下部分</p>
+<ul>
+<li><code>.interp</code>段，里面是<code>ld-linux.so</code>，负责运行时的链接动作</li>
+<li><code>.plt</code>（Procedure Linkage Table），过程链接表</li>
+<li><code>.got.plt</code>（Global Offset Table），全局偏移量表</li>
+</ul>
+<p>当程序编译时，会对每个函数在PLT中建立新的项，如<code>PLT[n]</code>，而动态库中则存有该函数的实际地址，记为<code>GOT[m]</code>。整体寻址过程如下所示</p>
+<ol>
+<li><code>PLT[n]</code>向<code>GOT[m]</code>寻求地址</li>
+<li><code>GOT[m]</code>初始并无地址，需要采取以下方式获取地址<ol>
+<li>回调<code>PLT[0]</code></li>
+<li><code>PLT[0]</code>调用<code>GOT[2]</code>，即<code>ld-linux.so</code></li>
+<li><code>ld-linux.so</code>查找所需函数实际地址并存放在<code>GOT[m]</code>中</li>
+</ol>
+</li>
+</ol>
+<p>由此，我们建立了<code>PLT[n]</code>到<code>GOT[m]</code>的对应关系，从而实现了动态链接。</p>
+<h3 id="加载运行"><a href="#加载运行" class="headerlink" title="加载运行"></a>加载运行</h3><p>&emsp;&emsp;完成了上述的编译、汇编、链接，我们最终形成了可执行文件，并加载运行。在内核中，有这样一个数据结构，用来定义加载二进制文件的方法。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">linux_binfmt</span> &#123;</span></span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">list_head</span> <span class="title">lh</span>;</span></span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">module</span> *<span class="title">module</span>;</span></span><br><span class="line">        <span class="keyword">int</span> (*load_binary)(struct linux_binprm *);</span><br><span class="line">        <span class="keyword">int</span> (*load_shlib)(struct file *);</span><br><span class="line">        <span class="keyword">int</span> (*core_dump)(struct coredump_params *cprm);</span><br><span class="line">        <span class="keyword">unsigned</span> <span class="keyword">long</span> min_coredump;     <span class="comment">/* minimal dump size */</span></span><br><span class="line">&#125; __randomize_layout;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;对于ELF文件格式，其对应实现为</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">struct</span> <span class="title">linux_binfmt</span> <span class="title">elf_format</span> = &#123;</span></span><br><span class="line">        .<span class="keyword">module</span>         = THIS_MODULE,</span><br><span class="line">        .load_binary    = load_elf_binary,</span><br><span class="line">        .load_shlib     = load_elf_library,</span><br><span class="line">        .core_dump      = elf_core_dump,</span><br><span class="line">        .min_coredump   = ELF_EXEC_PAGESIZE,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;其中加载的函数指针指向的函数和内核镜像加载是同一份函数，实际上通过<code>exec</code>函数完成调用。exec 比较特殊，它是一组函数：</p>
+<ul>
+<li>包含 p 的函数（execvp, execlp）会在 PATH 路径下面寻找程序；不包含 p 的函数需要输入程序的全路径；</li>
+<li>包含 v 的函数（execv, execvp, execve）以数组的形式接收参数；</li>
+<li>包含 l 的函数（execl, execlp, execle）以列表的形式接收参数；</li>
+<li>包含 e 的函数（execve, execle）以数组的形式接收环境变量。</li>
+</ul>
+<p>&emsp;&emsp;当我们通过shell运行可执行文件或者通过<code>fork</code>派生子类，均是通过该类函数实现加载。</p>
+<h2 id="进程的派生"><a href="#进程的派生" class="headerlink" title="进程的派生"></a>进程的派生</h2><p>&emsp;&emsp;多进程是一种常见的程序实现方式，采用的系统调用为<code>fork()</code>函数。前文中已经详细叙述了系统调用的整个过程，对于<code>fork()</code>来说，最终会在系统调用表中查找到对应的系统调用<code>sys_fork</code>完成子进程的生成。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">SYSCALL_DEFINE0(fork)</span><br><span class="line">&#123;</span><br><span class="line">......</span><br><span class="line">  <span class="keyword">return</span> _do_fork(SIGCHLD, <span class="number">0</span>, <span class="number">0</span>, <span class="literal">NULL</span>, <span class="literal">NULL</span>, <span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;<code>sys_fork</code> 会调用 <code>_do_fork</code>，其源码如下所示，主要工作包括复制结构<code>copy_process()</code>和唤醒新进程<code>wak_up_new()</code>两部分。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">long</span> _do_fork(<span class="keyword">unsigned</span> <span class="keyword">long</span> clone_flags,</span><br><span class="line">        <span class="keyword">unsigned</span> <span class="keyword">long</span> stack_start,</span><br><span class="line">        <span class="keyword">unsigned</span> <span class="keyword">long</span> stack_size,</span><br><span class="line">        <span class="keyword">int</span> __user *parent_tidptr,</span><br><span class="line">        <span class="keyword">int</span> __user *child_tidptr,</span><br><span class="line">        <span class="keyword">unsigned</span> <span class="keyword">long</span> tls)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">task_struct</span> *<span class="title">p</span>;</span></span><br><span class="line">  <span class="keyword">int</span> trace = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">long</span> nr;</span><br><span class="line"></span><br><span class="line">......</span><br><span class="line">  p = copy_process(clone_flags, stack_start, stack_size,</span><br><span class="line">       child_tidptr, <span class="literal">NULL</span>, trace, tls, NUMA_NO_NODE);</span><br><span class="line">......</span><br><span class="line">  <span class="keyword">if</span> (!IS_ERR(p)) &#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">pid</span> *<span class="title">pid</span>;</span></span><br><span class="line">    pid = get_task_pid(p, PIDTYPE_PID);</span><br><span class="line">    nr = pid_vnr(pid);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (clone_flags &amp; CLONE_PARENT_SETTID)</span><br><span class="line">      put_user(nr, parent_tidptr);</span><br><span class="line"></span><br><span class="line">......</span><br><span class="line">    wake_up_new_task(p);</span><br><span class="line">......</span><br><span class="line">    put_pid(pid);</span><br><span class="line">  &#125; </span><br><span class="line">......</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h3 id="进程结构体复制"><a href="#进程结构体复制" class="headerlink" title="进程结构体复制"></a>进程结构体复制</h3><p>&emsp;&emsp;如下所示为<code>copy_process()</code>函数源码精简版，<code>task_struct</code>结构复杂也注定了复制过程的复杂性，因此此处省略了很多，仅保留了各个部分的主要调用函数</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> __latent_entropy struct task_struct *<span class="title">copy_process</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">          <span class="keyword">unsigned</span> <span class="keyword">long</span> clone_flags,</span></span></span><br><span class="line"><span class="function"><span class="params">          <span class="keyword">unsigned</span> <span class="keyword">long</span> stack_start,</span></span></span><br><span class="line"><span class="function"><span class="params">          <span class="keyword">unsigned</span> <span class="keyword">long</span> stack_size,</span></span></span><br><span class="line"><span class="function"><span class="params">          <span class="keyword">int</span> __user *child_tidptr,</span></span></span><br><span class="line"><span class="function"><span class="params">          struct pid *pid,</span></span></span><br><span class="line"><span class="function"><span class="params">          <span class="keyword">int</span> trace,</span></span></span><br><span class="line"><span class="function"><span class="params">          <span class="keyword">unsigned</span> <span class="keyword">long</span> tls,</span></span></span><br><span class="line"><span class="function"><span class="params">          <span class="keyword">int</span> node)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> retval;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">task_struct</span> *<span class="title">p</span>;</span></span><br><span class="line">......</span><br><span class="line">    <span class="comment">//分配task_struct结构</span></span><br><span class="line">    p = dup_task_struct(current, node);  </span><br><span class="line">......</span><br><span class="line">    <span class="comment">//权限处理</span></span><br><span class="line">    retval = copy_creds(p, clone_flags);</span><br><span class="line">......</span><br><span class="line">    <span class="comment">//设置调度相关变量</span></span><br><span class="line">    retval = sched_fork(clone_flags, p);    </span><br><span class="line">......</span><br><span class="line">    <span class="comment">//初始化文件和文件系统相关变量</span></span><br><span class="line">    retval = copy_files(clone_flags, p);</span><br><span class="line">    retval = copy_fs(clone_flags, p);  </span><br><span class="line">......</span><br><span class="line">    <span class="comment">//初始化信号相关变量</span></span><br><span class="line">    init_sigpending(&amp;p-&gt;pending);</span><br><span class="line">    retval = copy_sighand(clone_flags, p);</span><br><span class="line">    retval = copy_signal(clone_flags, p);  </span><br><span class="line">......</span><br><span class="line">    <span class="comment">//拷贝进程内存空间</span></span><br><span class="line">    retval = copy_mm(clone_flags, p);</span><br><span class="line">...... </span><br><span class="line">    <span class="comment">//初始化亲缘关系变量</span></span><br><span class="line">    INIT_LIST_HEAD(&amp;p-&gt;children);</span><br><span class="line">    INIT_LIST_HEAD(&amp;p-&gt;sibling);</span><br><span class="line">......</span><br><span class="line">    <span class="comment">//建立亲缘关系</span></span><br><span class="line">    p-&gt;pid = pid_nr(pid);</span><br><span class="line">    <span class="keyword">if</span> (clone_flags &amp; CLONE_THREAD) &#123;</span><br><span class="line">        p-&gt;exit_signal = <span class="number">-1</span>;</span><br><span class="line">        p-&gt;group_leader = current-&gt;group_leader;</span><br><span class="line">        p-&gt;tgid = current-&gt;tgid;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (clone_flags &amp; CLONE_PARENT)</span><br><span class="line">          p-&gt;exit_signal = current-&gt;group_leader-&gt;exit_signal;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">          p-&gt;exit_signal = (clone_flags &amp; CSIGNAL);</span><br><span class="line">        p-&gt;group_leader = p;</span><br><span class="line">        p-&gt;tgid = p-&gt;pid;</span><br><span class="line">    &#125;</span><br><span class="line">......</span><br><span class="line">    <span class="keyword">if</span> (clone_flags &amp; (CLONE_PARENT|CLONE_THREAD)) &#123;</span><br><span class="line">        p-&gt;real_parent = current-&gt;real_parent;</span><br><span class="line">        p-&gt;parent_exec_id = current-&gt;parent_exec_id;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        p-&gt;real_parent = current;</span><br><span class="line">        p-&gt;parent_exec_id = current-&gt;self_exec_id;</span><br><span class="line">    &#125; </span><br><span class="line">......    </span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li><code>copy_process()</code>首先调用了<code>dup_task_struct()</code>，<code>dup_task_struct()</code> 主要做了下面几件事情：</li>
+</ol>
+<ul>
+<li>调用 <code>alloc_task_struct_node</code> 分配一个 <code>task_struct</code>结构；</li>
+<li>调用 <code>alloc_thread_stack_node</code> 来创建内核栈，这里面调用 <code>__vmalloc_node_range</code> 分配一个连续的 <code>THREAD_SIZE</code> 的内存空间，赋值给 <code>task_struct</code> 的 <code>void *stack</code>成员变量；</li>
+<li>调用 <code>arch_dup_task_struct(struct task_struct *dst, struct task_struct *src)</code>，将 <code>task_struct</code> 进行复制，其实就是调用 <code>memcpy</code>；</li>
+<li>调用<code>setup_thread_stack</code>设置 <code>thread_info</code>。</li>
+</ul>
+<ol start="2">
+<li>接着，调用<code>copy_creds</code>处理权限相关内容</li>
+</ol>
+<ul>
+<li>调用<code>prepare_creds</code>，准备一个新的 <code>struct cred *new</code>。如何准备呢？其实还是从内存中分配一个新的 <code>struct cred</code>结构，然后调用 memcpy 复制一份父进程的 cred；</li>
+<li>接着 <code>p-&gt;cred = p-&gt;real_cred = get_cred(new)</code>，将新进程的“我能操作谁”和“谁能操作我”两个权限都指向新的 cred。</li>
+</ul>
+<ol start="3">
+<li>设置调度相关的变量。<code>sched_fork</code>主要做了下面几件事情：</li>
+</ol>
+<ul>
+<li>调用<code>__sched_fork</code>，在这里面将<code>on_rq</code>设为 0，初始化<code>sched_entity</code>，将里面的 <code>exec_start、sum_exec_runtime、prev_sum_exec_runtime、vruntime</code> 都设为 0。你还记得吗，这几个变量涉及进程的实际运行时间和虚拟运行时间。是否到时间应该被调度了，就靠它们几个；</li>
+<li>设置进程的状态 <code>p-&gt;state = TASK_NEW</code>；</li>
+<li>初始化优先级 <code>prio、normal_prio、static_prio</code>；</li>
+<li>设置调度类，如果是普通进程，就设置为 <code>p-&gt;sched_class = &amp;fair_sched_class</code>；</li>
+<li>调用调度类的 <code>task_fork</code> 函数，对于 CFS 来讲，就是调用 <code>task_fork_fair</code>。在这个函数里，先调用 <code>update_curr</code>，对于当前的进程进行统计量更新，然后把子进程和父进程的 <code>vruntime</code> 设成一样，最后调用 <code>place_entity</code>，初始化 <code>sched_entity</code>。这里有一个变量 <code>sysctl_sched_child_runs_first</code>，可以设置父进程和子进程谁先运行。如果设置了子进程先运行，即便两个进程的 <code>vruntime</code> 一样，也要把子进程的 <code>sched_entity</code> 放在前面，然后调用 <code>resched_curr</code>，标记当前运行的进程 <code>TIF_NEED_RESCHED</code>，也就是说，把父进程设置为应该被调度，这样下次调度的时候，父进程会被子进程抢占。</li>
+</ul>
+<ol start="4">
+<li>初始化文件和文件系统相关变量</li>
+</ol>
+<ul>
+<li><code>copy_files</code> 主要用于复制一个进程打开的文件信息。这些信息用一个结构 <code>files_struct</code> 来维护，每个打开的文件都有一个文件描述符。在 copy_files 函数里面调用 <code>dup_fd</code>，在这里面会创建一个新的 files_struct，然后将所有的文件描述符数组 <code>fdtable</code> 拷贝一份。</li>
+<li><code>copy_fs</code> 主要用于复制一个进程的目录信息。这些信息用一个结构 <code>fs_struct</code> 来维护。一个进程有自己的根目录和根文件系统 <code>root</code>，也有当前目录 <code>pwd</code> 和当前目录的文件系统，都在 <code>fs_struct</code> 里面维护。<code>copy_fs</code> 函数里面调用 <code>copy_fs_struct</code>，创建一个新的 <code>fs_struct</code>，并复制原来进程的 <code>fs_struct</code>。</li>
+</ul>
+<ol start="5">
+<li>初始化信号相关变量</li>
+</ol>
+<ul>
+<li><code>copy_sighand</code> 会分配一个新的 <code>sighand_struct</code>。这里最主要的是维护信号处理函数，在 <code>copy_sighand</code> 里面会调用 <code>memcpy</code>，将信号处理函数 <code>sighand-&gt;action</code> 从父进程复制到子进程。</li>
+<li><code>init_sigpending</code> 和 <code>copy_signal</code> 用于初始化，并且复制用于维护发给这个进程的信号的数据结构。<code>copy_signal</code> 函数会分配一个新的 <code>signal_struct</code>，并进行初始化。</li>
+</ul>
+<ol start="6">
+<li><p>复制进程内存空间</p>
+<p>进程都有自己的内存空间，用 <code>mm_struct</code> 结构来表示。<code>copy_mm</code> 函数中调用 <code>dup_mm</code>，分配一个新的 <code>mm_struct</code> 结构，调用 <code>memcpy</code> 复制这个结构。<code>dup_mmap</code> 用于复制内存空间中内存映射的部分。前面讲系统调用的时候，我们说过，<code>mmap</code> 可以分配大块的内存，其实 <code>mmap</code> 也可以将一个文件映射到内存中，方便可以像读写内存一样读写文件，这个在内存管理那节我们讲</p>
+</li>
+<li><p>分配 <code>pid</code>，设置 <code>tid</code>，<code>group_leader</code>，并且建立进程之间的亲缘关系。</p>
+</li>
+</ol>
+<h3 id="新进程的唤醒"><a href="#新进程的唤醒" class="headerlink" title="新进程的唤醒"></a>新进程的唤醒</h3><h2 id="线程的创建"><a href="#线程的创建" class="headerlink" title="线程的创建"></a>线程的创建</h2><p>&emsp;&emsp;</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>&emsp;&emsp;</p>
 <h2 id="源码资料"><a href="#源码资料" class="headerlink" title="源码资料"></a>源码资料</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2>
       
@@ -702,7 +854,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#进程的创建"><span class="nav-number">2.</span> <span class="nav-text">进程的创建</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#编译"><span class="nav-number">2.1.</span> <span class="nav-text">编译</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#链接"><span class="nav-number">2.2.</span> <span class="nav-text">链接</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#加载运行"><span class="nav-number">2.3.</span> <span class="nav-text">加载运行</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#线程的创建"><span class="nav-number">3.</span> <span class="nav-text">线程的创建</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#进程的派生"><span class="nav-number">4.</span> <span class="nav-text">进程的派生</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#线程的派生"><span class="nav-number">5.</span> <span class="nav-text">线程的派生</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源码资料"><span class="nav-number">7.</span> <span class="nav-text">源码资料</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">8.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#进程的创建"><span class="nav-number">2.</span> <span class="nav-text">进程的创建</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#编译"><span class="nav-number">2.1.</span> <span class="nav-text">编译</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#链接"><span class="nav-number">2.2.</span> <span class="nav-text">链接</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#静态链接"><span class="nav-number">2.2.1.</span> <span class="nav-text">静态链接</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#动态链接"><span class="nav-number">2.2.2.</span> <span class="nav-text">动态链接</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#加载运行"><span class="nav-number">2.3.</span> <span class="nav-text">加载运行</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#进程的派生"><span class="nav-number">3.</span> <span class="nav-text">进程的派生</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#进程结构体复制"><span class="nav-number">3.1.</span> <span class="nav-text">进程结构体复制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#新进程的唤醒"><span class="nav-number">3.2.</span> <span class="nav-text">新进程的唤醒</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#线程的创建"><span class="nav-number">4.</span> <span class="nav-text">线程的创建</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源码资料"><span class="nav-number">6.</span> <span class="nav-text">源码资料</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">7.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
@@ -736,7 +888,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">24.6k</span>
+    <span title="Site words total count">28.5k</span>
   
 </div>
 
