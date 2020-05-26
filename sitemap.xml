@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://ty-chen.github.io/linux-kernel-schedule/</loc>
+    
+    <lastmod>2020-05-25T15:49:23.453Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://ty-chen.github.io/linux-kernel-task-struct/</loc>
     
     <lastmod>2020-05-25T15:16:57.883Z</lastmod>
@@ -19,13 +26,6 @@
     <loc>https://ty-chen.github.io/linux-kernel-bootstrap/</loc>
     
     <lastmod>2020-05-25T15:12:16.736Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://ty-chen.github.io/linux-kernel-schedule/</loc>
-    
-    <lastmod>2020-05-25T15:01:11.645Z</lastmod>
     
   </url>
   

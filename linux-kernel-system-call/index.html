@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/kulamati128.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/kulamati32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/kulamati16.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Linux,操作系统,syscall," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="前言&amp;emsp;&amp;emsp;通过前面几篇文章，我们分析了从按下电源键到内核启动、完成初始化的整个过程。在后面的文章中我们将分别深入剖析Linux内核各个重要部分的源码。考虑到后面的部分我们会从用户态的代码开始入手一步一步深入，因此在分析这些之前，我们需要仔细看一看如何实现一个从用户态到内核态再回到用户态的系统调用的全过程，即系统调用的实现。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux操作系统学习笔记（四）系统调用">
+<meta property="og:url" content="https://ty-chen.github.io/linux-kernel-system-call/index.html">
+<meta property="og:site_name" content="Ty-Chen&#39;s Home">
+<meta property="og:description" content="前言&amp;emsp;&amp;emsp;通过前面几篇文章，我们分析了从按下电源键到内核启动、完成初始化的整个过程。在后面的文章中我们将分别深入剖析Linux内核各个重要部分的源码。考虑到后面的部分我们会从用户态的代码开始入手一步一步深入，因此在分析这些之前，我们需要仔细看一看如何实现一个从用户态到内核态再回到用户态的系统调用的全过程，即系统调用的实现。">
+<meta property="article:published_time" content="2020-05-10T16:11:56.000Z">
+<meta property="article:modified_time" content="2020-05-24T02:35:40.785Z">
+<meta property="article:author" content="Ty Chen">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="操作系统">
+<meta property="article:tag" content="syscall">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"hide","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://ty-chen.github.io/linux-kernel-system-call/"/>
+
+
+
+
+
+  <title>Linux操作系统学习笔记（四）系统调用 | Ty-Chen's Home</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Ty-Chen's Home</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Collecting, sharing and creating knowledge</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://ty-chen.github.io/linux-kernel-system-call/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Ty Chen">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/me.JPG">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ty-Chen's Home">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Linux操作系统学习笔记（四）系统调用</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-05-11T00:11:56+08:00">
+                2020-05-11
+              </time>
+            
+
+            
+
+            
+          </span>
+          
+            <span class="post-updated">
+              &nbsp; | &nbsp; 更新于
+              <time itemprop="dateUpdated" datetime="2020-05-24T10:35:40+08:00" content="2020-05-24">
+                2020-05-24
+              </time>
+            </span>
+          
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%86%85%E6%A0%B8%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index">
+                    <span itemprop="name">Linux操作系统内核学习</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/linux-kernel-system-call/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/linux-kernel-system-call/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">访问次数：
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>次
+            </span>
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  3.8k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  16
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>&emsp;&emsp;通过前面几篇文章，我们分析了从按下电源键到内核启动、完成初始化的整个过程。在后面的文章中我们将分别深入剖析Linux内核各个重要部分的源码。考虑到后面的部分我们会从用户态的代码开始入手一步一步深入，因此在分析这些之前，我们需要仔细看一看如何实现一个从用户态到内核态再回到用户态的系统调用的全过程，即系统调用的实现。</p>
+<a id="more"></a>
+
+<p>&emsp;&emsp;本文的说明顺序如下</p>
+<ul>
+<li>首先从一个简单的例子开始分析glibc中对应的调用</li>
+<li>针对32位和64位中调用的结构不同会分开两部分单独介绍，会介绍整个调用至完成的过程。即用户态-&gt;内核态-&gt;用户态</li>
+<li>在整个调用过程中最重要的一步是中间访问系统调用表，该部分为了描述清楚单独拉出来最后介绍</li>
+</ul>
+<h2 id="GLIBC标准库的调用"><a href="#GLIBC标准库的调用" class="headerlink" title="GLIBC标准库的调用"></a>GLIBC标准库的调用</h2><p>&emsp;&emsp;让我们从一个简单的程序开始</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> **argv)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">   FILE *fp;</span><br><span class="line">   <span class="keyword">char</span> buff[<span class="number">255</span>];</span><br><span class="line"></span><br><span class="line">   fp = fopen(<span class="string">"test.txt"</span>, <span class="string">"r"</span>);</span><br><span class="line">   fgets(buff, <span class="number">255</span>, fp);</span><br><span class="line">   <span class="built_in">printf</span>(<span class="string">"%s\n"</span>, buff);</span><br><span class="line">   fclose(fp);</span><br><span class="line"></span><br><span class="line">   <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;如上所示的程序主要调用了glibc中的函数，然后在其上进行了封装而成。比如<code>fopen</code>实际使用的是<code>open</code>，这里我们就以该函数为例来说明整个调用过程。首先<code>open</code>函数的系统调用在<code>syscalls.list</code>表中定义</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># <span class="built_in">File</span> name Caller Syscall name Args Strong name Weak names</span><br><span class="line"><span class="built_in">open</span> - <span class="built_in">open</span> Ci:siv __libc_open __open <span class="built_in">open</span></span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;根据此配置文件，glibc会调用脚本<code>make_syscall.sh</code>将其封装为宏，如<code>SYSCALL_NAME open</code>的形式。这些宏会通过<code>T_PSEUDO</code>来调用（位于<code>syscall-template.S</code>），而实际上使用的则是<code>DO_CALL(syscall_name, args)</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">T_PSEUDO (SYSCALL_SYMBOL, SYSCALL_NAME, SYSCALL_NARGS)</span><br><span class="line">    ret</span><br><span class="line">T_PSEUDO_END (SYSCALL_SYMBOL)</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> T_PSEUDO(SYMBOL, NAME, N)    PSEUDO (SYMBOL, NAME, N)</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> PSEUDO(name, syscall_name, args)      \</span></span><br><span class="line">  .<span class="built_in">text</span>;                                      \</span><br><span class="line">  ENTRY (name)                                \</span><br><span class="line">    DO_CALL (syscall_name, args);             \</span><br><span class="line">    cmpl $<span class="number">-4095</span>, %eax;                        \</span><br><span class="line">    jae SYSCALL_ERROR_LABEL</span><br></pre></td></tr></table></figure>
+
+<h3 id="32位系统调用过程"><a href="#32位系统调用过程" class="headerlink" title="32位系统调用过程"></a>32位系统调用过程</h3><p>&emsp;&emsp;考虑到32位和64位代码结构有一些区别，因此这里需要分开讨论。在32位系统中，<code>DO_CALL()</code>位于i386 目录下的<code>sysdep.h</code>文件中</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* Linux takes system call arguments in registers:</span></span><br><span class="line"><span class="comment">  syscall number  %eax       call-clobbered</span></span><br><span class="line"><span class="comment">  arg 1    %ebx       call-saved</span></span><br><span class="line"><span class="comment">  arg 2    %ecx       call-clobbered</span></span><br><span class="line"><span class="comment">  arg 3    %edx       call-clobbered</span></span><br><span class="line"><span class="comment">  arg 4    %esi       call-saved</span></span><br><span class="line"><span class="comment">  arg 5    %edi       call-saved</span></span><br><span class="line"><span class="comment">  arg 6    %ebp       call-saved</span></span><br><span class="line"><span class="comment">......</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DO_CALL(syscall_name, args)               \</span></span><br><span class="line">    PUSHARGS_#<span class="meta">#args                               \</span></span><br><span class="line">    DOARGS_#<span class="meta">#args                                 \</span></span><br><span class="line">    movl $SYS_ify (syscall_name), %eax;           \</span><br><span class="line">    ENTER_KERNEL                                  \</span><br><span class="line">    POPARGS_#<span class="meta">#args</span></span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;这里，我们将请求参数放在寄存器里面，根据系统调用的名称，得到系统调用号，放在寄存器 eax 里面，然后执行<code>ENTER_KERNEL</code>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"># <span class="meta-keyword">define</span> ENTER_KERNEL int $0x80</span></span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;<code>ENTER_KERNEL</code>实际调用的是80软中断，以此陷入内核。这些中断在<code>trap_init()</code>中被定义并初始化。在前文中对<code>trap_init()</code>已有一些简单的叙述，后面再中断部分会再详细介绍。</p>
+<p>&emsp;&emsp;初始化好的中断表会等待到中断触发，触发的时候则调用对应的回调函数，这里的话就是<code>entry_INT80_32</code>。该中断首先通过<code>push</code>和<code>SAVE_ALL</code>保存所有的寄存器，存储在<code>pt_regs</code>中，然后调用<code>do_syscall_32_irqs_on()</code>函数。该函数将系统调用号从<code>eax</code>里面取出来，然后根据系统调用号，在系统调用表中找到相应的函数进行调用，并将寄存器中保存的参数取出来，作为函数参数。最后调用<code>INTERRUPT_RETURN</code>，实际使用的是<code>iret</code>指令将原来用户保存的现场包含代码段、指令指针寄存器等恢复，并返回至用户态执行。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">ENTRY(entry_INT80_32)</span><br><span class="line">        ASM_CLAC</span><br><span class="line">        pushl   %eax                    <span class="comment">/* pt_regs-&gt;orig_ax */</span></span><br><span class="line">        SAVE_ALL pt_regs_ax=$-ENOSYS    <span class="comment">/* save rest */</span></span><br><span class="line">        movl    %esp, %eax</span><br><span class="line">        call    do_syscall_32_irqs_on</span><br><span class="line">.Lsyscall_32_done:</span><br><span class="line">......</span><br><span class="line">.Lirq_return:</span><br><span class="line">  INTERRUPT_RETURN</span><br><span class="line"></span><br><span class="line">      </span><br><span class="line">......</span><br><span class="line">      </span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> __always_inline <span class="keyword">void</span> do_syscall_32_irqs_on(struct pt_regs *regs)</span><br><span class="line">&#123;</span><br><span class="line">  struct thread_info *ti = current_thread_info();</span><br><span class="line">  <span class="keyword">unsigned</span> <span class="keyword">int</span> nr = (<span class="keyword">unsigned</span> <span class="keyword">int</span>)regs-&gt;orig_ax;</span><br><span class="line">......</span><br><span class="line">  <span class="keyword">if</span> (likely(nr &lt; IA32_NR_syscalls)) &#123;</span><br><span class="line">    regs-&gt;ax = ia32_sys_call_table[nr](</span><br><span class="line">      (<span class="keyword">unsigned</span> <span class="keyword">int</span>)regs-&gt;bx, (<span class="keyword">unsigned</span> <span class="keyword">int</span>)regs-&gt;cx,</span><br><span class="line">      (<span class="keyword">unsigned</span> <span class="keyword">int</span>)regs-&gt;dx, (<span class="keyword">unsigned</span> <span class="keyword">int</span>)regs-&gt;si,</span><br><span class="line">      (<span class="keyword">unsigned</span> <span class="keyword">int</span>)regs-&gt;di, (<span class="keyword">unsigned</span> <span class="keyword">int</span>)regs-&gt;bp);</span><br><span class="line">  &#125;</span><br><span class="line">  syscall_return_slowpath(regs);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="64位系统调用过程"><a href="#64位系统调用过程" class="headerlink" title="64位系统调用过程"></a>64位系统调用过程</h3><p>&emsp;&emsp;对于64位系统来说，<code>DO_CALL</code>位于x86_64 目录下的 <code>sysdep.h</code> 文件中</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;* The Linux&#x2F;x86-64 kernel expects the system call parameters in</span><br><span class="line">   registers according to the following table:</span><br><span class="line">    syscall number  rax</span><br><span class="line">    arg 1    rdi</span><br><span class="line">    arg 2    rsi</span><br><span class="line">    arg 3    rdx</span><br><span class="line">    arg 4    r10</span><br><span class="line">    arg 5    r8</span><br><span class="line">    arg 6    r9</span><br><span class="line">......</span><br><span class="line">*&#x2F;</span><br><span class="line">#define DO_CALL(syscall_name, args)                \</span><br><span class="line">  lea SYS_ify (syscall_name), %rax;                \</span><br><span class="line">  syscall</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;和之前一样，还是将系统调用名称转换为系统调用号，放到寄存器<code>rax</code>。这里是真正进行调用，不是用中断了，而是改用<code>syscall</code>指令了。并且，通过注释我们也可以知道，传递参数的寄存器也变了。<code>syscall</code>指令还使用了一种特殊的寄存器，我们叫特殊模块寄存器（Model Specific Registers，简称 MSR）。这种寄存器是 CPU 为了完成某些特殊控制功能为目的的寄存器，其中就有系统调用。</p>
+<p>&emsp;&emsp;在系统初始化的时候，<code>trap_init()</code> 除了初始化上面的中断模式，这里面还会调用 <code>cpu_init-&gt;syscall_init()</code>。这里面有这样的代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wrmsrl(MSR_LSTAR, (<span class="keyword">unsigned</span> <span class="keyword">long</span>)entry_SYSCALL_64);</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;<code>rdmsr()</code> 和 <code>wrmsr()</code> 是用来读写<a href="https://en.wikipedia.org/wiki/Model-specific_register" target="_blank" rel="noopener">特殊模块寄存器</a>的。<code>MSR_LSTAR</code> 就是这样一个特殊的寄存器，当 <code>syscall</code> 指令调用的时候，会从这个寄存器里面拿出函数地址来调用，也就是调用 <code>entry_SYSCALL_64</code>。在 <a href="https://github.com/torvalds/linux/blob/16f73eb02d7e1765ccab3d2018e0bd98eb93d973/arch/x86/entry/entry_64.S" target="_blank" rel="noopener"><code>arch/x86/entry/entry_64.S</code></a>中定义了 <code>entry_SYSCALL_64</code>函数。</p>
+<p>&emsp;&emsp;该函数开始于一条宏：<code>SWAPGS_UNSAFE_STACK</code>，其定义如下，主要是交换当前GS基寄存器中的值和特殊模块寄存器中包含的值，即<strong>进入内核栈</strong>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SWAPGS_UNSAFE_STACK    swapgs</span></span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;对于旧的栈，我们会将其存于<code>rsp_scratch</code>，并将栈指针移至当前进程的栈顶。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">movq    %rsp, PER_CPU_VAR(rsp_scratch)</span><br><span class="line">movq    PER_CPU_VAR(cpu_current_top_of_stack), %rsp</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;下一步，我们将栈段和旧的栈指针压入栈中</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pushq    $__USER_DS</span><br><span class="line">pushq    PER_CPU_VAR(rsp_scratch)</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;接下来，我们需要打开中断并保存很多寄存器到 <code>pt_regs</code> 结构里面，例如用户态的代码段、数据段、保存参数的寄存器，并校验当前线程的信息<code>_TIF_WORK_SYSCALL_ENTRY</code>，这里涉及到Linux的debugging和tracing技术，会单独在后文中详细分析。该部分代码具体如下所示。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">ENTRY(entry_SYSCALL_64)</span><br><span class="line">        &#x2F;* Construct struct pt_regs on stack *&#x2F;</span><br><span class="line">        pushq   $__USER_DS                      &#x2F;* pt_regs-&gt;ss *&#x2F;</span><br><span class="line">        pushq   PER_CPU_VAR(rsp_scratch)        &#x2F;* pt_regs-&gt;sp *&#x2F;</span><br><span class="line">        pushq   %r11                            &#x2F;* pt_regs-&gt;flags *&#x2F;</span><br><span class="line">        pushq   $__USER_CS                      &#x2F;* pt_regs-&gt;cs *&#x2F;</span><br><span class="line">        pushq   %rcx                            &#x2F;* pt_regs-&gt;ip *&#x2F;</span><br><span class="line">        pushq   %rax                            &#x2F;* pt_regs-&gt;orig_ax *&#x2F;</span><br><span class="line">        pushq   %rdi                            &#x2F;* pt_regs-&gt;di *&#x2F;</span><br><span class="line">        pushq   %rsi                            &#x2F;* pt_regs-&gt;si *&#x2F;</span><br><span class="line">        pushq   %rdx                            &#x2F;* pt_regs-&gt;dx *&#x2F;</span><br><span class="line">        pushq   %rcx                            &#x2F;* pt_regs-&gt;cx *&#x2F;</span><br><span class="line">        pushq   $-ENOSYS                        &#x2F;* pt_regs-&gt;ax *&#x2F;</span><br><span class="line">        pushq   %r8                             &#x2F;* pt_regs-&gt;r8 *&#x2F;</span><br><span class="line">        pushq   %r9                             &#x2F;* pt_regs-&gt;r9 *&#x2F;</span><br><span class="line">        pushq   %r10                            &#x2F;* pt_regs-&gt;r10 *&#x2F;</span><br><span class="line">        pushq   %r11                            &#x2F;* pt_regs-&gt;r11 *&#x2F;</span><br><span class="line">        sub     $(6*8), %rsp                    &#x2F;* pt_regs-&gt;bp, bx, r12-15 not saved *&#x2F;</span><br><span class="line">        movq    PER_CPU_VAR(current_task), %r11</span><br><span class="line">        testl   $_TIF_WORK_SYSCALL_ENTRY|_TIF_ALLWORK_MASK, TASK_TI_flags(%r11)</span><br><span class="line">        jnz     entry_SYSCALL64_slow_path</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;各寄存器的作用如下所示：</p>
+<ul>
+<li><code>rax</code>：系统调用数目</li>
+<li><code>rcx</code>：函数返回的用户空间地址</li>
+<li><code>r11</code>：寄存器标记</li>
+<li><code>rdi</code>：系统调用回调函数的第一个参数</li>
+<li><code>rsi</code>：系统调用回调函数的第二个参数</li>
+<li><code>rdx</code>：系统调用回调函数的第三个参数</li>
+<li><code>r10</code>：系统调用回调函数的第四个参数</li>
+<li><code>r8</code>  ：系统调用回调函数的第五个参数</li>
+<li><code>r9</code>  ：系统调用回调函数的第六个参数</li>
+<li><code>rbp,rbx,r12-r15</code>：通用的<a href="https://en.wikipedia.org/wiki/X86_calling_conventions" target="_blank" rel="noopener">callee-preserved</a>寄存器</li>
+</ul>
+<p>&emsp;&emsp;在此之后，其实存在着两个处理分支：<code>entry_SYSCALL64_slow_path</code> 和 <code>entry_SYSCALL64_fast_path</code>，这里是根据<code>_TIF_WORK_SYSCALL_ENTRY</code>判断的结果进行选择，这里涉及到<code>ptrace</code>部分的知识，暂时先不介绍了，会在后面单独开一文详细研究。如果设置了<code>_TIF_ALLWORK_MASK</code>或者<code>_TIF_WORK_SYSCALL_ENTRY</code>，则跳转至<code>slow_path</code>，否则继续运行<code>fast_path</code>。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#define _TIF_WORK_SYSCALL_ENTRY \</span><br><span class="line">    (_TIF_SYSCALL_TRACE | _TIF_SYSCALL_EMU | _TIF_SYSCALL_AUDIT |   \</span><br><span class="line">    _TIF_SECCOMP | _TIF_SINGLESTEP | _TIF_SYSCALL_TRACEPOINT |     \</span><br><span class="line">    _TIF_NOHZ)</span><br></pre></td></tr></table></figure>
+
+<h4 id="fastpath分支"><a href="#fastpath分支" class="headerlink" title="fastpath分支"></a><code>fastpath</code>分支</h4><p>&emsp;&emsp;该分支主要分为以下部分内容</p>
+<ul>
+<li>再次检测TRACE部分，如果有标记则跳转至<code>slow_path</code></li>
+<li>检测<code>__SYSCALL_MASK</code>，如果<code>CONFIG_X86_X32_ABI</code>未设置我们就比较<code>rax</code>寄存器的值和最大系统调用数<code>__NR_syscall_max</code>，否则则标记<code>eax</code>寄存器为<code>__x32_SYSCALL_BIT</code>，再进行比较</li>
+<li><code>ja</code>指令会在<code>CF</code>和<code>ZF</code>设置为0时进行跳转，即如果不满足条件则会跳转至<code>-ENOSYS</code>，否则继续执行</li>
+<li>将第四个参数从<code>r10</code>放入<code>rcx</code>以保持x86_64 C ABI编译</li>
+<li>执行<code>sys_call_table</code>，去系统调用表中查找系统调用</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">entry_SYSCALL_64_fastpath:</span><br><span class="line">	&#x2F;*</span><br><span class="line">	 * Easy case: enable interrupts and issue the syscall.  If the syscall</span><br><span class="line">	 * needs pt_regs, we&#39;ll call a stub that disables interrupts again</span><br><span class="line">	 * and jumps to the slow path.</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	TRACE_IRQS_ON</span><br><span class="line">	ENABLE_INTERRUPTS(CLBR_NONE)</span><br><span class="line">	</span><br><span class="line">#if __SYSCALL_MASK &#x3D;&#x3D; ~0</span><br><span class="line">	cmpq	$__NR_syscall_max, %rax</span><br><span class="line">#else</span><br><span class="line">	andl	$__SYSCALL_MASK, %eax</span><br><span class="line">	cmpl	$__NR_syscall_max, %eax</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">	ja	1f				&#x2F;* return -ENOSYS (already in pt_regs-&gt;ax) *&#x2F;</span><br><span class="line">	movq	%r10, %rcx</span><br><span class="line"></span><br><span class="line">	&#x2F;*</span><br><span class="line">	 * This call instruction is handled specially in stub_ptregs_64.</span><br><span class="line">	 * It might end up jumping to the slow path.  If it jumps, RAX</span><br><span class="line">	 * and all argument registers are clobbered.</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	call	*sys_call_table(, %rax, 8)</span><br><span class="line">    </span><br><span class="line">......</span><br><span class="line"># ifdef CONFIG_X86_X32_ABI</span><br><span class="line">#  define __SYSCALL_MASK (~(__X32_SYSCALL_BIT))</span><br><span class="line"># else</span><br><span class="line">#  define __SYSCALL_MASK (~0)</span><br><span class="line"># endif</span><br><span class="line"></span><br><span class="line">#define __X32_SYSCALL_BIT    0x40000000</span><br></pre></td></tr></table></figure>
+
+<h4 id="slow-path分支"><a href="#slow-path分支" class="headerlink" title="slow_path分支"></a><code>slow_path</code>分支</h4><p>&emsp;&emsp;<code>slow_path</code>部分的源码如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">entry_SYSCALL64_slow_path:</span><br><span class="line">    &#x2F;* IRQs are off. *&#x2F;</span><br><span class="line">    SAVE_EXTRA_REGS</span><br><span class="line">    movq    %rsp, %rdi</span><br><span class="line">    call    do_syscall_64           &#x2F;* returns with IRQs disabled *&#x2F;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;<code>slow_path</code>会调用<code>entry_SYSCALL64_slow_pat-&gt;do_syscall_64()</code>，执行完毕后恢复寄存器，最后调用<code>USERGS_SYSRET64</code>，实际使用<code>sysretq</code>指令返回。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">return_from_SYSCALL_64:</span><br><span class="line">    RESTORE_EXTRA_REGS</span><br><span class="line">    TRACE_IRQS_IRETQ</span><br><span class="line">    movq  RCX(%rsp), %rcx</span><br><span class="line">    movq  RIP(%rsp), %r11</span><br><span class="line">    movq  R11(%rsp), %r11</span><br><span class="line">......</span><br><span class="line">syscall_return_via_sysret:</span><br><span class="line">    &#x2F;* rcx and r11 are already restored (see code above) *&#x2F;</span><br><span class="line">    RESTORE_C_REGS_EXCEPT_RCX_R11</span><br><span class="line">    movq  RSP(%rsp), %rsp</span><br><span class="line">    USERGS_SYSRET64</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;在 <code>do_syscall_64</code> 里面，从 <code>rax</code>里面拿出系统调用号，然后根据系统调用号，在系统调用表 sys_call_table 中找到相应的函数进行调用，并将寄存器中保存的参数取出来，作为函数参数。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">__visible <span class="keyword">void</span> <span class="title">do_syscall_64</span><span class="params">(struct pt_regs *regs)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">thread_info</span> *<span class="title">ti</span> = <span class="title">current_thread_info</span>();</span></span><br><span class="line">        <span class="keyword">unsigned</span> <span class="keyword">long</span> nr = regs-&gt;orig_ax;</span><br><span class="line">......</span><br><span class="line">        <span class="keyword">if</span> (likely((nr &amp; __SYSCALL_MASK) &lt; NR_syscalls)) &#123;</span><br><span class="line">                regs-&gt;ax = sys_call_table[nr &amp; __SYSCALL_MASK](</span><br><span class="line">                        regs-&gt;di, regs-&gt;si, regs-&gt;dx,</span><br><span class="line">                        regs-&gt;r10, regs-&gt;r8, regs-&gt;r9);</span><br><span class="line">        &#125;</span><br><span class="line">        syscall_return_slowpath(regs);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;至此，32位和64位又回到了同样的位置：查找系统调用表<code>sys_call_table</code>。</p>
+<h2 id="系统调用表的生成"><a href="#系统调用表的生成" class="headerlink" title="系统调用表的生成"></a>系统调用表的生成</h2><p>&emsp;&emsp;32位和64位的<code>sys_call_table</code>均位于<code>arch/x86/entry/syscalls/</code>目录下，分别为<a href="https://github.com/torvalds/linux/blob/16f73eb02d7e1765ccab3d2018e0bd98eb93d973/arch/x86/entry/syscalls/syscall_32.tbl" target="_blank" rel="noopener"><code>syscall_32.tbl</code></a>和<a href="https://github.com/torvalds/linux/blob/16f73eb02d7e1765ccab3d2018e0bd98eb93d973/arch/x86/entry/syscalls/syscall_64.tbl" target="_blank" rel="noopener"><code>syscall_64.tbl</code></a>。如下所示为32位和64位中<code>open</code>函数的定义</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">5</span> i386 <span class="built_in">open</span> sys_open compat_sys_open</span><br><span class="line"></span><br><span class="line"><span class="number">2</span> common <span class="built_in">open</span> sys_open</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;第一列的数字是系统调用号。可以看出，32 位和 64 位的系统调用号是不一样的。第三列是系统调用的名字，第四列是系统调用在内核的实现函数。不过，它们都是以 sys_ 开头。系统调用在内核中的实现函数要有一个声明。声明往往在 <a href="https://github.com/torvalds/linux/blob/16f73eb02d7e1765ccab3d2018e0bd98eb93d973/include/linux/syscalls.h" target="_blank" rel="noopener"><code>include/linux/syscalls.h</code></a>文件中。例如 <code>sys_open</code> 是这样声明的：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">asmlinkage <span class="keyword">long</span> <span class="title">sys_open</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> __user *filename,</span></span></span><br><span class="line"><span class="function"><span class="params">                                <span class="keyword">int</span> flags, <span class="keyword">umode_t</span> mode)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;真正的实现这个系统调用，一般在一个.c 文件里面，例如 <code>sys_open</code> 的实现在 <code>fs/open.c</code> 里面。其中采用了宏的方式对函数名进行了封装，实际拆开是一样的。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">SYSCALL_DEFINE3(<span class="built_in">open</span>, <span class="keyword">const</span> <span class="keyword">char</span> __user *, filename, <span class="keyword">int</span>, flags, <span class="keyword">umode_t</span>, mode)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (force_o_largefile())</span><br><span class="line">                flags |= O_LARGEFILE;</span><br><span class="line">    <span class="keyword">return</span> do_sys_open(AT_FDCWD, filename, flags, mode);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">......</span><br><span class="line"></span><br><span class="line"><span class="function">asmlinkage <span class="keyword">long</span> <span class="title">sys_open</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> __user * filename, <span class="keyword">int</span> flags, <span class="keyword">int</span> mode)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">long</span> ret;</span><br><span class="line">    </span><br><span class="line">	<span class="keyword">if</span> (force_o_largefile())</span><br><span class="line">		flags |= O_LARGEFILE;</span><br><span class="line">    </span><br><span class="line">	ret = do_sys_open(AT_FDCWD, filename, flags, mode);</span><br><span class="line">	asmlinkage_protect(<span class="number">3</span>, ret, filename, flags, mode);</span><br><span class="line">	<span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;其中SYSCALL_DEFINE3 是一个宏系统调用最多六个参数，根据参数的数目选择宏。具体是这样定义如下所示，首先使用<code>SYSCALL_METADATA()</code>宏解决<code>syscall_metada</code>结构体的初始化，该结构体包括了不同的有用区域包括系统调用的名字、系统调用表中对应的序号、系统调用的参数、参数类型链表等。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SYSCALL_DEFINE1(name, ...) SYSCALL_DEFINEx(1, _##name, __VA_ARGS__)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SYSCALL_DEFINE2(name, ...) SYSCALL_DEFINEx(2, _##name, __VA_ARGS__)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SYSCALL_DEFINE3(name, ...) SYSCALL_DEFINEx(3, _##name, __VA_ARGS__)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SYSCALL_DEFINE4(name, ...) SYSCALL_DEFINEx(4, _##name, __VA_ARGS__)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SYSCALL_DEFINE5(name, ...) SYSCALL_DEFINEx(5, _##name, __VA_ARGS__)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SYSCALL_DEFINE6(name, ...) SYSCALL_DEFINEx(6, _##name, __VA_ARGS__)</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SYSCALL_DEFINEx(x, sname, ...)                          		\</span></span><br><span class="line">        SYSCALL_METADATA(sname, x, __VA_ARGS__)                 		\</span><br><span class="line">        __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> __PROTECT(...) asmlinkage_protect(__VA_ARGS__)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> __SYSCALL_DEFINEx(x, name, ...)                                 \</span></span><br><span class="line">        asmlinkage <span class="keyword">long</span> sys#<span class="meta">#name(__MAP(x,__SC_DECL,__VA_ARGS__))       \</span></span><br><span class="line">                __attribute__((alias(__stringify(SyS##name))));         \</span><br><span class="line">        <span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">long</span> SYSC#<span class="meta">#name(__MAP(x,__SC_DECL,__VA_ARGS__));  \</span></span><br><span class="line">        asmlinkage <span class="keyword">long</span> SyS#<span class="meta">#name(__MAP(x,__SC_LONG,__VA_ARGS__));      \</span></span><br><span class="line">        asmlinkage <span class="keyword">long</span> SyS#<span class="meta">#name(__MAP(x,__SC_LONG,__VA_ARGS__))       \</span></span><br><span class="line">        &#123;                                                               \</span><br><span class="line">                <span class="keyword">long</span> ret = SYSC##name(__MAP(x,__SC_CAST,__VA_ARGS__));  \</span><br><span class="line">                __MAP(x,__SC_TEST,__VA_ARGS__);                         \</span><br><span class="line">                __PROTECT(x, ret,__MAP(x,__SC_ARGS,__VA_ARGS__));       \</span><br><span class="line">                <span class="keyword">return</span> ret;                                             \</span><br><span class="line">        &#125;                                                               \</span><br><span class="line">        <span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">long</span> SYSC#<span class="meta">#name(__MAP(x,__SC_DECL,__VA_ARGS__)</span></span><br><span class="line"></span><br><span class="line">..........</span><br><span class="line">    </span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SYSCALL_METADATA(sname, nb, ...)                             \</span></span><br><span class="line">    ...                                                              \</span><br><span class="line">    ...                                                              \</span><br><span class="line">    ...                                                              \</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">syscall_metadata</span> __<span class="title">used</span>                                   \</span></span><br><span class="line"><span class="class">              __<span class="title">syscall_meta_</span>##<span class="title">sname</span> = &#123;</span>                             \</span><br><span class="line">                    .name           = <span class="string">"sys"</span>#sname,                   \</span><br><span class="line">                    .syscall_nr     = <span class="number">-1</span>,                            \</span><br><span class="line">                    .nb_args        = nb,                            \</span><br><span class="line">                    .types          = nb ? types_##sname : <span class="literal">NULL</span>,     \</span><br><span class="line">                    .args           = nb ? args_##sname : <span class="literal">NULL</span>,      \</span><br><span class="line">                    .enter_event    = &amp;event_enter_##sname,          \</span><br><span class="line">                    .exit_event     = &amp;event_exit_##sname,           \</span><br><span class="line">                    .enter_fields   = LIST_HEAD_INIT(__syscall_meta_##sname.enter_fields), 				   \</span><br><span class="line">             &#125;;                                                                            																		\</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">struct</span> <span class="title">syscall_metadata</span> __<span class="title">used</span>                            \</span></span><br><span class="line"><span class="class">              __<span class="title">attribute__</span>((<span class="title">section</span>("__<span class="title">syscalls_metadata</span>")))        \</span></span><br><span class="line"><span class="class">             *__<span class="title">p_syscall_meta_</span>##<span class="title">sname</span> = &amp;__<span class="title">syscall_meta_</span>##<span class="title">sname</span>;</span></span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;在编译的过程中，需要根据 <code>syscall_32.tbl</code> 和 <code>syscall_64.tbl</code> 生成自己的<code>syscalls_32.h</code> 和 <code>syscalls_64.h</code>。生成方式在 <code>arch/x86/entry/syscalls/Makefile</code> 中。这里面会使用两个脚本</p>
+<ul>
+<li><p>第一个脚本<code>arch/x86/entry/syscalls/syscallhdr.sh</code>，会在文件中生成 <code>#define __NR_open；</code></p>
+</li>
+<li><p>第二个脚本 <code>arch/x86/entry/syscalls/syscalltbl.sh</code>，会在文件中生成<code>__SYSCALL(__NR_open, sys_open)</code>。</p>
+<p>这样最终生成<code>syscalls_32.h</code> 和 <code>syscalls_64.h</code> 就保存了系统调用号和系统调用实现函数之间的对应关系，如下所示</p>
+</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">__SYSCALL_COMMON(<span class="number">0</span>, sys_read, sys_read)</span><br><span class="line">__SYSCALL_COMMON(<span class="number">1</span>, sys_write, sys_write)</span><br><span class="line">__SYSCALL_COMMON(<span class="number">2</span>, sys_open, sys_open)</span><br><span class="line">__SYSCALL_COMMON(<span class="number">3</span>, sys_close, sys_close)</span><br><span class="line">__SYSCALL_COMMON(<span class="number">5</span>, sys_newfstat, sys_newfstat)</span><br><span class="line">...</span><br><span class="line">...</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;其中<code>__SYSCALL_COMMON</code>宏定义如下，主要是将对应的数字序号和系统调用名对应</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> __SYSCALL_COMMON(nr, sym, compat) __SYSCALL_64(nr, sym, compat)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> __SYSCALL_64(nr, sym, compat) [nr] = sym,</span></span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;最终形成的表如下</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">asmlinkage <span class="keyword">const</span> <span class="keyword">sys_call_ptr_t</span> sys_call_table[__NR_syscall_max+<span class="number">1</span>] = &#123;</span><br><span class="line">    [<span class="number">0</span> ... __NR_syscall_max] = &amp;sys_ni_syscall,</span><br><span class="line">    [<span class="number">0</span>] = sys_read,</span><br><span class="line">    [<span class="number">1</span>] = sys_write,</span><br><span class="line">    [<span class="number">2</span>] = sys_open,</span><br><span class="line">    ...</span><br><span class="line">    ...</span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;最后，所有的系统调用会存储在<code>arch/x86/entry/</code>目录下的<a href="https://github.com/torvalds/linux/blob/16f73eb02d7e1765ccab3d2018e0bd98eb93d973/arch/x86/entry/syscall_32.c" target="_blank" rel="noopener"><code>syscall_32.c</code></a>和<a href="https://github.com/torvalds/linux/blob/16f73eb02d7e1765ccab3d2018e0bd98eb93d973/arch/x86/entry/syscall_64.c" target="_blank" rel="noopener"><code>syscall_64.c</code></a>中，里面包含了<code>syscalls_32.h</code> 和 <code>syscalls_64.h</code> 头文件，其形式如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">__visible <span class="keyword">const</span> <span class="keyword">sys_call_ptr_t</span> ia32_sys_call_table[__NR_syscall_compat_max+<span class="number">1</span>] = &#123;</span><br><span class="line">        <span class="comment">/*</span></span><br><span class="line"><span class="comment">         * Smells like a compiler bug -- it doesn't work</span></span><br><span class="line"><span class="comment">         * when the &amp; below is removed.</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        [<span class="number">0</span> ... __NR_syscall_compat_max] = &amp;sys_ni_syscall,</span><br><span class="line">#include &lt;<span class="keyword">asm</span>/syscalls_32.h&gt;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* System call table for x86-64. */</span></span><br><span class="line">asmlinkage <span class="keyword">const</span> <span class="keyword">sys_call_ptr_t</span> sys_call_table[__NR_syscall_max+<span class="number">1</span>] = &#123;</span><br><span class="line">  <span class="comment">/*</span></span><br><span class="line"><span class="comment">   * Smells like a compiler bug -- it doesn't work</span></span><br><span class="line"><span class="comment">   * when the &amp; below is removed.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  [<span class="number">0</span> ... __NR_syscall_max] = &amp;sys_ni_syscall,</span><br><span class="line">#include &lt;<span class="keyword">asm</span>/syscalls_64.h&gt;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;其中<code>__NR_syscall_max</code>宏定义规定了最大系统调用数量，该数量取决于<a href="https://en.wikipedia.org/wiki/Comparison_of_instruction_set_architectures" target="_blank" rel="noopener">操作系统的架构</a>，在X86下定义如下</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> __NR_syscall_max 547</span></span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;这里还需要注意<code>sys_call_ptr_t</code>表示指向系统调用表的指针，定义为函数指针</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">typedef</span> <span class="title">void</span> <span class="params">(*<span class="keyword">sys_call_ptr_t</span>)</span><span class="params">(<span class="keyword">void</span>)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;系统调用表数组中的每一个系统调用均会指向<code>sys_ni_syscall</code>，该函数表示一个未实现的系统调用（not-implement），从而系统调用表的初始化。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">asmlinkage <span class="keyword">long</span> <span class="title">sys_ni_syscall</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> -ENOSYS;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">ENOSYS Function <span class="keyword">not</span> <span class="title">implemented</span> <span class="params">(POSIX<span class="number">.1</span>)</span></span></span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;由此，整个系统调用表的生成过程就全部说明完了，而在实际产生系统调用的时候，过程则刚好相反：</p>
+<ul>
+<li>用户态调用<code>syscall</code></li>
+<li><code>syscall</code>导致中断，程序由用户态陷入内核态</li>
+<li>内核C函数执行<code>syscalls_32/64.c</code>，并由此获得对应关系最终在对应的源码中找到函数实现</li>
+<li>针对对应的<code>sys_syscall_name</code>函数，做好调用准备工作，如初始化系统调用入口、保存寄存器、切换新的栈、构造新的task以备中断回调等。</li>
+<li>调用函数实现</li>
+<li>切换寄存器、栈，返回用户态</li>
+</ul>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>&emsp;&emsp;本文较为深入的分析了系统调用的整个过程，并着重分析了系统调用表的形成和使用原理，如有遗漏错误还请多多指正。</p>
+<h2 id="源码资料"><a href="#源码资料" class="headerlink" title="源码资料"></a>源码资料</h2><p>[1] <a href="https://github.com/torvalds/linux/tree/16f73eb02d7e1765ccab3d2018e0bd98eb93d973" target="_blank" rel="noopener">linux</a>/<a href="https://github.com/torvalds/linux/tree/16f73eb02d7e1765ccab3d2018e0bd98eb93d973/arch" target="_blank" rel="noopener">arch</a>/<a href="https://github.com/torvalds/linux/tree/16f73eb02d7e1765ccab3d2018e0bd98eb93d973/arch/x86" target="_blank" rel="noopener">x86</a>/<a href="https://github.com/torvalds/linux/tree/16f73eb02d7e1765ccab3d2018e0bd98eb93d973/arch/x86/entry" target="_blank" rel="noopener"><strong>entry</strong></a>/</p>
+<p>[2] <a href="https://github.com/torvalds/linux/tree/16f73eb02d7e1765ccab3d2018e0bd98eb93d973" target="_blank" rel="noopener">linux</a>/<a href="https://github.com/torvalds/linux/tree/16f73eb02d7e1765ccab3d2018e0bd98eb93d973/arch" target="_blank" rel="noopener">arch</a>/<a href="https://github.com/torvalds/linux/tree/16f73eb02d7e1765ccab3d2018e0bd98eb93d973/arch/x86" target="_blank" rel="noopener">x86</a>/<a href="https://github.com/torvalds/linux/tree/16f73eb02d7e1765ccab3d2018e0bd98eb93d973/arch/x86/kernel" target="_blank" rel="noopener">kernel</a>/<a href="https://github.com/torvalds/linux/tree/16f73eb02d7e1765ccab3d2018e0bd98eb93d973/arch/x86/kernel/cpu" target="_blank" rel="noopener">cpu</a>/<a href="https://github.com/torvalds/linux/blob/16f73eb02d7e1765ccab3d2018e0bd98eb93d973/arch/x86/kernel/cpu/common.c#L1335" target="_blank" rel="noopener"><strong>common.c</strong></a></p>
+<p>[3] <a href="https://github.com/torvalds/linux/tree/16f73eb02d7e1765ccab3d2018e0bd98eb93d973" target="_blank" rel="noopener">linux</a>/<a href="https://github.com/torvalds/linux/tree/16f73eb02d7e1765ccab3d2018e0bd98eb93d973/include" target="_blank" rel="noopener">include</a>/<a href="https://github.com/torvalds/linux/tree/16f73eb02d7e1765ccab3d2018e0bd98eb93d973/include/linux" target="_blank" rel="noopener">linux</a>/<a href="https://github.com/torvalds/linux/blob/16f73eb02d7e1765ccab3d2018e0bd98eb93d973/include/linux/syscalls.h" target="_blank" rel="noopener"><strong>syscalls.h</strong></a></p>
+<p>[4] <a href="https://github.com/torvalds/linux/tree/16f73eb02d7e1765ccab3d2018e0bd98eb93d973" target="_blank" rel="noopener">linux</a>/<a href="https://github.com/torvalds/linux/tree/16f73eb02d7e1765ccab3d2018e0bd98eb93d973/arch" target="_blank" rel="noopener">arch</a>/<a href="https://github.com/torvalds/linux/tree/16f73eb02d7e1765ccab3d2018e0bd98eb93d973/arch/x86" target="_blank" rel="noopener">x86</a>/<a href="https://github.com/torvalds/linux/tree/16f73eb02d7e1765ccab3d2018e0bd98eb93d973/arch/x86/include" target="_blank" rel="noopener">include</a>/<a href="https://github.com/torvalds/linux/tree/16f73eb02d7e1765ccab3d2018e0bd98eb93d973/arch/x86/include/asm" target="_blank" rel="noopener">asm</a>/<a href="https://github.com/torvalds/linux/blob/16f73eb02d7e1765ccab3d2018e0bd98eb93d973/arch/x86/include/asm/thread_info.h" target="_blank" rel="noopener"><strong>thread_info.h</strong></a></p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1] Linux-insides</p>
+<p>[2] 深入理解Linux内核源码</p>
+<p>[3] Linux内核设计的艺术</p>
+<p>[4] 极客时间 趣谈Linux操作系统</p>
+<p>[5] Intel® 64 and IA-32 Architectures Software Developer Manuals</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>坚持原创，坚持分享，谢谢鼓励和支持</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.png" alt="Ty Chen 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="Ty Chen 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    Ty Chen
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://ty-chen.github.io/linux-kernel-system-call/" title="Linux操作系统学习笔记（四）系统调用">https://ty-chen.github.io/linux-kernel-system-call/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Linux/" rel="tag"># Linux</a>
+          
+            <a href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" rel="tag"># 操作系统</a>
+          
+            <a href="/tags/syscall/" rel="tag"># syscall</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/linux-kernel-zero-process/" rel="next" title="Linux操作系统学习笔记（三）内核初始化">
+                <i class="fa fa-chevron-left"></i> Linux操作系统学习笔记（三）内核初始化
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/linux-kernel-task-struct/" rel="prev" title="Linux操作系统学习笔记（五）进程的核心——task_truct">
+                Linux操作系统学习笔记（五）进程的核心——task_truct <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/me.JPG"
+                alt="Ty Chen" />
+            
+              <p class="site-author-name" itemprop="name">Ty Chen</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">11</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">23</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/Ty-Chen" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:tianyuch@hotmail.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                Friends
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://example.com/" title="Stanleylsx" target="_blank">Stanleylsx</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GLIBC标准库的调用"><span class="nav-number">2.</span> <span class="nav-text">GLIBC标准库的调用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#32位系统调用过程"><span class="nav-number">2.1.</span> <span class="nav-text">32位系统调用过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#64位系统调用过程"><span class="nav-number">2.2.</span> <span class="nav-text">64位系统调用过程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#fastpath分支"><span class="nav-number">2.2.1.</span> <span class="nav-text">fastpath分支</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#slow-path分支"><span class="nav-number">2.2.2.</span> <span class="nav-text">slow_path分支</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#系统调用表的生成"><span class="nav-number">3.</span> <span class="nav-text">系统调用表的生成</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源码资料"><span class="nav-number">5.</span> <span class="nav-text">源码资料</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-number">6.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ty Chen</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">Site words total count&#58;</span>
+    
+    <span title="Site words total count">32.5k</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+<div class="busuanzi-count">
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+	</script>
+
+  
+    <span class="site-uv">
+      你是来访的第
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      位同学
+    </span>
+  
+
+  
+    <span class="site-pv">
+      访问次数：
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item=>{
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'aTqo2eFkO2Bn0AGX008uKDV7-gzGzoHsz',
+        appKey: 'uJ6nxqW7RHWpAILCtttkJfJu',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

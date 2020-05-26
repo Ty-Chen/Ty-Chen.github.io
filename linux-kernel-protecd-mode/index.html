@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/kulamati128.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/kulamati32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/kulamati16.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Linux,操作系统,实模式,保护模式," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="前言&amp;emsp;&amp;emsp;上文中，我们分析了从按下电源键到BootLoader完成加载的过程。加载完成之后，就要正式启动Linux内核了，而在这之前首先要完成从实模式到保护模式的切换。本文主要分析以下几部分内容  新旧中断的交替 打开A20 进入main函数 内核初始化  &amp;emsp;&amp;emsp;其实整个过程中还有很多内容，比如检查各种硬件设备等，在此略过不提。下面就开始潜入Linux源码的海洋">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux操作系统学习笔记（二）内核运行">
+<meta property="og:url" content="https://ty-chen.github.io/linux-kernel-protecd-mode/index.html">
+<meta property="og:site_name" content="Ty-Chen&#39;s Home">
+<meta property="og:description" content="前言&amp;emsp;&amp;emsp;上文中，我们分析了从按下电源键到BootLoader完成加载的过程。加载完成之后，就要正式启动Linux内核了，而在这之前首先要完成从实模式到保护模式的切换。本文主要分析以下几部分内容  新旧中断的交替 打开A20 进入main函数 内核初始化  &amp;emsp;&amp;emsp;其实整个过程中还有很多内容，比如检查各种硬件设备等，在此略过不提。下面就开始潜入Linux源码的海洋">
+<meta property="article:published_time" content="2020-04-26T11:59:35.000Z">
+<meta property="article:modified_time" content="2020-05-21T16:45:34.716Z">
+<meta property="article:author" content="Ty Chen">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="操作系统">
+<meta property="article:tag" content="实模式">
+<meta property="article:tag" content="保护模式">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"hide","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://ty-chen.github.io/linux-kernel-protecd-mode/"/>
+
+
+
+
+
+  <title>Linux操作系统学习笔记（二）内核运行 | Ty-Chen's Home</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Ty-Chen's Home</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Collecting, sharing and creating knowledge</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://ty-chen.github.io/linux-kernel-protecd-mode/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Ty Chen">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/me.JPG">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ty-Chen's Home">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Linux操作系统学习笔记（二）内核运行</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-04-26T19:59:35+08:00">
+                2020-04-26
+              </time>
+            
+
+            
+
+            
+          </span>
+          
+            <span class="post-updated">
+              &nbsp; | &nbsp; 更新于
+              <time itemprop="dateUpdated" datetime="2020-05-22T00:45:34+08:00" content="2020-05-22">
+                2020-05-22
+              </time>
+            </span>
+          
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%86%85%E6%A0%B8%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index">
+                    <span itemprop="name">Linux操作系统内核学习</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/linux-kernel-protecd-mode/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/linux-kernel-protecd-mode/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">访问次数：
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>次
+            </span>
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  3.2k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  11
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>&emsp;&emsp;上文中，我们分析了从按下电源键到BootLoader完成加载的过程。加载完成之后，就要正式启动Linux内核了，而在这之前首先要完成从实模式到保护模式的切换。本文主要分析以下几部分内容</p>
+<ul>
+<li>新旧中断的交替</li>
+<li>打开A20</li>
+<li>进入main函数</li>
+<li>内核初始化</li>
+</ul>
+<p>&emsp;&emsp;其实整个过程中还有很多内容，比如检查各种硬件设备等，在此略过不提。下面就开始潜入Linux源码的海洋畅游啦。</p>
+<a id="more"></a>
+
+<h2 id="新旧中断的交替"><a href="#新旧中断的交替" class="headerlink" title="新旧中断的交替"></a>新旧中断的交替</h2><p>&emsp;&emsp;在实模式下的中断显然不可以和保护模式的中断同日而语，因此我们需要关闭旧的中断（cli）并确立新的中断（sti）。<code>main</code>函数能够适应保护模式的中断服务体系被重建完毕才会打开中断，而那时候响应中断的服务程序将不再是BIOS提供的中断服务程序，取而代之的是由系统自身提供的中断服务程序。</p>
+<p>&emsp;&emsp;cli、sti总是在一个完整操作过程的两头出现，目的是避免中断在此期间的介入。接下来的代码将为操作系统进入保护模式做准备。此处即将进行实模式下中断向量表和保护模式下<a href="https://en.wikipedia.org/wiki/Interrupt_descriptor_table" target="_blank" rel="noopener">中断描述符表</a>（IDT）的交接工作。试想，如果没有cli，又恰好发生中断，如用户不小心碰了一下键盘，中断就要切进来，就不得不面对实模式的中断机制已经废除、保护模式的中断机制尚未完成的尴尬局面，结果就是系统崩溃。cli、sti保证了这个过程中，IDT能够完整创建，以避免不可预料中断的进入造成IDT创建不完整或新老中断机制混用。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">#boot&#x2F;setup.s</span><br><span class="line">……</span><br><span class="line">do _move：</span><br><span class="line">mov es,ax！destination segment</span><br><span class="line">add ax，#0x1000</span><br><span class="line">cmp ax，#0x9000</span><br><span class="line">jz end_move</span><br><span class="line">mov ds,ax！source segment</span><br><span class="line">sub di,di</span><br><span class="line">sub si,si</span><br><span class="line">mov cx，#0x8000</span><br><span class="line">rep</span><br><span class="line">movsw</span><br><span class="line">jmp do_move</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;如上代码主要完成了一项工作：将位于0x10000处的内核程序复制至内存地址起始位置0x00000处。在上一节我们分析了实模式中的存储分布图，在此位置原来存放着由BIOS建立的中断向量表及BIOS数据区。这个复制动作将BIOS中断向量表和BIOS数据区完全覆盖，使它们不复存在。这样做的好处如下：</p>
+<ol>
+<li>废除BIOS的中断向量表，等同于废除了BIOS提供的实模式下的中断服务程序。</li>
+<li>收回刚刚结束使用寿命的程序所占内存空间。</li>
+<li>让内核代码占据内存物理地址最开始的、天然的、有利的位置。</li>
+</ol>
+<p>&emsp;&emsp;此时，重要角色要登场了，他们就是中断描述符表IDT和<a href="https://en.wikipedia.org/wiki/Global_Descriptor_Table" target="_blank" rel="noopener">全局描述符表GDT</a>。</p>
+<ul>
+<li><p>GDT（Global Descriptor Table，全局描述符表），在系统中唯一的存放段寄存器内容（段描述符）的数组，配合程序进行保护模式下的段寻址。它在操作系统的进程切换中具有重要意义，可理解为所有进程的总目录表，其中存放每一个任务（task）局部描述符表（LDT, Local Descriptor Table）地址和任务状态段（TSS, Task Structure Segment）地址，完成进程中各段的寻址、现场保护与现场恢复。GDTR是GDT基地址寄存器，当程序通过段寄存器引用一个段描述符时，需要取得GDT的入口，GDTR标识的即为此入口。在操作系统对GDT的初始化完成后，可以用LGDT（Load GDT）指令将GDT基地址加载至GDTR。</p>
+</li>
+<li><p>IDT（Interrupt Descriptor Table，中断描述符表），保存保护模式下所有中断服务程序的入口地址，类似于实模式下的中断向量表。IDTR（IDT基地址寄存器），保存IDT的起始地址。</p>
+</li>
+</ul>
+<p>&emsp;&emsp;32位的中断机制和16位的中断机制，在原理上有比较大的差别。最明显的是16位的中断机制用的是中断向量表，中断向量表的起始位置在0x00000处，这个位置是固定的；32位的中断机制用的是中断描述符表（IDT），位置是不固定的，可以由操作系统的设计者根据设计要求灵活安排，由IDTR来锁定其位置。GDT是保护模式下管理段描述符的数据结构，对操作系统自身的运行以及管理、调度进程有重大意义。</p>
+<p>&emsp;&emsp;此时此刻内核尚未真正运行起来，还没有进程，所以现在创建的GDT第一项为空，第二项为内核代码段描述符，第三项为内核数据段描述符，其余项皆为空。IDT虽然已经设置，实为一张空表，原因是目前已关中断，无需调用中断服务程序。此处反映的是数据“够用即得”的思想。</p>
+<p>创建这两个表的过程可理解为是分两步进行的：</p>
+<ol>
+<li>在设计内核代码时，已经将两个表写好，并且把需要的数据也写好。此处的数据区域是在内核源代码中设定、编译并直接加载至内存形成的一块数据区域。专用寄存器的指向由程序中的lidt和lgdt指令完成</li>
+<li>将专用寄存器（IDTR、GDTR）指向表。</li>
+</ol>
+<h2 id="A20"><a href="#A20" class="headerlink" title="A20"></a>A20</h2><p>&emsp;&emsp;A20启用是一个标志性的动作，由上文提到的lzma_decompress.img 调用 <code>real_to_prot</code>启动。打开A20，意味着CPU可以进行32位寻址，最大寻址空间为4 GB。注意图1-19中内存条范围的变化：从5个F扩展到8个F，即0xFFFFFFFF(4 GB)。</p>
+<p>&emsp;&emsp;实模式下，当程序寻址超过0xFFFFF时，CPU将“回滚”至内存地址起始处寻址（注意，在只有20根地址线的条<br>件下，0xFFFFF+1=0x00000，最高位溢出）。例如，系统的段寄存器（如CS）的最大允许地址为0xFFFF，指令指针（IP）的最大允许段内偏移也为0xFFFF，两者确定的最大绝对地址为0x10FFEF，这将意味着程序中可产生的实模式下的寻址范围比1 MB多出将近64 KB（一些特殊寻址要求的程序就利用了这个特点）。这样，此处对A20地址线的启用相当于关闭CPU在实模式下寻址的“回滚”机制。如下所示为利用此特点来验证A20地址线是否确实已经打开。注意此处代码并不在此时运行，而是在后续head运行过程中为了检测是否处于保护模式中使用。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">#boot&#x2F;head.s</span><br><span class="line">……</span><br><span class="line">xorl %eax，%eax</span><br><span class="line">1：incl%eax#check that A20 really IS enabled</span><br><span class="line">movl %eax，0x000000#loop forever if it isn&#39;t</span><br><span class="line">cmpl %eax，0x100000</span><br><span class="line">je 1b</span><br><span class="line">……</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;A20如果没打开，则计算机处于20位的寻址模式，超过0xFFFFF寻址必然“回滚”。一个特例是0x100000会回滚到0x000000，也就是说，地址0x100000处存储的值必然和地址0x000000处存储的值完全相同。通过在内存0x000000位置写入一个数据，然后比较此处和1 MB（0x100000，注意，已超过实模式寻址范围）处数据是否一致，就可以检验A20地址线是否已打开。</p>
+<h2 id="进入main函数"><a href="#进入main函数" class="headerlink" title="进入main函数"></a>进入main函数</h2><p>&emsp;&emsp;这里涉及到一个硬件知识：在X86体系中，采用的终端控制芯片名为8259A，此芯片，是可以用程序控制的中断控制器。单个的8259A能管理8级向量优先级中断，在不增加其他电路的情况下，最多可以级联成64级的向量优先级中断系统。CPU在保护模式下，int 0x00～int 0x1F被Intel保留作为内部（不可屏蔽）中断和异常中断。如果不对8259A进行重新编程，int 0x00～int 0x1F中断将被覆盖。例如，IRQ0（时钟中断）为8号（int 0x08）中断，但在保护模式下此中断号是Intel保留的“Double Fault”（双重故障）。因此，必须通过8259A编程将原来的IRQ0x00～IRQ0x0F对应的中断号重新分布，即在保护模式下，IRQ0x00～IRQ0x0F的中断号是int 0x20～int 0x2F。</p>
+<p>&emsp;&emsp;setup程序通过下面代码将CPU工作方式设为保护模式。这里涉及到一个CR0寄存器：0号32位控制寄存器，放系统控制标志。第0位为<a href="https://en.wikipedia.org/wiki/Portable_Executable" target="_blank" rel="noopener">PE（Protected Mode Enable，保护模式使能）标志</a>，置1时CPU工作在保护模式下，置0时为实模式。将CR0寄存器第0位（PE）置1，即设定处理器工作方式为保护模式。CPU工作方式转变为保护模式，一个重要的特征就是要根据GDT决定后续执行哪里的程序。前文提到GDT初始时已写好了数据，这些将用来完成从setup程序到head程序的跳转。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#boot&#x2F;setup.s</span><br><span class="line">mov ax，#0x0001！protected mode（PE）bit</span><br><span class="line">lmsw ax！This is it！</span><br><span class="line">jmpi 0，8！jmp offset 0 of segment 8（cs）</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;head程序是进入main之前的最后一步了。head在空间创建了内核分页机制，即在0x000000的位置创建了页目录表、页表、缓冲区、GDT、IDT，并将head程序已经执行过的代码所占内存空间覆盖。这意味着head程序自己将自己废弃，main函数即将开始执行。具体的分页机制因为较为复杂，所以打算<strong>放在后续介绍内存管理的部分再单独介绍</strong>。</p>
+<p>&emsp;&emsp;head构造IDT，使中断机制的整体架构先搭建起来（实际的中断服务程序挂接则在main函数中完成），并使所有中断服务程序指向同一段只显示一行提示信息就返回的服务程序。从编程技术上讲，这种初始化操作，既可以防止无意中覆盖代码或数据而引起的逻辑混乱，也可以对开发过程中的误操作给出及时的提示。IDT有256个表项，实际只使用了几十个，对于误用未使用的中断描述符，这样的提示信息可以提醒开发人员注意错误。</p>
+<p>&emsp;&emsp;除此之外，head程序要废除已有的GDT，并在内核中的新位置重新创建GDT。原来GDT所在的位置是设计代码时在setup.s里面设置的数据，将来这个setup模块所在的内存位置会在设计缓冲区时被覆盖。如果不改变位置，将来GDT的内容肯定会被缓冲区覆盖掉，从而影响系统的运行。这样一来，将来整个内存中唯一安全的地方就是现在head.s所在的位置了。</p>
+<p>&emsp;&emsp;下来步骤主要包括</p>
+<ol>
+<li><p>初始化段寄存器和堆栈</p>
+<p>主要包括将DS和ES寄存器指向相同的地址，并将DS和CS设置为相同的值。</p>
+</li>
+<li><p>清零eflag寄存器以及内核未初始化数据区</p>
+</li>
+<li><p>调用<code>decompress_kernel()</code>解压内核映像并跳转至0X00100000处。</p>
+</li>
+<li><p>段寄存器初始化为最终值并填充BSS字段为0</p>
+</li>
+<li><p>初始化临时内核页表</p>
+</li>
+</ol>
+<p>&emsp;&emsp;最终完成了分页机制初始化后，PG（Paging) 标志位将会置1，表示地址映射模式采取分页机制，最终跳转至main函数，内核开始初始化工作。</p>
+<h2 id="内核初始化"><a href="#内核初始化" class="headerlink" title="内核初始化"></a>内核初始化</h2><p>&emsp;&emsp;注意，至此为止，我们尚未打开中断，而必须通过main函数完成一系列的初始化后才会打开新的中断，从而使内核正式运行起来。该部分主要包括：</p>
+<ol>
+<li><p>为进程0建立内核态堆栈</p>
+</li>
+<li><p>清零eflags寄存器</p>
+</li>
+<li><p>调用<code>setup_idt()</code>用空的中断处理程序填充IDT</p>
+</li>
+<li><p>把BIOS中获得的参数传递给第一个页框</p>
+</li>
+<li><p>用GDT和IDT表填充寄存器</p>
+</li>
+</ol>
+<p>&emsp;&emsp;完成这些之后，内核就正式运行，开始创建0号进程了。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>&emsp;&emsp;本文介绍了实模式到保护模式的整个切换过程，完成了内核的加载并开始正式准备创建0号进程。后续将继续分析启动内核创建0号、1号、2号进程的整个过程。本文介绍过程中忽略了很多汇编代码以及一些虽然很重要但是不属于基本流程的知识，有兴趣了解的可以根据文中链接、文末的源码和参考资料进行更深入的学习研究。</p>
+<h2 id="源码资料"><a href="#源码资料" class="headerlink" title="源码资料"></a>源码资料</h2><p>[1] <a href="https://www.gnu.org/software/grub/" target="_blank" rel="noopener">GURB 2</a></p>
+<p>[2] <a href="http://www.syslinux.org/wiki/index.php/The_Syslinux_Project" target="_blank" rel="noopener">syslinux</a></p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1] Linux-insides</p>
+<p>[2] 深入理解Linux内核源码</p>
+<p>[3] Linux内核设计的艺术</p>
+<p>[4] 极客时间 趣谈Linux操作系统</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>坚持原创，坚持分享，谢谢鼓励和支持</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.png" alt="Ty Chen 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="Ty Chen 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    Ty Chen
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://ty-chen.github.io/linux-kernel-protecd-mode/" title="Linux操作系统学习笔记（二）内核运行">https://ty-chen.github.io/linux-kernel-protecd-mode/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Linux/" rel="tag"># Linux</a>
+          
+            <a href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" rel="tag"># 操作系统</a>
+          
+            <a href="/tags/%E5%AE%9E%E6%A8%A1%E5%BC%8F/" rel="tag"># 实模式</a>
+          
+            <a href="/tags/%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F/" rel="tag"># 保护模式</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/linux-kernel-bootstrap/" rel="next" title="Linux操作系统学习笔记（一）启动">
+                <i class="fa fa-chevron-left"></i> Linux操作系统学习笔记（一）启动
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/linux-kernel-zero-process/" rel="prev" title="Linux操作系统学习笔记（三）内核初始化">
+                Linux操作系统学习笔记（三）内核初始化 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/me.JPG"
+                alt="Ty Chen" />
+            
+              <p class="site-author-name" itemprop="name">Ty Chen</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">11</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">23</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/Ty-Chen" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:tianyuch@hotmail.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                Friends
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://example.com/" title="Stanleylsx" target="_blank">Stanleylsx</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#新旧中断的交替"><span class="nav-number">2.</span> <span class="nav-text">新旧中断的交替</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#A20"><span class="nav-number">3.</span> <span class="nav-text">A20</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#进入main函数"><span class="nav-number">4.</span> <span class="nav-text">进入main函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#内核初始化"><span class="nav-number">5.</span> <span class="nav-text">内核初始化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源码资料"><span class="nav-number">7.</span> <span class="nav-text">源码资料</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-number">8.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ty Chen</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">Site words total count&#58;</span>
+    
+    <span title="Site words total count">32.5k</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+<div class="busuanzi-count">
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+	</script>
+
+  
+    <span class="site-uv">
+      你是来访的第
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      位同学
+    </span>
+  
+
+  
+    <span class="site-pv">
+      访问次数：
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item=>{
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'aTqo2eFkO2Bn0AGX008uKDV7-gzGzoHsz',
+        appKey: 'uJ6nxqW7RHWpAILCtttkJfJu',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
