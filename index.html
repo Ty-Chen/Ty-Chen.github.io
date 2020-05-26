@@ -276,7 +276,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/linux-kernel-schedule/" itemprop="url">Linux操作系统学习笔记（七）进程调度</a></h1>
+                <a class="post-title-link" href="/linux-kernel-schedule/" itemprop="url">Linux操作系统学习笔记（七）任务调度</a></h1>
         
 
         <div class="post-meta">
@@ -300,8 +300,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-05-25T23:49:23+08:00" content="2020-05-25">
-                2020-05-25
+              <time itemprop="dateUpdated" datetime="2020-05-26T23:20:38+08:00" content="2020-05-26">
+                2020-05-26
               </time>
             </span>
           
@@ -359,7 +359,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  95
+                  142
                 </span>
               
 
@@ -397,7 +397,7 @@
 
       
         
-          <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>&emsp;&emsp;在前文中，我们分析了内核中进程和线程的统一结构体<code>task_struct</code>，并分析进程、线程的创建和派生的过程。在本文中，我们会对进程间调度进行详细剖析，了解其原理和整个执行过程。由此，进程、线程部分的大体框架就算是介绍完了。</p>
+          <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>&emsp;&emsp;在前文中，我们分析了内核中进程和线程的统一结构体<code>task_struct</code>，并分析进程、线程的创建和派生的过程。在本文中，我们会对任务间调度进行详细剖析，了解其原理和整个执行过程。由此，进程、线程部分的大体框架就算是介绍完了。本节主要分为三个部分，调度的基本结构体，调度发生的整个流程以及Linux内核中常见的调度策略。</p>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/linux-kernel-schedule/#more" rel="contents">
@@ -2371,7 +2371,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">32.5k</span>
+    <span title="Site words total count">32.6k</span>
   
 </div>
 
