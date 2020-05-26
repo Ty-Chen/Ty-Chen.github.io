@@ -2,6 +2,27 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://ty-chen.github.io/linux-kernel-task-struct/</loc>
+    
+    <lastmod>2020-05-25T15:16:57.883Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://ty-chen.github.io/linux-kernel-zero-process/</loc>
+    
+    <lastmod>2020-05-25T15:14:38.513Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://ty-chen.github.io/linux-kernel-bootstrap/</loc>
+    
+    <lastmod>2020-05-25T15:12:16.736Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://ty-chen.github.io/linux-kernel-schedule/</loc>
     
     <lastmod>2020-05-25T15:01:11.645Z</lastmod>
@@ -19,27 +40,6 @@
     <loc>https://ty-chen.github.io/linux-kernel-system-call/</loc>
     
     <lastmod>2020-05-24T02:35:40.785Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://ty-chen.github.io/linux-kernel-zero-process/</loc>
-    
-    <lastmod>2020-05-21T16:46:42.746Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://ty-chen.github.io/linux-kernel-task-struct/</loc>
-    
-    <lastmod>2020-05-21T16:46:19.621Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://ty-chen.github.io/linux-kernel-bootstrap/</loc>
-    
-    <lastmod>2020-05-21T16:46:06.010Z</lastmod>
     
   </url>
   

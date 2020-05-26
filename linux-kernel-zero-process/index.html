@@ -87,7 +87,7 @@
 <meta property="og:description" content="前言&amp;emsp;&amp;emsp;前文分析到Linux内核正式启动，完成了实模式到保护模式的切换，并做好了各种准备工作。下来就要看开始内核初始化工作了，源码位置位于init&#x2F;main.c中的start_kernel()，源码如附录所示。这包括了一系列重要的初始化工作，本文会介绍其中一部分较为重要的，但是详细的介绍依然会留在后文各个模块的源码学习中单独进行。本文的目的在于承接上文给出一个从内核启动到各个模">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/2b/42/2b53b470673cde8f9d8e2573f7d07242.jpg">
 <meta property="article:published_time" content="2020-05-05T14:46:22.000Z">
-<meta property="article:modified_time" content="2020-05-21T16:46:42.746Z">
+<meta property="article:modified_time" content="2020-05-25T15:14:38.513Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -310,8 +310,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-05-22T00:46:42+08:00" content="2020-05-22">
-                2020-05-22
+              <time itemprop="dateUpdated" datetime="2020-05-25T23:14:38+08:00" content="2020-05-25">
+                2020-05-25
               </time>
             </span>
           
@@ -461,7 +461,10 @@
 <p>　　需要说明的是<code>init_task</code>在这里会被转变为<code>idle</code>进程，但是它还会继续执行初始化工作，相当于这里只是给<code>init_task</code>挂个<code>idle</code>进程的名号，它其实还是<code>init_task</code>进程，只有到最后<code>init_task</code>进程开启了<code>kernel_init</code>和<code>kthreadd</code>进程之后，才转变为真正意义上的<code>idle</code>进程。</p>
 <h2 id="剩余初始化"><a href="#剩余初始化" class="headerlink" title="剩余初始化"></a>剩余初始化</h2><p>&emsp;&emsp;<code>rest_init</code>是非常重要的一步，主要包括了区分内核态和用户态、初始化1号进程和初始化2号进程。</p>
 <h3 id="内核态和用户态"><a href="#内核态和用户态" class="headerlink" title="内核态和用户态"></a>内核态和用户态</h3><p>&emsp;&emsp;在运行用户进程之前，尚需要完成一件事：区分内核态和用户态。x86 提供了分层的权限机制，把区域分成了四个 Ring，越往里权限越高，越往外权限越低。操作系统很好地利用了这个机制，将能够访问关键资源的代码放在 Ring0，我们称为内核态（Kernel Mode）；将普通的程序代码放在 Ring3，我们称为用户态（User Mode）。</p>
-<p><img src="https://static001.geekbang.org/resource/image/2b/42/2b53b470673cde8f9d8e2573f7d07242.jpg" alt="img"></p>
+<img src="https://static001.geekbang.org/resource/image/2b/42/2b53b470673cde8f9d8e2573f7d07242.jpg" alt="img" style="zoom:25%;" />
+
+
+
 <h3 id="初始化1号进程"><a href="#初始化1号进程" class="headerlink" title="初始化1号进程"></a>初始化1号进程</h3><p>&emsp;&emsp;<code>rest_init()</code> 的一大工作是，用 <code>kernel_thread(kernel_init, NULL, CLONE_FS)</code>创建第二个进程，这个是 1 号进程。1 号进程对于操作系统来讲，有“划时代”的意义，因为它将运行一个用户进程，并从此开始形成用户态进程树。这里主要需要分析的是如何完成从内核态到用户态切换的过程。<code>kernel_thread()</code>代码如下所示，可见其中最主要的是第一个参数指针函数fn决定了栈中的内容，根据fn的不同将生成1号进程和后面的2号进程。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * Create a kernel thread.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">pid_t</span> <span class="title">kernel_thread</span><span class="params">(<span class="keyword">int</span> (*fn)(<span class="keyword">void</span> *), <span class="keyword">void</span> *arg, <span class="keyword">unsigned</span> <span class="keyword">long</span> flags)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">kernel_clone_args</span> <span class="title">args</span> = &#123;</span></span><br><span class="line">		.flags		= ((flags | CLONE_VM | CLONE_UNTRACED) &amp; ~CSIGNAL),</span><br><span class="line">		.exit_signal	= (flags &amp; CSIGNAL),</span><br><span class="line">		.<span class="built_in">stack</span>		= (<span class="keyword">unsigned</span> <span class="keyword">long</span>)fn,</span><br><span class="line">		.stack_size	= (<span class="keyword">unsigned</span> <span class="keyword">long</span>)arg,</span><br><span class="line">	&#125;;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> _do_fork(&amp;args);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
@@ -797,6 +800,20 @@
           
 
           
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://example.com/" title="Stanleylsx" target="_blank">Stanleylsx</a>
+                  </li>
+                
+              </ul>
+            </div>
           
 
           
