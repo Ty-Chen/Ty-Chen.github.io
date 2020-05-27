@@ -300,8 +300,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-05-26T23:20:38+08:00" content="2020-05-26">
-                2020-05-26
+              <time itemprop="dateUpdated" datetime="2020-05-27T23:46:57+08:00" content="2020-05-27">
+                2020-05-27
               </time>
             </span>
           
@@ -359,7 +359,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  142
+                  934
                 </span>
               
 
@@ -375,7 +375,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  1
+                  3
                 </span>
               
             </div>
@@ -397,7 +397,7 @@
 
       
         
-          <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>&emsp;&emsp;在前文中，我们分析了内核中进程和线程的统一结构体<code>task_struct</code>，并分析进程、线程的创建和派生的过程。在本文中，我们会对任务间调度进行详细剖析，了解其原理和整个执行过程。由此，进程、线程部分的大体框架就算是介绍完了。本节主要分为三个部分，调度的基本结构体，调度发生的整个流程以及Linux内核中常见的调度策略。</p>
+          <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;在前文中，我们分析了内核中进程和线程的统一结构体<code>task_struct</code>，并分析进程、线程的创建和派生的过程。在本文中，我们会对任务间调度进行详细剖析，了解其原理和整个执行过程。由此，进程、线程部分的大体框架就算是介绍完了。本节主要分为三个部分：Linux内核中常见的调度策略，调度的基本结构体以及调度发生的整个流程。下面将详细展开说明。</p>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/linux-kernel-schedule/#more" rel="contents">
@@ -494,8 +494,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-05-25T22:55:24+08:00" content="2020-05-25">
-                2020-05-25
+              <time itemprop="dateUpdated" datetime="2020-05-26T23:30:46+08:00" content="2020-05-26">
+                2020-05-26
               </time>
             </span>
           
@@ -569,7 +569,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  33
+                  34
                 </span>
               
             </div>
@@ -591,7 +591,7 @@
 
       
         
-          <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>&emsp;&emsp;在前文中，我们分析了内核中进程和线程的统一结构体<code>task_struct</code>，本文将继续分析进程、线程的创建和派生的过程。首先介绍如何将一个程序编辑为执行文件最后成为进程执行，然后会介绍线程的执行，最后会分析如何通过已有的进程、线程实现多进程、多线程。因为进程和线程有诸多相似之处，也有一些不同之处，因此本文会对比进程和线程来加深理解和记忆。</p>
+          <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;在前文中，我们分析了内核中进程和线程的统一结构体<code>task_struct</code>，本文将继续分析进程、线程的创建和派生的过程。首先介绍如何将一个程序编辑为执行文件最后成为进程执行，然后会介绍线程的执行，最后会分析如何通过已有的进程、线程实现多进程、多线程。因为进程和线程有诸多相似之处，也有一些不同之处，因此本文会对比进程和线程来加深理解和记忆。</p>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/linux-kernel-process-create/#more" rel="contents">
@@ -688,8 +688,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-05-25T23:16:57+08:00" content="2020-05-25">
-                2020-05-25
+              <time itemprop="dateUpdated" datetime="2020-05-26T23:27:23+08:00" content="2020-05-26">
+                2020-05-26
               </time>
             </span>
           
@@ -747,7 +747,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  4.4k
+                  4.5k
                 </span>
               
 
@@ -785,7 +785,7 @@
 
       
         
-          <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>&emsp;&emsp;在前文中，我们分析了内核启动的整个过程以及系统调用的过程，从本文开始我们会介绍Linux系统各个重要的组成部分。这一切就从进程和线程开始，在 Linux 里面，无论是进程，还是线程，到了内核里面，我们统一都叫任务（Task），由一个统一的结构 <code>task_struct</code> 进行管理。这个结构非常复杂，本文将细细分析<code>task_struct</code>结构。主要分析顺序会按照该架构体中的成员变量和函数的作用进行分类，主要包括：</p>
+          <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;在前文中，我们分析了内核启动的整个过程以及系统调用的过程，从本文开始我们会介绍Linux系统各个重要的组成部分。这一切就从进程和线程开始，在 Linux 里面，无论是进程，还是线程，到了内核里面，我们统一都叫任务（Task），由一个统一的结构 <code>task_struct</code> 进行管理。这个结构非常复杂，本文将细细分析<code>task_struct</code>结构。主要分析顺序会按照该架构体中的成员变量和函数的作用进行分类，主要包括：</p>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/linux-kernel-task-struct/#more" rel="contents">
@@ -882,8 +882,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-05-24T10:35:40+08:00" content="2020-05-24">
-                2020-05-24
+              <time itemprop="dateUpdated" datetime="2020-05-26T23:28:19+08:00" content="2020-05-26">
+                2020-05-26
               </time>
             </span>
           
@@ -979,7 +979,7 @@
 
       
         
-          <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>&emsp;&emsp;通过前面几篇文章，我们分析了从按下电源键到内核启动、完成初始化的整个过程。在后面的文章中我们将分别深入剖析Linux内核各个重要部分的源码。考虑到后面的部分我们会从用户态的代码开始入手一步一步深入，因此在分析这些之前，我们需要仔细看一看如何实现一个从用户态到内核态再回到用户态的系统调用的全过程，即系统调用的实现。</p>
+          <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;通过前面几篇文章，我们分析了从按下电源键到内核启动、完成初始化的整个过程。在后面的文章中我们将分别深入剖析Linux内核各个重要部分的源码。考虑到后面的部分我们会从用户态的代码开始入手一步一步深入，因此在分析这些之前，我们需要仔细看一看如何实现一个从用户态到内核态再回到用户态的系统调用的全过程，即系统调用的实现。</p>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/linux-kernel-system-call/#more" rel="contents">
@@ -1076,8 +1076,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-05-25T23:14:38+08:00" content="2020-05-25">
-                2020-05-25
+              <time itemprop="dateUpdated" datetime="2020-05-26T23:25:47+08:00" content="2020-05-26">
+                2020-05-26
               </time>
             </span>
           
@@ -1173,7 +1173,7 @@
 
       
         
-          <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>&emsp;&emsp;前文分析到Linux内核正式启动，完成了实模式到保护模式的切换，并做好了各种准备工作。下来就要看开始内核初始化工作了，源码位置位于init/main.c中的<code>start_kernel()</code>，源码如附录所示。这包括了一系列重要的初始化工作，本文会介绍其中一部分较为重要的，但是详细的介绍依然会留在后文各个模块的源码学习中单独进行。本文的目的在于承接上文给出一个从内核启动到各个模块开始运转的过程介绍，而不是详细的各部分内容介绍。</p>
+          <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;前文分析到Linux内核正式启动，完成了实模式到保护模式的切换，并做好了各种准备工作。下来就要看开始内核初始化工作了，源码位置位于init/main.c中的<code>start_kernel()</code>，源码如附录所示。这包括了一系列重要的初始化工作，本文会介绍其中一部分较为重要的，但是详细的介绍依然会留在后文各个模块的源码学习中单独进行。本文的目的在于承接上文给出一个从内核启动到各个模块开始运转的过程介绍，而不是详细的各部分内容介绍。</p>
 <ul>
 <li><p>创建0号进程：<code>INIT_TASK(init_task)</code></p>
 </li>
@@ -1280,8 +1280,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-05-22T00:45:34+08:00" content="2020-05-22">
-                2020-05-22
+              <time itemprop="dateUpdated" datetime="2020-05-26T23:29:09+08:00" content="2020-05-26">
+                2020-05-26
               </time>
             </span>
           
@@ -1377,7 +1377,7 @@
 
       
         
-          <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>&emsp;&emsp;上文中，我们分析了从按下电源键到BootLoader完成加载的过程。加载完成之后，就要正式启动Linux内核了，而在这之前首先要完成从实模式到保护模式的切换。本文主要分析以下几部分内容</p>
+          <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;上文中，我们分析了从按下电源键到BootLoader完成加载的过程。加载完成之后，就要正式启动Linux内核了，而在这之前首先要完成从实模式到保护模式的切换。本文主要分析以下几部分内容</p>
 <ul>
 <li>新旧中断的交替</li>
 <li>打开A20</li>
@@ -1481,8 +1481,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-05-25T23:12:16+08:00" content="2020-05-25">
-                2020-05-25
+              <time itemprop="dateUpdated" datetime="2020-05-26T23:31:22+08:00" content="2020-05-26">
+                2020-05-26
               </time>
             </span>
           
@@ -1578,7 +1578,7 @@
 
       
         
-          <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>&emsp;&emsp;Linux操作系统内核是服务端学习的根基，也是提高编程能力、源码阅读能力和进阶知识学习能力的重要部分，本文开始将记录Linux操作系统中的各个部分源码学习历程。</p>
+          <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;Linux操作系统内核是服务端学习的根基，也是提高编程能力、源码阅读能力和进阶知识学习能力的重要部分，本文开始将记录Linux操作系统中的各个部分源码学习历程。</p>
 <p>&emsp;&emsp;关于如何学习源码，个人觉得可以从以下角度入手，有效地提高阅读和学习的效率。（学习语言就不说了，这是基本功。学习IDE推荐Source Insight或者Visual Studio）</p>
 <ul>
 <li><strong>理解代码的组织结构。</strong> 以Linux源码举例，首先你得知道操作系统分为哪几个部分，他们单独做了什么功能，如何进行配合完成更为具体的功能。建立整体的印象有助于后续深入学习的时候方便理解，毕竟<strong>代码是用的不是看的</strong>，理解他的作用有利于理解为什么要这么做。</li>
@@ -2075,8 +2075,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-04-25T12:19:20+08:00" content="2020-04-25">
-                2020-04-25
+              <time itemprop="dateUpdated" datetime="2020-05-26T23:31:53+08:00" content="2020-05-26">
+                2020-05-26
               </time>
             </span>
           
@@ -2172,7 +2172,7 @@
 
       
         
-          <h3 id="引子"><a href="#引子" class="headerlink" title="引子"></a>引子</h3><p>&emsp;&emsp;本人是重度游戏爱好者，MMORPG当然也体验过很多，从早期的传奇、奇迹到冒险岛，从天下三、剑网三到天刀、逆水寒，其中有一个共同的问题：人一多就卡。拿剑网三举例，大攻防小攻防简直不要太卡，尤其是一波对冲，如果你不屏蔽人物、不降低画质，那简直就是在作死的边缘试探。为此，本文试分析如何解决MMORPG中多人对战造成的卡顿问题。</p>
+          <h3 id="一-引子"><a href="#一-引子" class="headerlink" title="一. 引子"></a>一. 引子</h3><p>&emsp;&emsp;本人是重度游戏爱好者，MMORPG当然也体验过很多，从早期的传奇、奇迹到冒险岛，从天下三、剑网三到天刀、逆水寒，其中有一个共同的问题：人一多就卡。拿剑网三举例，大攻防小攻防简直不要太卡，尤其是一波对冲，如果你不屏蔽人物、不降低画质，那简直就是在作死的边缘试探。为此，本文试分析如何解决MMORPG中多人对战造成的卡顿问题。</p>
 <p>&emsp;&emsp;卡顿分为个人电脑卡顿和服务器卡顿两种。其中个人卡顿可能是由于显卡性能不够（引擎优化不够）、内存不足（客户端优化不够）、网络延迟高（大多数是因为网太垃圾了，也有可能是客户端服务端优化不足）等原因导致。<strong>这些不在本文的讨论范围内，因为每一个展开都会是极多极难的问题，本文仅专注于讨论大攻防时由于人多导致的服务器卡顿问题，即如何做到一个玩家在进行大规模对战时游戏体验和JJC以及战场体验接近或者相同的问题。</strong></p>
           <!--noindex-->
           <div class="post-button text-center">
@@ -2371,7 +2371,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">32.6k</span>
+    <span title="Site words total count">33.5k</span>
   
 </div>
 

@@ -79,15 +79,15 @@
 
 
 
-<meta name="description" content="前言&amp;emsp;&amp;emsp;Linux操作系统内核是服务端学习的根基，也是提高编程能力、源码阅读能力和进阶知识学习能力的重要部分，本文开始将记录Linux操作系统中的各个部分源码学习历程。 &amp;emsp;&amp;emsp;关于如何学习源码，个人觉得可以从以下角度入手，有效地提高阅读和学习的效率。（学习语言就不说了，这是基本功。学习IDE推荐Source Insight或者Visual Studio）  理">
+<meta name="description" content="一. 前言&amp;emsp;&amp;emsp;Linux操作系统内核是服务端学习的根基，也是提高编程能力、源码阅读能力和进阶知识学习能力的重要部分，本文开始将记录Linux操作系统中的各个部分源码学习历程。 &amp;emsp;&amp;emsp;关于如何学习源码，个人觉得可以从以下角度入手，有效地提高阅读和学习的效率。（学习语言就不说了，这是基本功。学习IDE推荐Source Insight或者Visual Studio）">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux操作系统学习笔记（一）启动">
 <meta property="og:url" content="https://ty-chen.github.io/linux-kernel-bootstrap/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
-<meta property="og:description" content="前言&amp;emsp;&amp;emsp;Linux操作系统内核是服务端学习的根基，也是提高编程能力、源码阅读能力和进阶知识学习能力的重要部分，本文开始将记录Linux操作系统中的各个部分源码学习历程。 &amp;emsp;&amp;emsp;关于如何学习源码，个人觉得可以从以下角度入手，有效地提高阅读和学习的效率。（学习语言就不说了，这是基本功。学习IDE推荐Source Insight或者Visual Studio）  理">
+<meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;Linux操作系统内核是服务端学习的根基，也是提高编程能力、源码阅读能力和进阶知识学习能力的重要部分，本文开始将记录Linux操作系统中的各个部分源码学习历程。 &amp;emsp;&amp;emsp;关于如何学习源码，个人觉得可以从以下角度入手，有效地提高阅读和学习的效率。（学习语言就不说了，这是基本功。学习IDE推荐Source Insight或者Visual Studio）">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/2b/6a/2b8573bbbf31fc0cb0420e32d07b196a.jpeg">
 <meta property="article:published_time" content="2020-04-24T15:17:54.000Z">
-<meta property="article:modified_time" content="2020-05-25T15:12:16.736Z">
+<meta property="article:modified_time" content="2020-05-26T15:31:22.334Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -308,8 +308,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-05-25T23:12:16+08:00" content="2020-05-25">
-                2020-05-25
+              <time itemprop="dateUpdated" datetime="2020-05-26T23:31:22+08:00" content="2020-05-26">
+                2020-05-26
               </time>
             </span>
           
@@ -409,7 +409,7 @@
       
 
       
-        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>&emsp;&emsp;Linux操作系统内核是服务端学习的根基，也是提高编程能力、源码阅读能力和进阶知识学习能力的重要部分，本文开始将记录Linux操作系统中的各个部分源码学习历程。</p>
+        <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;Linux操作系统内核是服务端学习的根基，也是提高编程能力、源码阅读能力和进阶知识学习能力的重要部分，本文开始将记录Linux操作系统中的各个部分源码学习历程。</p>
 <p>&emsp;&emsp;关于如何学习源码，个人觉得可以从以下角度入手，有效地提高阅读和学习的效率。（学习语言就不说了，这是基本功。学习IDE推荐Source Insight或者Visual Studio）</p>
 <ul>
 <li><strong>理解代码的组织结构。</strong> 以Linux源码举例，首先你得知道操作系统分为哪几个部分，他们单独做了什么功能，如何进行配合完成更为具体的功能。建立整体的印象有助于后续深入学习的时候方便理解，毕竟<strong>代码是用的不是看的</strong>，理解他的作用有利于理解为什么要这么做。</li>
@@ -442,12 +442,12 @@
 </li>
 </ul>
 <p>&emsp;&emsp;说了一大堆的废话，下面就正式开始操作系统的深入学习记录之旅了。</p>
-<h2 id="混沌初开"><a href="#混沌初开" class="headerlink" title="混沌初开"></a>混沌初开</h2><p>&emsp;&emsp;本文分析从按下电源键到加载BIOS以及后续bootloader的整个过程。犹如盘古开天辟地一般，该过程将混沌的操作系统世界分为清晰的内核态和用户态，并经历从实模式到保护模式的变化。这里先简单介绍一下名次，便于后续理解。</p>
+<h2 id="二-混沌初开"><a href="#二-混沌初开" class="headerlink" title="二. 混沌初开"></a>二. 混沌初开</h2><p>&emsp;&emsp;本文分析从按下电源键到加载BIOS以及后续bootloader的整个过程。犹如盘古开天辟地一般，该过程将混沌的操作系统世界分为清晰的内核态和用户态，并经历从实模式到保护模式的变化。这里先简单介绍一下名次，便于后续理解。</p>
 <ul>
 <li><a href="https://en.wikipedia.org/wiki/Real_mode" target="_blank" rel="noopener">实模式（Real Mode)</a>：又名 Real Address Mode，在此模式下地址访问的是真实地内存地址所在位置。在此模式下，可以使用20位（1MB）的地址空间，软件可以不受限制的操作所有地址的空间和IO设备。    </li>
 <li><a href="https://en.wikipedia.org/wiki/Protected_mode" target="_blank" rel="noopener">保护模式（Protected Mode)</a>：又名 Protected Virtual Address Mode，采用虚拟内存、页等机制对内存进行了保护，比起实模式更为安全可靠，同时也增加了灵活性和扩展性。</li>
 </ul>
-<h3 id="从启动电源到BIOS"><a href="#从启动电源到BIOS" class="headerlink" title="从启动电源到BIOS"></a>从启动电源到BIOS</h3><p>&emsp;&emsp;当我们按下电源键，主板会发向电源组发出信号，接收到信号后，电源会提供合适的电压给计算机。当主板收到电源正常启动的信号后，主板会启动CPU。CPU重置所有寄存器数据，并设置初始化数据，这个初始化数据在X86架构里如下所示：</p>
+<h3 id="2-1-从启动电源到BIOS"><a href="#2-1-从启动电源到BIOS" class="headerlink" title="2.1 从启动电源到BIOS"></a>2.1 从启动电源到BIOS</h3><p>&emsp;&emsp;当我们按下电源键，主板会发向电源组发出信号，接收到信号后，电源会提供合适的电压给计算机。当主板收到电源正常启动的信号后，主板会启动CPU。CPU重置所有寄存器数据，并设置初始化数据，这个初始化数据在X86架构里如下所示：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">IP          0xfff0</span><br><span class="line">CS selector 0xf000</span><br><span class="line">CS base     0xffff0000</span><br></pre></td></tr></table></figure>
 
 <ul>
@@ -458,12 +458,12 @@
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PhysicalAddress = Segment Selector * <span class="number">16</span> + Offset</span><br></pre></td></tr></table></figure>
 
 <p>&emsp;&emsp;该部分由硬件完成，通过计算访问0XFFFF0，如果该位置没有可执行代码则计算机无法启动。如果有，则执行该部分代码，这里也就是我们故事的开始，BIOS程序了。</p>
-<h3 id="BIOS到BootLoader"><a href="#BIOS到BootLoader" class="headerlink" title="BIOS到BootLoader"></a>BIOS到BootLoader</h3><p>&emsp;&emsp;BIOS执行程序存储在ROM中，起始位置为0XFFFF0，当CS:IP指向该位置时，BIOS开始执行。BIOS主要包括以下内存映射：</p>
+<h3 id="2-2-BIOS到BootLoader"><a href="#2-2-BIOS到BootLoader" class="headerlink" title="2.2 BIOS到BootLoader"></a>2.2 BIOS到BootLoader</h3><p>&emsp;&emsp;BIOS执行程序存储在ROM中，起始位置为0XFFFF0，当CS:IP指向该位置时，BIOS开始执行。BIOS主要包括以下内存映射：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">0x00000000 - 0x000003FF - Real Mode Interrupt Vector Table</span><br><span class="line">0x00000400 - 0x000004FF - BIOS Data Area</span><br><span class="line">0x00000500 - 0x00007BFF - Unused</span><br><span class="line">0x00007C00 - 0x00007DFF - Our Bootloader</span><br><span class="line">0x00007E00 - 0x0009FFFF - Unused</span><br><span class="line">0x000A0000 - 0x000BFFFF - Video RAM (VRAM) Memory</span><br><span class="line">0x000B0000 - 0x000B7777 - Monochrome Video Memory</span><br><span class="line">0x000B8000 - 0x000BFFFF - Color Video Memory</span><br><span class="line">0x000C0000 - 0x000C7FFF - Video ROM BIOS</span><br><span class="line">0x000C8000 - 0x000EFFFF - BIOS Shadow Area</span><br><span class="line">0x000F0000 - 0x000FFFFF - System BIOS</span><br></pre></td></tr></table></figure>
 
 <p>&emsp;&emsp;其中最重要的莫过于中断向量表和中断服务程序。BIOS程序在内存最开始的位置（0x00000）用1 KB的内存空间（0x00000～0x003FF）构建中断向量表，在紧挨着它的位置用256字节的内存空间构建BIOS数据区（0x00400～0x004FF），并在大约57 KB以后的位置（0x0E05B）加载了8 KB左右的与中断向量表相应的若干中断服务程序。中断向量表中有256个中断向量，每个中断向量占4字节，其中两个字节是CS的值，两个字节是IP的值。每个中断向量都指向一个具体的中断服务程序。</p>
 <p>&emsp;&emsp;BIOS程序会选择一个启动设备，并将控制权转交给启动扇区中的代码。主要工作即使用中断向量和中断服务程序完成BootLoader的加载，最终将<a href="http://git.savannah.gnu.org/gitweb/?p=grub.git;a=blob;f=grub-core/boot/i386/pc/boot.S;hb=HEAD" target="_blank" rel="noopener">boot.img</a>加载至0X7C00的位置启动。Linux内核通过<a href="https://github.com/torvalds/linux/blob/v4.16/Documentation/x86/boot.txt" target="_blank" rel="noopener">Boot Protocol</a>定义如何实现该引导程序，有如GRUB 2和syslinux等具体实现方式，这里仅介绍GRUB2。</p>
-<h3 id="BootLoader的工作"><a href="#BootLoader的工作" class="headerlink" title="BootLoader的工作"></a>BootLoader的工作</h3><p>&emsp;&emsp;boot.img由boot.S编译而成，512字节，安装在启动盘的第一个扇区，即<a href="https://en.wikipedia.org/wiki/Master_boot_record" target="_blank" rel="noopener">MBR</a>。由于空间有限，其代码十分简单，仅仅是起到一个引导的作用，指向后续的核心镜像文件，即core.img。core.img包括很多重要的部分，如lzma_decompress.img、<a href="http://git.savannah.gnu.org/gitweb/?p=grub.git;a=blob;f=grub-core/boot/i386/pc/diskboot.S;hb=HEAD" target="_blank" rel="noopener">diskboot.img</a>、kernel.img等，结构如下图。</p>
+<h3 id="2-3-BootLoader的工作"><a href="#2-3-BootLoader的工作" class="headerlink" title="2.3 BootLoader的工作"></a>2.3 BootLoader的工作</h3><p>&emsp;&emsp;boot.img由boot.S编译而成，512字节，安装在启动盘的第一个扇区，即<a href="https://en.wikipedia.org/wiki/Master_boot_record" target="_blank" rel="noopener">MBR</a>。由于空间有限，其代码十分简单，仅仅是起到一个引导的作用，指向后续的核心镜像文件，即core.img。core.img包括很多重要的部分，如lzma_decompress.img、<a href="http://git.savannah.gnu.org/gitweb/?p=grub.git;a=blob;f=grub-core/boot/i386/pc/diskboot.S;hb=HEAD" target="_blank" rel="noopener">diskboot.img</a>、kernel.img等，结构如下图。</p>
 <img src="https://static001.geekbang.org/resource/image/2b/6a/2b8573bbbf31fc0cb0420e32d07b196a.jpeg" alt="img" style="zoom: 25%;" />
 
 <p>整个加载流程如下：</p>
@@ -475,7 +475,7 @@
 </ol>
 <p>&emsp;&emsp;在这之前，我们所有遇到过的程序都非常非常小，完全可以在实模式下运行，但是随着我们加载的东西越来越大，实模式这 1M 的地址空间实在放不下了，所以在真正的解压缩之前，lzma_decompress.img 做了一个重要的决定，就是调用 <code>real_to_prot</code>，切换到保护模式，这样就能在更大的寻址空间里面，加载更多的东西。</p>
 <p>&emsp;&emsp;开机时的16位实模式与内核启动的main函数执行需要的32位保护模式之间有很大的差距，这个差距谁来填补？<a href="https://github.com/torvalds/linux/blob/v4.16/arch/x86/boot/header.S" target="_blank" rel="noopener">head.S</a>做的就是这项工作。就像 kernel boot protocol 所描述的，引导程序必须填充 kernel setup header （位于 kernel setup code 偏移 <code>0x01f1</code> 处） 的必要字段，这些均在head.S中定义。在这期间，head程序打开A20，打开pe、pg，废弃旧的、16位的中断响应机制，建立新的32位的IDT……这些工作都做完了，计算机已经处在32位的保护模式状态了，调用32位内核的一切条件已经准备完毕，这时顺理成章地调用main函数。后面的操作就可以用32位编译的main函数完成，从而正式启动内核，进入波澜壮阔的Linux内核操作系统之中。</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>&emsp;&emsp;本文介绍了从按下电源开关至加载完毕BootLoader的整个过程，后续将继续分析从实模式进入保护模式，从而启动内核创建0号、1号、2号进程的整个过程。本文介绍过程中忽略了很多汇编代码以及一些虽然很重要但是不属于基本流程的知识，有兴趣了解的可以根据文中链接、文末的源码和参考资料进行更深入的学习研究。</p>
+<h2 id="三-总结"><a href="#三-总结" class="headerlink" title="三. 总结"></a>三. 总结</h2><p>&emsp;&emsp;本文介绍了从按下电源开关至加载完毕BootLoader的整个过程，后续将继续分析从实模式进入保护模式，从而启动内核创建0号、1号、2号进程的整个过程。本文介绍过程中忽略了很多汇编代码以及一些虽然很重要但是不属于基本流程的知识，有兴趣了解的可以根据文中链接、文末的源码和参考资料进行更深入的学习研究。</p>
 <h2 id="源码资料"><a href="#源码资料" class="headerlink" title="源码资料"></a>源码资料</h2><p>[1] src/cpu/x86/16bit</p>
 <p>[2] arch/x86/boot/</p>
 <p>[3] <a href="https://www.gnu.org/software/grub/" target="_blank" rel="noopener">GURB 2</a></p>
@@ -786,7 +786,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#混沌初开"><span class="nav-text">混沌初开</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#从启动电源到BIOS"><span class="nav-text">从启动电源到BIOS</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#BIOS到BootLoader"><span class="nav-text">BIOS到BootLoader</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#BootLoader的工作"><span class="nav-text">BootLoader的工作</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源码资料"><span class="nav-text">源码资料</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-text">参考资料</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-混沌初开"><span class="nav-text">二. 混沌初开</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-从启动电源到BIOS"><span class="nav-text">2.1 从启动电源到BIOS</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-BIOS到BootLoader"><span class="nav-text">2.2 BIOS到BootLoader</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-BootLoader的工作"><span class="nav-text">2.3 BootLoader的工作</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-总结"><span class="nav-text">三. 总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源码资料"><span class="nav-text">源码资料</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-text">参考资料</span></a></li></ol></div>
             
 
           </div>
@@ -820,7 +820,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">32.6k</span>
+    <span title="Site words total count">33.5k</span>
   
 </div>
 

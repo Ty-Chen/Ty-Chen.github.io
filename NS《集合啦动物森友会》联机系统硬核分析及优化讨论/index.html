@@ -79,15 +79,15 @@
 
 
 
-<meta name="description" content="联机系统简介&amp;emsp;&amp;emsp;集合啦动物森友会是最近NS的大爆款，我也第一时间入坑玩的不亦乐乎。在最近一周的游玩过程中，唯一被大家抱怨的问题大概就是这个联机系统了。首先我来简单介绍一下动物森友会的网络联机流程和中间的一些机制。  需要开通NS会员这肯定没啥好说的 去别的岛上逛或者别人来自己岛上逛只能二选一，不可以自己开着岛让别人来玩同时自己跑别人岛上玩 如果想去别人岛上玩，此时不允许岛上有人">
+<meta name="description" content="一. 联机系统简介&amp;emsp;&amp;emsp;集合啦动物森友会是最近NS的大爆款，我也第一时间入坑玩的不亦乐乎。在最近一周的游玩过程中，唯一被大家抱怨的问题大概就是这个联机系统了。首先我来简单介绍一下动物森友会的网络联机流程和中间的一些机制。  需要开通NS会员这肯定没啥好说的 去别的岛上逛或者别人来自己岛上逛只能二选一，不可以自己开着岛让别人来玩同时自己跑别人岛上玩 如果想去别人岛上玩，此时不允许岛">
 <meta property="og:type" content="article">
 <meta property="og:title" content="NS《集合啦动物森友会》联机系统硬核分析及优化讨论">
 <meta property="og:url" content="https://ty-chen.github.io/NS%E3%80%8A%E9%9B%86%E5%90%88%E5%95%A6%E5%8A%A8%E7%89%A9%E6%A3%AE%E5%8F%8B%E4%BC%9A%E3%80%8B%E8%81%94%E6%9C%BA%E7%B3%BB%E7%BB%9F%E7%A1%AC%E6%A0%B8%E5%88%86%E6%9E%90%E5%8F%8A%E4%BC%98%E5%8C%96%E8%AE%A8%E8%AE%BA/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
-<meta property="og:description" content="联机系统简介&amp;emsp;&amp;emsp;集合啦动物森友会是最近NS的大爆款，我也第一时间入坑玩的不亦乐乎。在最近一周的游玩过程中，唯一被大家抱怨的问题大概就是这个联机系统了。首先我来简单介绍一下动物森友会的网络联机流程和中间的一些机制。  需要开通NS会员这肯定没啥好说的 去别的岛上逛或者别人来自己岛上逛只能二选一，不可以自己开着岛让别人来玩同时自己跑别人岛上玩 如果想去别人岛上玩，此时不允许岛上有人">
+<meta property="og:description" content="一. 联机系统简介&amp;emsp;&amp;emsp;集合啦动物森友会是最近NS的大爆款，我也第一时间入坑玩的不亦乐乎。在最近一周的游玩过程中，唯一被大家抱怨的问题大概就是这个联机系统了。首先我来简单介绍一下动物森友会的网络联机流程和中间的一些机制。  需要开通NS会员这肯定没啥好说的 去别的岛上逛或者别人来自己岛上逛只能二选一，不可以自己开着岛让别人来玩同时自己跑别人岛上玩 如果想去别人岛上玩，此时不允许岛">
 <meta property="og:image" content="https://img-blog.csdnimg.cn/20200329152545223.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTMzNTQ0ODY=,size_16,color_FFFFFF,t_70">
 <meta property="article:published_time" content="2020-04-18T01:54:33.000Z">
-<meta property="article:modified_time" content="2020-04-25T04:21:36.325Z">
+<meta property="article:modified_time" content="2020-05-26T15:24:37.844Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="动物森友会">
 <meta property="article:tag" content="随笔">
@@ -308,8 +308,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-04-25T12:21:36+08:00" content="2020-04-25">
-                2020-04-25
+              <time itemprop="dateUpdated" datetime="2020-05-26T23:24:37+08:00" content="2020-05-26">
+                2020-05-26
               </time>
             </span>
           
@@ -409,7 +409,7 @@
       
 
       
-        <h3 id="联机系统简介"><a href="#联机系统简介" class="headerlink" title="联机系统简介"></a>联机系统简介</h3><p>&emsp;&emsp;集合啦动物森友会是最近NS的大爆款，我也第一时间入坑玩的不亦乐乎。在最近一周的游玩过程中，唯一被大家抱怨的问题大概就是这个联机系统了。首先我来简单介绍一下动物森友会的网络联机流程和中间的一些机制。</p>
+        <h2 id="一-联机系统简介"><a href="#一-联机系统简介" class="headerlink" title="一. 联机系统简介"></a>一. 联机系统简介</h2><p>&emsp;&emsp;集合啦动物森友会是最近NS的大爆款，我也第一时间入坑玩的不亦乐乎。在最近一周的游玩过程中，唯一被大家抱怨的问题大概就是这个联机系统了。首先我来简单介绍一下动物森友会的网络联机流程和中间的一些机制。</p>
 <ol>
 <li>需要开通NS会员这肯定没啥好说的</li>
 <li>去别的岛上逛或者别人来自己岛上逛只能二选一，不可以自己开着岛让别人来玩同时自己跑别人岛上玩</li>
@@ -427,15 +427,17 @@
 </ol>
 <a id="more"></a>
 
-<p><img src="https://img-blog.csdnimg.cn/20200329152545223.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTMzNTQ0ODY=,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
-<h3 id="联机系统分析"><a href="#联机系统分析" class="headerlink" title="联机系统分析"></a>联机系统分析</h3><p>&emsp;&emsp;根据以上联机的流程和限制，我们可以大致做以下的猜测：</p>
+<img src="https://img-blog.csdnimg.cn/20200329152545223.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTMzNTQ0ODY=,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" style="zoom: 50%;" />
+
+
+<h2 id="二-联机系统分析"><a href="#二-联机系统分析" class="headerlink" title="二. 联机系统分析"></a>二. 联机系统分析</h2><p>&emsp;&emsp;根据以上联机的流程和限制，我们可以大致做以下的猜测：</p>
 <ol>
 <li>联机系统一般分为两种，占用服务器资源的联机或P2P联机，根据机制4，12，13可以猜测大概率为P2P连接，具体需要后续wireshark抓包确认，由于采取科学上网+游戏加速器，这里可能会比较艰难。</li>
 <li>如果是P2P的话，一般是用C/S模拟成peer，根据机制2可以知道此处不支持同时开启c和s模型，而是仅可以启动client或者server完成联机过程。如果是服务器联机，则说明这里会映射到一个服务端申请空间建立岛的备份或者进入一个别人建立的服务端备份岛中进行联机。在映射的整个过程中，发起者不允许访问别的映射而是必须等释放资源才可以。</li>
 <li>机制3、5、6、7反应了动森的数据一致性处理机制，从中我们可以总结一下动森的一致性维护方式：我们用log表示每人的的存档状态，每次有人进来之前需要停止活动、关闭窗口以便于记录当前的log，如果有人掉线断开连接则所有人的log回滚到上一次有人进入时的状态（最后一次保存状态），如果有人离开则再次更新当前的log并保存。</li>
 </ol>
-<h3 id="改进分析"><a href="#改进分析" class="headerlink" title="改进分析"></a>改进分析</h3><p>&emsp;&emsp;很显然，这套联机系统是比较蛋疼的，最蛋疼的地方就在于每次有人来所有人都需要停下手中的活等着，有人掉线的话所有人都会回个档，那么有没有办法做改进呢？下面给出一些个人的想法。首先申明，怎么样做到不掉线不在本文讨论范围内，这个属于网络性能优化、科学上网和游戏加速器代理的知识，有空再单独聊。本文只针对掉线和不掉线可能带来的问题展开讨论。</p>
-<h4 id="P2P联机系统"><a href="#P2P联机系统" class="headerlink" title="P2P联机系统"></a>P2P联机系统</h4><h5 id="实现方式分析"><a href="#实现方式分析" class="headerlink" title="实现方式分析"></a>实现方式分析</h5><p>&emsp;&emsp;如果是P2P联机，其实就是所有人以client方式连接开放权限的server，然后通过tcp(适合局域网)、udp或者utp等方式进行通信。这里又有两种实现方式</p>
+<h2 id="三-改进分析"><a href="#三-改进分析" class="headerlink" title="三. 改进分析"></a>三. 改进分析</h2><p>&emsp;&emsp;很显然，这套联机系统是比较蛋疼的，最蛋疼的地方就在于每次有人来所有人都需要停下手中的活等着，有人掉线的话所有人都会回个档，那么有没有办法做改进呢？下面给出一些个人的想法。首先申明，怎么样做到不掉线不在本文讨论范围内，这个属于网络性能优化、科学上网和游戏加速器代理的知识，有空再单独聊。本文只针对掉线和不掉线可能带来的问题展开讨论。</p>
+<h3 id="3-1-P2P联机系统"><a href="#3-1-P2P联机系统" class="headerlink" title="3.1 P2P联机系统"></a>3.1 P2P联机系统</h3><h4 id="3-1-1-实现方式分析"><a href="#3-1-1-实现方式分析" class="headerlink" title="3.1.1 实现方式分析"></a>3.1.1 实现方式分析</h4><p>&emsp;&emsp;如果是P2P联机，其实就是所有人以client方式连接开放权限的server，然后通过tcp(适合局域网)、udp或者utp等方式进行通信。这里又有两种实现方式</p>
 <p>（1）以server为轴心和其他玩家通信：入岛玩家发消息、走路、做动作会实时发送数据包给server，并得到server回复其他几名玩家的位置信息、动作从而实现联机功能。</p>
 <ul>
 <li><p>优点：利于管理，小型server可以做到数据的汇总和一致性。</p>
@@ -450,7 +452,7 @@
 <li><p>缺点：数据会较为凌乱，无法很好地进行一致性处理。网络本身是不稳定的，每个玩家的延迟也不同，比如玩家A发送给BCD自己向前跑了十步并丢下了1000颗大头菜，BC玩家在几百毫秒内收到并出现了动画，而D玩家迟迟没有收到。</p>
 </li>
 </ul>
-<h5 id="实现方式改进"><a href="#实现方式改进" class="headerlink" title="实现方式改进"></a>实现方式改进</h5><p>&emsp;&emsp;根据动森的联机表现来看，如果是P2P联机系统则采用的显然是第一种方式。而这里有必要做log的一致性到这种地步吗？我觉得是没有的。下面针对岛主、游客来分析可能存在哪些问题，以及可能有哪些解决方案。</p>
+<h4 id="3-1-2-实现方式改进"><a href="#3-1-2-实现方式改进" class="headerlink" title="3.1.2 实现方式改进"></a>3.1.2 实现方式改进</h4><p>&emsp;&emsp;根据动森的联机表现来看，如果是P2P联机系统则采用的显然是第一种方式。而这里有必要做log的一致性到这种地步吗？我觉得是没有的。下面针对岛主、游客来分析可能存在哪些问题，以及可能有哪些解决方案。</p>
 <p>（1）关于数据一致性和先后顺序的判定</p>
 <p>&emsp;&emsp;对于分布式系统，解决数据一致性和先后顺序显然是有很多方法的。针对这里最多8人的设定，采取raft或paxos的思想做一致性保证，由岛主发布其他接收即可。如果出现log丢失，只需要照着最新的log写入就行，甚至不需要做leader election。而玩家操作的先后顺序就更简单了，采取lamport clock或者vector clock可以轻松解决。</p>
 <p>（2）对于岛主来说，其他玩家登陆岛的操作过程和自身操作修改岛可以共存吗？</p>
@@ -476,8 +478,8 @@
 <p>&emsp;&emsp;岛的数据（玩家定位、玩家穿着、岛的装饰、玩家扔东西采东西等）可以单独维护，每个人的操作都会修改岛的数据并发送给其他玩家来改变其他玩家当前显示的岛的表现，这一过程只要不掉线一定是可以维持的，只是延迟问题，如果掉线更不用考虑。而岛的数据仅属于岛主，和其他人的存档毫无关系。由于岛的数据仅有一份在岛主这里，其他人的写入过程只有岛主收到了才有效。</p>
 <p>&emsp;&emsp;假设有人在地上丢了个东西，岛主保存游戏并退出，在岛主退出时如果有人捡了东西，则岛主重连后东西还在发生了错误，这种情况其实是不存在的。因为有人捡东西是需要岛主ACK才可以的，不然会触发掉线回档，没有ACK的情况下是不允许立刻保存的，或者说点击保存会触发尚未ACK的消息再次请求回应的过程。</p>
 <p>&emsp;&emsp;每个玩家的数据（包裹，金钱，衣服）即我们关心的存档是存在本地的，在别人岛上游玩过程中，对该存档可能产生的变化就是别人给你东西或者你给别人东西。比如A丢个东西在地上，让B拾取，大致是这么个流程：A丢东西动作—-&gt;server接收到发给所有其他玩家—–&gt;B看到东西被A丢地上，捡起来——&gt;server接收到B的动作发给所有其他玩家，server断线没啥好说的，大家都GG，存档也会回档到上一次存档，如果server正常，A或者B掉线对自身影响是动作失效并断开连接，对对方来说其实并无影响。</p>
-<h4 id="服务器联机系统"><a href="#服务器联机系统" class="headerlink" title="服务器联机系统"></a>服务器联机系统</h4><p>&emsp;&emsp;服务器联机和P2P的区别在于服务端位于服务器还是岛主上。服务器联机的话，机房是一笔很大的开销，而如果能将每个岛开岛的时候映射到服务器，或者干脆每个岛都直接搭在服务器上，则是对整个联机过程最大的提升（没错MMORPG新游，集合啦动物森友会）。其实优化提升的分析和P2P相似，但是对于岛主来说更为自由，对于游客来说也是如此。岛主的掉线不再会直接导致所有人的掉线。缺点在于成本高，所以短时间内大概不要想啦，就算有，国服也是遥遥无期，也许任天堂的下一代动森作品会出呢。</p>
-<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>&emsp;&emsp;综上，任天堂其实是有很多选择的方案将动森的联机系统做的更加出众，让玩家玩起来更为舒心的。但是他没有做，原因大概只有赶工期，迁就一下了，毕竟做如此精妙的博物馆、家具系统、岛屿生态系统、玩法系统还是极为不容易的，所以只能用最简单的做法做到还可以接受的效果，满足一下大家联机的心愿。但是不论如何，作为世界的主宰，这个联机系统还是挺让人失望的。</p>
+<h3 id="3-2-服务器联机系统"><a href="#3-2-服务器联机系统" class="headerlink" title="3.2 服务器联机系统"></a>3.2 服务器联机系统</h3><p>&emsp;&emsp;服务器联机和P2P的区别在于服务端位于服务器还是岛主上。服务器联机的话，机房是一笔很大的开销，而如果能将每个岛开岛的时候映射到服务器，或者干脆每个岛都直接搭在服务器上，则是对整个联机过程最大的提升（没错MMORPG新游，集合啦动物森友会）。其实优化提升的分析和P2P相似，但是对于岛主来说更为自由，对于游客来说也是如此。岛主的掉线不再会直接导致所有人的掉线。缺点在于成本高，所以短时间内大概不要想啦，就算有，国服也是遥遥无期，也许任天堂的下一代动森作品会出呢。</p>
+<h2 id="四-总结"><a href="#四-总结" class="headerlink" title="四. 总结"></a>四. 总结</h2><p>&emsp;&emsp;综上，任天堂其实是有很多选择的方案将动森的联机系统做的更加出众，让玩家玩起来更为舒心的。但是他没有做，原因大概只有赶工期，迁就一下了，毕竟做如此精妙的博物馆、家具系统、岛屿生态系统、玩法系统还是极为不容易的，所以只能用最简单的做法做到还可以接受的效果，满足一下大家联机的心愿。但是不论如何，作为世界的主宰，这个联机系统还是挺让人失望的。</p>
 <p>&emsp;&emsp;本文是我在玩游戏之余因为买不到大头菜的愤懑而做，可能存在很多偏颇和缺陷，也可能因为自身知识能力的关系视野狭隘没有看清任天堂的设计思维。所以还请多多包涵指点，聊以娱乐。</p>
 
       
@@ -777,7 +779,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#联机系统简介"><span class="nav-text">联机系统简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#联机系统分析"><span class="nav-text">联机系统分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#改进分析"><span class="nav-text">改进分析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#P2P联机系统"><span class="nav-text">P2P联机系统</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#实现方式分析"><span class="nav-text">实现方式分析</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#实现方式改进"><span class="nav-text">实现方式改进</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#服务器联机系统"><span class="nav-text">服务器联机系统</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-联机系统简介"><span class="nav-text">一. 联机系统简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-联机系统分析"><span class="nav-text">二. 联机系统分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-改进分析"><span class="nav-text">三. 改进分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-P2P联机系统"><span class="nav-text">3.1 P2P联机系统</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-1-实现方式分析"><span class="nav-text">3.1.1 实现方式分析</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-2-实现方式改进"><span class="nav-text">3.1.2 实现方式改进</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-服务器联机系统"><span class="nav-text">3.2 服务器联机系统</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-总结"><span class="nav-text">四. 总结</span></a></li></ol></div>
             
 
           </div>
@@ -811,7 +813,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">32.6k</span>
+    <span title="Site words total count">33.5k</span>
   
 </div>
 

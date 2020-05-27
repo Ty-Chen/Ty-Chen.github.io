@@ -79,14 +79,14 @@
 
 
 
-<meta name="description" content="前言&amp;emsp;&amp;emsp;上文中，我们分析了从按下电源键到BootLoader完成加载的过程。加载完成之后，就要正式启动Linux内核了，而在这之前首先要完成从实模式到保护模式的切换。本文主要分析以下几部分内容  新旧中断的交替 打开A20 进入main函数 内核初始化  &amp;emsp;&amp;emsp;其实整个过程中还有很多内容，比如检查各种硬件设备等，在此略过不提。下面就开始潜入Linux源码的海洋">
+<meta name="description" content="一. 前言&amp;emsp;&amp;emsp;上文中，我们分析了从按下电源键到BootLoader完成加载的过程。加载完成之后，就要正式启动Linux内核了，而在这之前首先要完成从实模式到保护模式的切换。本文主要分析以下几部分内容  新旧中断的交替 打开A20 进入main函数 内核初始化  &amp;emsp;&amp;emsp;其实整个过程中还有很多内容，比如检查各种硬件设备等，在此略过不提。下面就开始潜入Linux源码">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux操作系统学习笔记（二）内核运行">
 <meta property="og:url" content="https://ty-chen.github.io/linux-kernel-protecd-mode/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
-<meta property="og:description" content="前言&amp;emsp;&amp;emsp;上文中，我们分析了从按下电源键到BootLoader完成加载的过程。加载完成之后，就要正式启动Linux内核了，而在这之前首先要完成从实模式到保护模式的切换。本文主要分析以下几部分内容  新旧中断的交替 打开A20 进入main函数 内核初始化  &amp;emsp;&amp;emsp;其实整个过程中还有很多内容，比如检查各种硬件设备等，在此略过不提。下面就开始潜入Linux源码的海洋">
+<meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;上文中，我们分析了从按下电源键到BootLoader完成加载的过程。加载完成之后，就要正式启动Linux内核了，而在这之前首先要完成从实模式到保护模式的切换。本文主要分析以下几部分内容  新旧中断的交替 打开A20 进入main函数 内核初始化  &amp;emsp;&amp;emsp;其实整个过程中还有很多内容，比如检查各种硬件设备等，在此略过不提。下面就开始潜入Linux源码">
 <meta property="article:published_time" content="2020-04-26T11:59:35.000Z">
-<meta property="article:modified_time" content="2020-05-21T16:45:34.716Z">
+<meta property="article:modified_time" content="2020-05-26T15:29:09.550Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -306,8 +306,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-05-22T00:45:34+08:00" content="2020-05-22">
-                2020-05-22
+              <time itemprop="dateUpdated" datetime="2020-05-26T23:29:09+08:00" content="2020-05-26">
+                2020-05-26
               </time>
             </span>
           
@@ -407,7 +407,7 @@
       
 
       
-        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>&emsp;&emsp;上文中，我们分析了从按下电源键到BootLoader完成加载的过程。加载完成之后，就要正式启动Linux内核了，而在这之前首先要完成从实模式到保护模式的切换。本文主要分析以下几部分内容</p>
+        <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;上文中，我们分析了从按下电源键到BootLoader完成加载的过程。加载完成之后，就要正式启动Linux内核了，而在这之前首先要完成从实模式到保护模式的切换。本文主要分析以下几部分内容</p>
 <ul>
 <li>新旧中断的交替</li>
 <li>打开A20</li>
@@ -417,7 +417,7 @@
 <p>&emsp;&emsp;其实整个过程中还有很多内容，比如检查各种硬件设备等，在此略过不提。下面就开始潜入Linux源码的海洋畅游啦。</p>
 <a id="more"></a>
 
-<h2 id="新旧中断的交替"><a href="#新旧中断的交替" class="headerlink" title="新旧中断的交替"></a>新旧中断的交替</h2><p>&emsp;&emsp;在实模式下的中断显然不可以和保护模式的中断同日而语，因此我们需要关闭旧的中断（cli）并确立新的中断（sti）。<code>main</code>函数能够适应保护模式的中断服务体系被重建完毕才会打开中断，而那时候响应中断的服务程序将不再是BIOS提供的中断服务程序，取而代之的是由系统自身提供的中断服务程序。</p>
+<h2 id="二-新旧中断的交替"><a href="#二-新旧中断的交替" class="headerlink" title="二. 新旧中断的交替"></a>二. 新旧中断的交替</h2><p>&emsp;&emsp;在实模式下的中断显然不可以和保护模式的中断同日而语，因此我们需要关闭旧的中断（cli）并确立新的中断（sti）。<code>main</code>函数能够适应保护模式的中断服务体系被重建完毕才会打开中断，而那时候响应中断的服务程序将不再是BIOS提供的中断服务程序，取而代之的是由系统自身提供的中断服务程序。</p>
 <p>&emsp;&emsp;cli、sti总是在一个完整操作过程的两头出现，目的是避免中断在此期间的介入。接下来的代码将为操作系统进入保护模式做准备。此处即将进行实模式下中断向量表和保护模式下<a href="https://en.wikipedia.org/wiki/Interrupt_descriptor_table" target="_blank" rel="noopener">中断描述符表</a>（IDT）的交接工作。试想，如果没有cli，又恰好发生中断，如用户不小心碰了一下键盘，中断就要切进来，就不得不面对实模式的中断机制已经废除、保护模式的中断机制尚未完成的尴尬局面，结果就是系统崩溃。cli、sti保证了这个过程中，IDT能够完整创建，以避免不可预料中断的进入造成IDT创建不完整或新老中断机制混用。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">#boot&#x2F;setup.s</span><br><span class="line">……</span><br><span class="line">do _move：</span><br><span class="line">mov es,ax！destination segment</span><br><span class="line">add ax，#0x1000</span><br><span class="line">cmp ax，#0x9000</span><br><span class="line">jz end_move</span><br><span class="line">mov ds,ax！source segment</span><br><span class="line">sub di,di</span><br><span class="line">sub si,si</span><br><span class="line">mov cx，#0x8000</span><br><span class="line">rep</span><br><span class="line">movsw</span><br><span class="line">jmp do_move</span><br></pre></td></tr></table></figure>
 
@@ -441,12 +441,12 @@
 <li>在设计内核代码时，已经将两个表写好，并且把需要的数据也写好。此处的数据区域是在内核源代码中设定、编译并直接加载至内存形成的一块数据区域。专用寄存器的指向由程序中的lidt和lgdt指令完成</li>
 <li>将专用寄存器（IDTR、GDTR）指向表。</li>
 </ol>
-<h2 id="A20"><a href="#A20" class="headerlink" title="A20"></a>A20</h2><p>&emsp;&emsp;A20启用是一个标志性的动作，由上文提到的lzma_decompress.img 调用 <code>real_to_prot</code>启动。打开A20，意味着CPU可以进行32位寻址，最大寻址空间为4 GB。注意图1-19中内存条范围的变化：从5个F扩展到8个F，即0xFFFFFFFF(4 GB)。</p>
+<h2 id="三-A20"><a href="#三-A20" class="headerlink" title="三. A20"></a>三. A20</h2><p>&emsp;&emsp;A20启用是一个标志性的动作，由上文提到的lzma_decompress.img 调用 <code>real_to_prot</code>启动。打开A20，意味着CPU可以进行32位寻址，最大寻址空间为4 GB。注意图1-19中内存条范围的变化：从5个F扩展到8个F，即0xFFFFFFFF(4 GB)。</p>
 <p>&emsp;&emsp;实模式下，当程序寻址超过0xFFFFF时，CPU将“回滚”至内存地址起始处寻址（注意，在只有20根地址线的条<br>件下，0xFFFFF+1=0x00000，最高位溢出）。例如，系统的段寄存器（如CS）的最大允许地址为0xFFFF，指令指针（IP）的最大允许段内偏移也为0xFFFF，两者确定的最大绝对地址为0x10FFEF，这将意味着程序中可产生的实模式下的寻址范围比1 MB多出将近64 KB（一些特殊寻址要求的程序就利用了这个特点）。这样，此处对A20地址线的启用相当于关闭CPU在实模式下寻址的“回滚”机制。如下所示为利用此特点来验证A20地址线是否确实已经打开。注意此处代码并不在此时运行，而是在后续head运行过程中为了检测是否处于保护模式中使用。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">#boot&#x2F;head.s</span><br><span class="line">……</span><br><span class="line">xorl %eax，%eax</span><br><span class="line">1：incl%eax#check that A20 really IS enabled</span><br><span class="line">movl %eax，0x000000#loop forever if it isn&#39;t</span><br><span class="line">cmpl %eax，0x100000</span><br><span class="line">je 1b</span><br><span class="line">……</span><br></pre></td></tr></table></figure>
 
 <p>&emsp;&emsp;A20如果没打开，则计算机处于20位的寻址模式，超过0xFFFFF寻址必然“回滚”。一个特例是0x100000会回滚到0x000000，也就是说，地址0x100000处存储的值必然和地址0x000000处存储的值完全相同。通过在内存0x000000位置写入一个数据，然后比较此处和1 MB（0x100000，注意，已超过实模式寻址范围）处数据是否一致，就可以检验A20地址线是否已打开。</p>
-<h2 id="进入main函数"><a href="#进入main函数" class="headerlink" title="进入main函数"></a>进入main函数</h2><p>&emsp;&emsp;这里涉及到一个硬件知识：在X86体系中，采用的终端控制芯片名为8259A，此芯片，是可以用程序控制的中断控制器。单个的8259A能管理8级向量优先级中断，在不增加其他电路的情况下，最多可以级联成64级的向量优先级中断系统。CPU在保护模式下，int 0x00～int 0x1F被Intel保留作为内部（不可屏蔽）中断和异常中断。如果不对8259A进行重新编程，int 0x00～int 0x1F中断将被覆盖。例如，IRQ0（时钟中断）为8号（int 0x08）中断，但在保护模式下此中断号是Intel保留的“Double Fault”（双重故障）。因此，必须通过8259A编程将原来的IRQ0x00～IRQ0x0F对应的中断号重新分布，即在保护模式下，IRQ0x00～IRQ0x0F的中断号是int 0x20～int 0x2F。</p>
+<h2 id="四-进入main函数"><a href="#四-进入main函数" class="headerlink" title="四. 进入main函数"></a>四. 进入main函数</h2><p>&emsp;&emsp;这里涉及到一个硬件知识：在X86体系中，采用的终端控制芯片名为8259A，此芯片，是可以用程序控制的中断控制器。单个的8259A能管理8级向量优先级中断，在不增加其他电路的情况下，最多可以级联成64级的向量优先级中断系统。CPU在保护模式下，int 0x00～int 0x1F被Intel保留作为内部（不可屏蔽）中断和异常中断。如果不对8259A进行重新编程，int 0x00～int 0x1F中断将被覆盖。例如，IRQ0（时钟中断）为8号（int 0x08）中断，但在保护模式下此中断号是Intel保留的“Double Fault”（双重故障）。因此，必须通过8259A编程将原来的IRQ0x00～IRQ0x0F对应的中断号重新分布，即在保护模式下，IRQ0x00～IRQ0x0F的中断号是int 0x20～int 0x2F。</p>
 <p>&emsp;&emsp;setup程序通过下面代码将CPU工作方式设为保护模式。这里涉及到一个CR0寄存器：0号32位控制寄存器，放系统控制标志。第0位为<a href="https://en.wikipedia.org/wiki/Portable_Executable" target="_blank" rel="noopener">PE（Protected Mode Enable，保护模式使能）标志</a>，置1时CPU工作在保护模式下，置0时为实模式。将CR0寄存器第0位（PE）置1，即设定处理器工作方式为保护模式。CPU工作方式转变为保护模式，一个重要的特征就是要根据GDT决定后续执行哪里的程序。前文提到GDT初始时已写好了数据，这些将用来完成从setup程序到head程序的跳转。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#boot&#x2F;setup.s</span><br><span class="line">mov ax，#0x0001！protected mode（PE）bit</span><br><span class="line">lmsw ax！This is it！</span><br><span class="line">jmpi 0，8！jmp offset 0 of segment 8（cs）</span><br></pre></td></tr></table></figure>
 
@@ -468,7 +468,7 @@
 </li>
 </ol>
 <p>&emsp;&emsp;最终完成了分页机制初始化后，PG（Paging) 标志位将会置1，表示地址映射模式采取分页机制，最终跳转至main函数，内核开始初始化工作。</p>
-<h2 id="内核初始化"><a href="#内核初始化" class="headerlink" title="内核初始化"></a>内核初始化</h2><p>&emsp;&emsp;注意，至此为止，我们尚未打开中断，而必须通过main函数完成一系列的初始化后才会打开新的中断，从而使内核正式运行起来。该部分主要包括：</p>
+<h2 id="五-内核初始化"><a href="#五-内核初始化" class="headerlink" title="五. 内核初始化"></a>五. 内核初始化</h2><p>&emsp;&emsp;注意，至此为止，我们尚未打开中断，而必须通过main函数完成一系列的初始化后才会打开新的中断，从而使内核正式运行起来。该部分主要包括：</p>
 <ol>
 <li><p>为进程0建立内核态堆栈</p>
 </li>
@@ -482,7 +482,7 @@
 </li>
 </ol>
 <p>&emsp;&emsp;完成这些之后，内核就正式运行，开始创建0号进程了。</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>&emsp;&emsp;本文介绍了实模式到保护模式的整个切换过程，完成了内核的加载并开始正式准备创建0号进程。后续将继续分析启动内核创建0号、1号、2号进程的整个过程。本文介绍过程中忽略了很多汇编代码以及一些虽然很重要但是不属于基本流程的知识，有兴趣了解的可以根据文中链接、文末的源码和参考资料进行更深入的学习研究。</p>
+<h2 id="六-总结"><a href="#六-总结" class="headerlink" title="六. 总结"></a>六. 总结</h2><p>&emsp;&emsp;本文介绍了实模式到保护模式的整个切换过程，完成了内核的加载并开始正式准备创建0号进程。后续将继续分析启动内核创建0号、1号、2号进程的整个过程。本文介绍过程中忽略了很多汇编代码以及一些虽然很重要但是不属于基本流程的知识，有兴趣了解的可以根据文中链接、文末的源码和参考资料进行更深入的学习研究。</p>
 <h2 id="源码资料"><a href="#源码资料" class="headerlink" title="源码资料"></a>源码资料</h2><p>[1] <a href="https://www.gnu.org/software/grub/" target="_blank" rel="noopener">GURB 2</a></p>
 <p>[2] <a href="http://www.syslinux.org/wiki/index.php/The_Syslinux_Project" target="_blank" rel="noopener">syslinux</a></p>
 <h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1] Linux-insides</p>
@@ -791,7 +791,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#新旧中断的交替"><span class="nav-text">新旧中断的交替</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#A20"><span class="nav-text">A20</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#进入main函数"><span class="nav-text">进入main函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#内核初始化"><span class="nav-text">内核初始化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源码资料"><span class="nav-text">源码资料</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-text">参考资料</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-新旧中断的交替"><span class="nav-text">二. 新旧中断的交替</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-A20"><span class="nav-text">三. A20</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-进入main函数"><span class="nav-text">四. 进入main函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-内核初始化"><span class="nav-text">五. 内核初始化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#六-总结"><span class="nav-text">六. 总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源码资料"><span class="nav-text">源码资料</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-text">参考资料</span></a></li></ol></div>
             
 
           </div>
@@ -825,7 +825,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">32.6k</span>
+    <span title="Site words total count">33.5k</span>
   
 </div>
 
