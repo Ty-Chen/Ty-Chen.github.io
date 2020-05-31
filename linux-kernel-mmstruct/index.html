@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;从本文开始，我们进入内存部分的学习。首先会接着前面的任务task_struct讲解任务空间管理结构体mm_struct，并简单介绍物理内存和虚拟内存的相关知识，关于详细的基础知识和概念可以参照CSAPP一书，这里不会做过多的赘述，而是默认在已了解其映射关系的基础上进行的学习。在后文中，会继续介绍物理内存的管理以及用户态和内核态的内存映射。">
 <meta property="article:published_time" content="2020-05-30T15:24:34.000Z">
-<meta property="article:modified_time" content="2020-05-30T15:29:16.937Z">
+<meta property="article:modified_time" content="2020-05-31T15:05:19.638Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -306,8 +306,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-05-30T23:29:16+08:00" content="2020-05-30">
-                2020-05-30
+              <time itemprop="dateUpdated" datetime="2020-05-31T23:05:19+08:00" content="2020-05-31">
+                2020-05-31
               </time>
             </span>
           
@@ -370,7 +370,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  150
+                  706
                 </span>
               
 
@@ -386,7 +386,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  1
+                  2
                 </span>
               
             </div>
@@ -410,7 +410,26 @@
         <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;从本文开始，我们进入内存部分的学习。首先会接着前面的任务<code>task_struct</code>讲解任务空间管理结构体<code>mm_struct</code>，并简单介绍物理内存和虚拟内存的相关知识，关于详细的基础知识和概念可以参照CSAPP一书，这里不会做过多的赘述，而是默认在已了解其映射关系的基础上进行的学习。在后文中，会继续介绍物理内存的管理以及用户态和内核态的内存映射。</p>
 <a id="more"></a>
 
-<h2 id="二-基本概念梳理"><a href="#二-基本概念梳理" class="headerlink" title="二. 基本概念梳理"></a>二. 基本概念梳理</h2>
+<h2 id="二-基本概念梳理"><a href="#二-基本概念梳理" class="headerlink" title="二. 基本概念梳理"></a>二. 基本概念梳理</h2><ul>
+<li>CPU、缓存、内存、主存的架构是源于越快的设备越贵，因此出于节约（qiong)考虑设计了多层架构，CPU中有了MMU</li>
+<li>物理内存有限，多进程共享物理内存存在安全问题，因此出现了虚拟内存的设计</li>
+<li>虚拟内存根据ELF的结构进行了相应的设计，存在堆、映射区、栈、数据段等部分</li>
+<li>考虑到虚拟内存的结构，出现了堆的申请即动态内存</li>
+<li>虚拟内存为每个进程分配单独的地址空间，映射到物理内存上执行，因此有了物理内存和虚拟内存的映射方法：页</li>
+<li>为了管理虚拟内存，出现了页表和多级页表</li>
+<li>为了加速映射，出现了CPU中的TLB</li>
+<li>为了满足共享的需求，出现了内存映射中的共享内存</li>
+<li>由于内存碎片的存在，出现了碎片管理的设计以及垃圾回收器</li>
+</ul>
+<h2 id="三-任务内存管理"><a href="#三-任务内存管理" class="headerlink" title="三. 任务内存管理"></a>三. 任务内存管理</h2><p>对于一个任务来说，需要考虑用户态和内核态两部分需要存储在内核内的各个结构</p>
+<p>用户态包括</p>
+<p>代码需要放在内存里面；全局变量，例如 max_length；常量字符串”Input the string length : “；函数栈，例如局部变量 num 是作为参数传给 generate 函数的，这里面涉及了函数调用，局部变量，函数参数等都是保存在函数栈上面的；堆，malloc 分配的内存在堆里面；这里面涉及对 glibc 的调用，所以 glibc 的代码是以 so 文件的形式存在的，也需要放在内存里面。</p>
+<p>内核态包括</p>
+<p>内核的代码要在内存里面；内核中也有全局变量；每个进程都要有一个 task_struct；每个进程还有一个内核栈；在内核里面也有动态分配的内存；虚拟地址到物理地址的映射表放在哪里？</p>
+<p>Text Segment、Data Segment 和 BSS Segment。Text Segment 是存放二进制可执行代码的位置，Data Segment 存放静态常量，BSS Segment 存放未初始化的静态变量。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">mm_struct</span>		*<span class="title">mm</span>;</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">mm_struct</span>		*<span class="title">active_mm</span>;</span></span><br><span class="line"><span class="comment">/* Per-thread vma caching: */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">vmacache</span>			<span class="title">vmacache</span>;</span></span><br></pre></td></tr></table></figure>
+
+
       
     </div>
     
@@ -708,7 +727,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-基本概念梳理"><span class="nav-text">二. 基本概念梳理</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-基本概念梳理"><span class="nav-text">二. 基本概念梳理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-任务内存管理"><span class="nav-text">三. 任务内存管理</span></a></li></ol></div>
             
 
           </div>
@@ -742,7 +761,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">40.2k</span>
+    <span title="Site words total count">40.8k</span>
   
 </div>
 
