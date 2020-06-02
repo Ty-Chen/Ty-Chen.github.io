@@ -85,14 +85,17 @@
 <meta property="og:url" content="https://ty-chen.github.io/linux-kernel-mmstruct/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;从本文开始，我们进入内存部分的学习。首先会接着前面的任务task_struct讲解任务空间管理结构体mm_struct，并简单介绍物理内存和虚拟内存的相关知识，关于详细的基础知识和概念可以参照CSAPP一书，这里不会做过多的赘述，而是默认在已了解其映射关系的基础上进行的学习。在后文中，会继续介绍物理内存的管理以及用户态和内核态的内存映射。">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/83/04/83a6511faf802014fbc2c02afc397a04.jpg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/7e/f6/7eaf620768c62ff53e5ea2b11b4940f6.jpg">
 <meta property="article:published_time" content="2020-05-30T15:24:34.000Z">
-<meta property="article:modified_time" content="2020-06-01T14:51:27.998Z">
+<meta property="article:modified_time" content="2020-06-02T14:56:27.537Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
 <meta property="article:tag" content="mm_struct">
 <meta property="article:tag" content="内存">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://static001.geekbang.org/resource/image/83/04/83a6511faf802014fbc2c02afc397a04.jpg">
 
 
 
@@ -306,8 +309,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-06-01T22:51:27+08:00" content="2020-06-01">
-                2020-06-01
+              <time itemprop="dateUpdated" datetime="2020-06-02T22:56:27+08:00" content="2020-06-02">
+                2020-06-02
               </time>
             </span>
           
@@ -370,7 +373,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  2.2k
+                  3.4k
                 </span>
               
 
@@ -386,7 +389,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  9
+                  14
                 </span>
               
             </div>
@@ -421,7 +424,7 @@
 <li>为了满足共享的需求，出现了内存映射中的共享内存</li>
 <li>由于内存碎片的存在，出现了碎片管理的设计以及垃圾回收器</li>
 </ul>
-<h2 id="三-任务内存管理"><a href="#三-任务内存管理" class="headerlink" title="三. 任务内存管理"></a>三. 任务内存管理</h2><p>&emsp;&emsp;对于一个进程来说，需要考虑用户态和内核态两部分需要存储在内核内的各个结构</p>
+<h2 id="三-进程内存管理"><a href="#三-进程内存管理" class="headerlink" title="三. 进程内存管理"></a>三. 进程内存管理</h2><p>&emsp;&emsp;对于一个进程来说，需要考虑用户态和内核态两部分需要存储在内核内的各个结构</p>
 <p>&emsp;&emsp;用户态包括</p>
 <ul>
 <li>代码段</li>
@@ -499,7 +502,64 @@
 </ul>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">load_elf_binary</span><span class="params">(struct linux_binprm *bprm)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">......</span><br><span class="line">    setup_new_exec(bprm);</span><br><span class="line">......</span><br><span class="line">	<span class="comment">/* Do this so that we can load the interpreter, if need be.  We will</span></span><br><span class="line"><span class="comment">	   change some of these later */</span>    </span><br><span class="line">    retval = setup_arg_pages(bprm, randomize_stack_top(STACK_TOP),</span><br><span class="line">         executable_stack);</span><br><span class="line">......</span><br><span class="line">    error = elf_map(bprm-&gt;file, load_bias + vaddr, elf_ppnt,</span><br><span class="line">        elf_prot, elf_flags, total_size);</span><br><span class="line">......</span><br><span class="line">	<span class="comment">/* Calling set_brk effectively mmaps the pages that we need</span></span><br><span class="line"><span class="comment">	 * for the bss and break sections.  We must do this before</span></span><br><span class="line"><span class="comment">	 * mapping in the interpreter, to make sure it doesn't wind</span></span><br><span class="line"><span class="comment">	 * up getting placed where the bss needs to go.</span></span><br><span class="line"><span class="comment">	 */</span>    </span><br><span class="line">    retval = set_brk(elf_bss, elf_brk, bss_prot);</span><br><span class="line">......</span><br><span class="line">    elf_entry = load_elf_interp(&amp;loc-&gt;interp_elf_ex,</span><br><span class="line">              interpreter,</span><br><span class="line">              &amp;interp_map_addr,</span><br><span class="line">              load_bias, interp_elf_phdata);</span><br><span class="line">......</span><br><span class="line">    current-&gt;mm-&gt;end_code = end_code;</span><br><span class="line">    current-&gt;mm-&gt;start_code = start_code;</span><br><span class="line">    current-&gt;mm-&gt;start_data = start_data;</span><br><span class="line">    current-&gt;mm-&gt;end_data = end_data;</span><br><span class="line">    current-&gt;mm-&gt;start_stack = bprm-&gt;p;</span><br><span class="line">......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<h3 id="3-2-内核态结构"><a href="#3-2-内核态结构" class="headerlink" title="3.2 内核态结构"></a>3.2 内核态结构</h3><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="代码资料"><a href="#代码资料" class="headerlink" title="代码资料"></a>代码资料</h2><h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2>
+<h3 id="3-2-内核态结构"><a href="#3-2-内核态结构" class="headerlink" title="3.2 内核态结构"></a>3.2 内核态结构</h3><p>&emsp;&emsp;由于32位和64位系统空间大小差距过大，因此结构上也有一些区别。我们这里分别讨论二者的结构。</p>
+<h4 id="3-2-1-32位内核态结构"><a href="#3-2-1-32位内核态结构" class="headerlink" title="3.2.1 32位内核态结构"></a>3.2.1 32位内核态结构</h4><p>&emsp;&emsp;内核态的虚拟空间和进程是无关的，即所有进程通过系统调用进入内核后，看到的虚拟地址空间是一样的。如下图所示为32位内核态虚拟空间分布图。</p>
+<img src="https://static001.geekbang.org/resource/image/83/04/83a6511faf802014fbc2c02afc397a04.jpg" alt="img" style="zoom: 25%;" />
+
+<ol>
+<li><p>直接映射区</p>
+<p>前896M为直接映射区，该区域用于和物理内存进行直接映射。虚拟内存地址减去 3G，就得到对应的物理内存的位置。在内核里面，有两个宏：</p>
+</li>
+</ol>
+<ul>
+<li><p><code>__pa(vaddr)</code> 返回与虚拟地址 <code>vaddr</code> 相关的物理地址；</p>
+</li>
+<li><p><code>__va(paddr)</code> 则计算出对应于物理地址 paddr 的虚拟地址。</p>
+</li>
+</ul>
+<p>&emsp;&emsp;对于该部分虚拟地址的访问，同样采取分页的方式进行，但是页表地址比较简单，直接一一对应即可。</p>
+<p>&emsp;&emsp;在系统启动的时候，物理内存的前 1M 已经被占用了，从 1M 开始加载内核代码段，然后就是内核的全局变量、BSS 等，也是 ELF 里面涵盖的。这样内核的代码段，全局变量，BSS 也就会被映射到 3G 后的虚拟地址空间里面。具体的物理内存布局可以查看 <code>/proc/iomem</code>，具体会因为每个人的系统、配置等产生区别。</p>
+<ol start="2">
+<li>high_memory</li>
+</ol>
+<p>&emsp;&emsp;高端内存的名字来源于x86架构中将物理地址空间划分三部分：ZONE_DMA、ZONE_NORMAL和ZONE_HIGHMEM。ZONE_HIGHMEM即为高端内存。</p>
+<p>&emsp;&emsp;高端内存是内存管理模块看待物理内存的称谓，指的也即896M直接映射区上面的区域。内核中除了内存管理模块外，其余均操作虚拟地址。而内存管理模块会直接操作物理地址，进行虚拟地址的分配和映射。其存在的意义是以32位系统有限的内核空间去访问无限的物理内存空间：借用这段逻辑地址空间，建立映射到想访问的那段物理内存（即填充内核页表），临时用一会，用完后归还。</p>
+<ol start="3">
+<li>内核动态映射空间（noncontiguous memory allocation）</li>
+</ol>
+<p>&emsp;&emsp;在<code>VMALLOC_START</code>和<code>VMALLOC_END</code>之间的区域称之为内核动态映射空间，对应于用户态进程<code>malloc</code>申请内存一样，在内核态可以通过<code>vmalloc</code>来申请。内核态有单独的页表管理，和用户态分开。</p>
+<ol start="4">
+<li>持久内核映射区（permanent kernel mapping）</li>
+</ol>
+<p>&emsp;&emsp;<code>PKMAP_BASE</code> 到 <code>FIXADDR_START</code> 的空间称为持久内核映射，这个地址范围是 4G-8M 到 4G-4M 之间。使用 <code>alloc_pages()</code> 函数的时候，在物理内存的高端内存得到 <code>struct page</code> 结构，可以调用 <code>kmap</code> 将其映射到这个区域。因为允许永久映射的数量有限，当不再需要高端内存时，应该解除映射，这可以通过<code>kunmap()</code>函数来完成。</p>
+<ol start="5">
+<li>固定映射区</li>
+</ol>
+<p>&emsp;&emsp;<code>FIXADDR_START</code> 到 <code>FIXADDR_TOP(0xFFFF F000)</code> 的空间，称为固定映射区域，主要用于满足特殊需求。</p>
+<ol start="6">
+<li>临时映射区（temporary kernel mapping）</li>
+</ol>
+<p>&emsp;&emsp;临时内核映射通过<code>kmap_atomic</code>和<code>kunmap_atomic</code>实现，主要用于当需要写入物理内存或主存时的操作，如写入文件时使用。</p>
+<h4 id="3-2-2-64位内核态结构"><a href="#3-2-2-64位内核态结构" class="headerlink" title="3.2.2 64位内核态结构"></a>3.2.2 64位内核态结构</h4><p>&emsp;&emsp;64位内核态因为空间巨大，所以不需要像32位一样精打细算，直接分出很多的空闲区域做保护，结构如下图所示</p>
+<img src="https://static001.geekbang.org/resource/image/7e/f6/7eaf620768c62ff53e5ea2b11b4940f6.jpg" alt="img" style="zoom:25%;" />
+
+<ul>
+<li>从 0xffff800000000000 开始就是内核的部分，只不过一开始有 8T 的空档区域。</li>
+<li>从 <code>__PAGE_OFFSET_BASE(0xffff880000000000)</code> 开始的 64T 的虚拟地址空间是直接映射区域，也就是减去 <code>PAGE_OFFSET</code> 就是物理地址。虚拟地址和物理地址之间的映射在大部分情况下还是会通过建立页表的方式进行映射。</li>
+<li>从 <code>VMALLOC_START（0xffffc90000000000）</code>开始到 <code>VMALLOC_END（0xffffe90000000000）</code>的 32T 的空间是给 <code>vmalloc</code> 的。</li>
+<li>从 <code>VMEMMAP_START（0xffffea0000000000）</code>开始的 1T 空间用于存放物理页面的描述结构 <code>struct page</code> 的。</li>
+<li>从 <code>__START_KERNEL_map（0xffffffff80000000）</code>开始的 512M 用于存放内核代码段、全局变量、BSS 等。这里对应到物理内存开始的位置，减去 <code>__START_KERNEL_map</code> 就能得到物理内存的地址。这里和直接映射区有点像，但是不矛盾，因为直接映射区之前有 8T 的空当区域，早就过了内核代码在物理内存中加载的位置。</li>
+</ul>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>&emsp;&emsp;本文比较详细的分析了内存在用户态和内核态的结构，以此为基础，后文可以开始分析内存的管理、映射了。</p>
+<h2 id="代码资料"><a href="#代码资料" class="headerlink" title="代码资料"></a>代码资料</h2><p>[1] <a href="https://code.woboq.org/linux/linux/include/linux/mm_types.h.html#mm_struct" target="_blank" rel="noopener">linux/include/linux/mm_types.h</a></p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1] wiki</p>
+<p>[2] <a href="https://elixir.bootlin.com/linux/v5.7-rc1/source" target="_blank" rel="noopener">elixir.bootlin.com/linux</a></p>
+<p>[3] <a href="https://code.woboq.org/" target="_blank" rel="noopener">woboq</a></p>
+<p>[4] Linux-insides</p>
+<p>[5] 深入理解Linux内核</p>
+<p>[6] Linux内核设计的艺术</p>
+<p>[7] 极客时间 趣谈Linux操作系统</p>
+
       
     </div>
     
@@ -797,7 +857,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-基本概念梳理"><span class="nav-text">二. 基本概念梳理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-任务内存管理"><span class="nav-text">三. 任务内存管理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-用户态内存结构"><span class="nav-text">3.1 用户态内存结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-内核态结构"><span class="nav-text">3.2 内核态结构</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#代码资料"><span class="nav-text">代码资料</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-text">参考资料</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-基本概念梳理"><span class="nav-text">二. 基本概念梳理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-进程内存管理"><span class="nav-text">三. 进程内存管理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-用户态内存结构"><span class="nav-text">3.1 用户态内存结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-内核态结构"><span class="nav-text">3.2 内核态结构</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-1-32位内核态结构"><span class="nav-text">3.2.1 32位内核态结构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-2-64位内核态结构"><span class="nav-text">3.2.2 64位内核态结构</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#代码资料"><span class="nav-text">代码资料</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-text">参考资料</span></a></li></ol></div>
             
 
           </div>
@@ -831,7 +891,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">42.3k</span>
+    <span title="Site words total count">43.5k</span>
   
 </div>
 
