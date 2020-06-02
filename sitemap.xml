@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://ty-chen.github.io/linux-kernel-mm-mgr/</loc>
+    
+    <lastmod>2020-06-02T15:04:44.386Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://ty-chen.github.io/linux-kernel-mmstruct/</loc>
     
     <lastmod>2020-06-02T14:56:27.537Z</lastmod>
