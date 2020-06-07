@@ -2,9 +2,16 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://ty-chen.github.io/linux-kernel-mmap/</loc>
+    
+    <lastmod>2020-06-07T13:15:06.058Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://ty-chen.github.io/linux-kernel-mm-mgr/</loc>
     
-    <lastmod>2020-06-07T13:07:55.833Z</lastmod>
+    <lastmod>2020-06-07T13:13:49.097Z</lastmod>
     
   </url>
   
