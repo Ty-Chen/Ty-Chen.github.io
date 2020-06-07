@@ -300,7 +300,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-06-07T21:15:06+08:00" content="2020-06-07">
+              <time itemprop="dateUpdated" datetime="2020-06-07T23:57:17+08:00" content="2020-06-07">
                 2020-06-07
               </time>
             </span>
@@ -359,7 +359,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  32
+                  169
                 </span>
               
 
@@ -397,7 +397,7 @@
 
       
         
-          <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;本文为内存部分最后一篇，介绍虚拟内存和物理内存之间的映射。</p>
+          <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;本文为内存部分最后一篇，介绍内存映射。内存映射不仅是物理内存和虚拟内存间的映射，也包括将文件中的内容映射到虚拟内存空间。这个时候，访问内存空间就能够访问到文件里面的数据。而仅有物理内存和虚拟内存的映射，是一种特殊情况。本文首先分析用户态在堆中申请小块内存的<code>brk</code>和申请大块内存的<code>mmap</code>，之后会分析内核态的内存映射机制<code>vmalloc</code>，<code>kmap_atomic</code>，<code>swapper_pg_dir</code>以及内核态缺页异常。</p>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/linux-kernel-mmap/#more" rel="contents">
@@ -2362,7 +2362,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">51.2k</span>
+    <span title="Site words total count">51.3k</span>
   
 </div>
 

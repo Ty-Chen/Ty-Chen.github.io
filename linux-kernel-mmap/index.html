@@ -79,14 +79,14 @@
 
 
 
-<meta name="description" content="一. 前言&amp;emsp;&amp;emsp;本文为内存部分最后一篇，介绍虚拟内存和物理内存之间的映射。">
+<meta name="description" content="一. 前言&amp;emsp;&amp;emsp;本文为内存部分最后一篇，介绍内存映射。内存映射不仅是物理内存和虚拟内存间的映射，也包括将文件中的内容映射到虚拟内存空间。这个时候，访问内存空间就能够访问到文件里面的数据。而仅有物理内存和虚拟内存的映射，是一种特殊情况。本文首先分析用户态在堆中申请小块内存的brk和申请大块内存的mmap，之后会分析内核态的内存映射机制vmalloc，kmap_atomic，swap">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux操作系统学习笔记（十）内存管理之内存映射">
 <meta property="og:url" content="https://ty-chen.github.io/linux-kernel-mmap/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
-<meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;本文为内存部分最后一篇，介绍虚拟内存和物理内存之间的映射。">
+<meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;本文为内存部分最后一篇，介绍内存映射。内存映射不仅是物理内存和虚拟内存间的映射，也包括将文件中的内容映射到虚拟内存空间。这个时候，访问内存空间就能够访问到文件里面的数据。而仅有物理内存和虚拟内存的映射，是一种特殊情况。本文首先分析用户态在堆中申请小块内存的brk和申请大块内存的mmap，之后会分析内核态的内存映射机制vmalloc，kmap_atomic，swap">
 <meta property="article:published_time" content="2020-06-07T13:12:49.000Z">
-<meta property="article:modified_time" content="2020-06-07T13:15:06.058Z">
+<meta property="article:modified_time" content="2020-06-07T15:57:17.098Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -309,7 +309,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-06-07T21:15:06+08:00" content="2020-06-07">
+              <time itemprop="dateUpdated" datetime="2020-06-07T23:57:17+08:00" content="2020-06-07">
                 2020-06-07
               </time>
             </span>
@@ -373,7 +373,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  32
+                  169
                 </span>
               
 
@@ -410,8 +410,10 @@
       
 
       
-        <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;本文为内存部分最后一篇，介绍虚拟内存和物理内存之间的映射。</p>
+        <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;本文为内存部分最后一篇，介绍内存映射。内存映射不仅是物理内存和虚拟内存间的映射，也包括将文件中的内容映射到虚拟内存空间。这个时候，访问内存空间就能够访问到文件里面的数据。而仅有物理内存和虚拟内存的映射，是一种特殊情况。本文首先分析用户态在堆中申请小块内存的<code>brk</code>和申请大块内存的<code>mmap</code>，之后会分析内核态的内存映射机制<code>vmalloc</code>，<code>kmap_atomic</code>，<code>swapper_pg_dir</code>以及内核态缺页异常。</p>
 <a id="more"></a>
+
+<h2 id="二-用户态内存映射"><a href="#二-用户态内存映射" class="headerlink" title="二. 用户态内存映射"></a>二. 用户态内存映射</h2>
       
     </div>
     
@@ -715,7 +717,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-用户态内存映射"><span class="nav-text">二. 用户态内存映射</span></a></li></ol></div>
             
 
           </div>
@@ -749,7 +751,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">51.2k</span>
+    <span title="Site words total count">51.3k</span>
   
 </div>
 
