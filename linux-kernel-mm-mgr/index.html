@@ -87,7 +87,7 @@
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;上文分析了内存再用户态的结构体mm_struct及各个区域映射的vm_area_struct以及32位和64位的内核态结构体，本文将基于这些结构来分析Linux的内存管理系统。内存管理系统包括虚拟内存和物理内存的分页以及虚拟内存和物理内存的映射。本文将介绍分页机制，而映射则在下文中说明。本文首先简单介绍SMP和NUMA系统，然后对物理内存的节点、区域、页结构进行分">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/3f/4f/3fa8123990e5ae2c86859f70a8351f4f.jpeg">
 <meta property="article:published_time" content="2020-06-02T15:01:44.000Z">
-<meta property="article:modified_time" content="2020-06-07T13:13:49.097Z">
+<meta property="article:modified_time" content="2020-06-07T16:05:40.065Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -309,8 +309,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-06-07T21:13:49+08:00" content="2020-06-07">
-                2020-06-07
+              <time itemprop="dateUpdated" datetime="2020-06-08T00:05:40+08:00" content="2020-06-08">
+                2020-06-08
               </time>
             </span>
           
@@ -542,7 +542,7 @@
 </ul>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">void</span> *<span class="title">new_slab_objects</span><span class="params">(struct kmem_cache *s, <span class="keyword">gfp_t</span> flags,</span></span></span><br><span class="line"><span class="function"><span class="params">			<span class="keyword">int</span> node, struct kmem_cache_cpu **pc)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">void</span> *freelist;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">kmem_cache_cpu</span> *<span class="title">c</span> = *<span class="title">pc</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">page</span> *<span class="title">page</span>;</span></span><br><span class="line">	WARN_ON_ONCE(s-&gt;ctor &amp;&amp; (flags &amp; __GFP_ZERO));</span><br><span class="line">	freelist = get_partial(s, flags, node, c);</span><br><span class="line">	<span class="keyword">if</span> (freelist)</span><br><span class="line">		<span class="keyword">return</span> freelist;</span><br><span class="line">	page = new_slab(s, flags, node);</span><br><span class="line">	<span class="keyword">if</span> (page) &#123;</span><br><span class="line">		c = raw_cpu_ptr(s-&gt;cpu_slab);</span><br><span class="line">		<span class="keyword">if</span> (c-&gt;page)</span><br><span class="line">			flush_slab(s, c);</span><br><span class="line">		<span class="comment">/*</span></span><br><span class="line"><span class="comment">		 * No other reference to the page yet so we can</span></span><br><span class="line"><span class="comment">		 * muck around with it freely without cmpxchg</span></span><br><span class="line"><span class="comment">		 */</span></span><br><span class="line">		freelist = page-&gt;freelist;</span><br><span class="line">		page-&gt;freelist = <span class="literal">NULL</span>;</span><br><span class="line">		stat(s, ALLOC_SLAB);</span><br><span class="line">		c-&gt;page = page;</span><br><span class="line">		*pc = c;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> freelist;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>&emsp;&emsp;至此，页的分配就介绍完了。简单概括就是伙伴系统将多个连续页面整合为页块以供大规模使用，slub allocator将从伙伴系统申请的大块切成小块，放在缓存，并分配给其他系统。</p>
+<p>&emsp;&emsp;至此，页的分配就介绍完了。简单概括就是伙伴系统将多个连续页面整合为页块以供大规模使用，slub allocator将从伙伴系统申请的大块切成小块，放在缓存，并分配给其他系统。物理内存分页之后，通过<code>page_address()-&gt;lowmem_page_address()-&gt;page_to_virt()</code>调用链转化为虚拟地址以使用。</p>
 <h2 id="五-页面交换"><a href="#五-页面交换" class="headerlink" title="五. 页面交换"></a>五. 页面交换</h2><p>&emsp;&emsp;由于虚拟内存是远大于物理内存的，在物理内存中加载所有的虚拟内存页显然是异想天开，因此我们必须要有页面的交换。和CPU调度相似，页的交换也包括主动的交换和被动的交换。</p>
 <ul>
 <li>被动页面回收：当分配内存的时候发现物理内存不够用了，则尝试回收。如申请页面会调用<code>get_page_from_freelist()</code>，该函数会通过调用链<code>get_page_from_freelist()-&gt;node_reclaim()-&gt;__node_reclaim()-&gt;shrink_node()</code>尝试是否可以对当前的内存节点执行换出操作，从而腾出空</li>
@@ -909,7 +909,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">51.3k</span>
+    <span title="Site words total count">51.4k</span>
   
 </div>
 

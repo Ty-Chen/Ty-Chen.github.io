@@ -88,7 +88,7 @@
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/83/04/83a6511faf802014fbc2c02afc397a04.jpg">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/7e/f6/7eaf620768c62ff53e5ea2b11b4940f6.jpg">
 <meta property="article:published_time" content="2020-05-30T15:24:34.000Z">
-<meta property="article:modified_time" content="2020-06-07T05:19:34.722Z">
+<meta property="article:modified_time" content="2020-06-07T16:02:42.154Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -309,8 +309,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-06-07T13:19:34+08:00" content="2020-06-07">
-                2020-06-07
+              <time itemprop="dateUpdated" datetime="2020-06-08T00:02:42+08:00" content="2020-06-08">
+                2020-06-08
               </time>
             </span>
           
@@ -523,7 +523,7 @@
 <li>high_memory</li>
 </ol>
 <p>&emsp;&emsp;高端内存的名字来源于x86架构中将物理地址空间划分三部分：ZONE_DMA、ZONE_NORMAL和ZONE_HIGHMEM。ZONE_HIGHMEM即为高端内存。</p>
-<p>&emsp;&emsp;高端内存是内存管理模块看待物理内存的称谓，指的也即896M直接映射区上面的区域。内核中除了内存管理模块外，其余均操作虚拟地址。而内存管理模块会直接操作物理地址，进行虚拟地址的分配和映射。其存在的意义是以32位系统有限的内核空间去访问无限的物理内存空间：借用这段逻辑地址空间，建立映射到想访问的那段物理内存（即填充内核页表），临时用一会，用完后归还。</p>
+<p>&emsp;&emsp;高端内存是内存管理模块看待物理内存的称谓，指的也即896M直接映射区上面的区域。<strong>内核中除了内存管理模块外，其余均操作虚拟地址。</strong>而内存管理模块会直接操作物理地址，进行虚拟地址的分配和映射。其存在的意义是以32位系统有限的内核空间去访问无限的物理内存空间：借用这段逻辑地址空间，建立映射到想访问的那段物理内存（即填充内核页表），临时用一会，用完后归还。</p>
 <ol start="3">
 <li>内核动态映射空间（noncontiguous memory allocation）</li>
 </ol>
@@ -895,7 +895,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">51.3k</span>
+    <span title="Site words total count">51.4k</span>
   
 </div>
 
