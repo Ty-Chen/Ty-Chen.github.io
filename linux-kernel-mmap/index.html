@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;本文为内存部分最后一篇，介绍内存映射。内存映射不仅是物理内存和虚拟内存间的映射，也包括将文件中的内容映射到虚拟内存空间。这个时候，访问内存空间就能够访问到文件里面的数据。而仅有物理内存和虚拟内存的映射，是一种特殊情况。本文首先分析用户态在堆中申请小块内存的brk和申请大块内存的mmap，之后会分析内核态的内存映射机制vmalloc，kmap_atomic，swap">
 <meta property="article:published_time" content="2020-06-07T13:12:49.000Z">
-<meta property="article:modified_time" content="2020-06-10T16:14:33.830Z">
+<meta property="article:modified_time" content="2020-06-11T16:35:48.671Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -309,8 +309,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-06-11T00:14:33+08:00" content="2020-06-11">
-                2020-06-11
+              <time itemprop="dateUpdated" datetime="2020-06-12T00:35:48+08:00" content="2020-06-12">
+                2020-06-12
               </time>
             </span>
           
@@ -373,7 +373,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1.5k
+                  1.8k
                 </span>
               
 
@@ -389,7 +389,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  7
+                  8
                 </span>
               
             </div>
@@ -444,6 +444,13 @@
 
 <p><code>vm_mmap_pgoff()</code>函数调用<code>do_mmap_pgoff()</code>，实际调用<code>do_mmap()</code>函数。这里<code>get_unmapped_area()</code>函数负责寻找可映射的区域，<code>mmap_region()</code>负责映射该区域。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * The caller must hold down_write(&amp;current-&gt;mm-&gt;mmap_sem).</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="title">do_mmap</span><span class="params">(struct file *file, <span class="keyword">unsigned</span> <span class="keyword">long</span> addr,</span></span></span><br><span class="line"><span class="function"><span class="params">			<span class="keyword">unsigned</span> <span class="keyword">long</span> len, <span class="keyword">unsigned</span> <span class="keyword">long</span> prot,</span></span></span><br><span class="line"><span class="function"><span class="params">			<span class="keyword">unsigned</span> <span class="keyword">long</span> flags, <span class="keyword">vm_flags_t</span> vm_flags,</span></span></span><br><span class="line"><span class="function"><span class="params">			<span class="keyword">unsigned</span> <span class="keyword">long</span> pgoff, <span class="keyword">unsigned</span> <span class="keyword">long</span> *populate,</span></span></span><br><span class="line"><span class="function"><span class="params">			struct list_head *uf)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">mm_struct</span> *<span class="title">mm</span> = <span class="title">current</span>-&gt;<span class="title">mm</span>;</span></span><br><span class="line">	<span class="keyword">int</span> pkey = <span class="number">0</span>;</span><br><span class="line">	*populate = <span class="number">0</span>;</span><br><span class="line">......</span><br><span class="line">	<span class="comment">/* Obtain the address to map to. we verify (or select) it and ensure</span></span><br><span class="line"><span class="comment">	 * that it represents a valid section of the address space.</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	addr = get_unmapped_area(file, addr, len, pgoff, flags);</span><br><span class="line">......</span><br><span class="line">	addr = mmap_region(file, addr, len, vm_flags, pgoff, uf);</span><br><span class="line">	<span class="keyword">if</span> (!IS_ERR_VALUE(addr) &amp;&amp;</span><br><span class="line">	    ((vm_flags &amp; VM_LOCKED) ||</span><br><span class="line">	     (flags &amp; (MAP_POPULATE | MAP_NONBLOCK)) == MAP_POPULATE))</span><br><span class="line">		*populate = len;</span><br><span class="line">	<span class="keyword">return</span> addr;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>首先来看看寻找映射区的函数<code>get_unmapped_area()</code>。</p>
+<ul>
+<li>如果是匿名映射，则调用<code>get_umapped_area()</code>，这个函数其实是 <code>arch_get_unmapped_area()</code>。它会调用 <code>find_vma_prev()</code>，在表示虚拟内存区域的 <code>vm_area_struct</code> 红黑树上找到相应的位置。之所以叫 <code>prev</code>，是说这个时候虚拟内存区域还没有建立，找到前一个 <code>vm_area_struct</code>。</li>
+<li>如果是映射到一个文件，在 Linux 里面每个打开的文件都有一个 <code>struct file</code> 结构，里面有一个 <code>file_operations</code>用来表示和这个文件相关的操作。如果是我们熟知的 <code>ext4</code> 文件系统，调用的也是<code>get_unmapped_area()</code> 函数。</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">unsigned</span> <span class="keyword">long</span></span><br><span class="line">get_unmapped_area(struct file *file, <span class="keyword">unsigned</span> <span class="keyword">long</span> addr, <span class="keyword">unsigned</span> <span class="keyword">long</span> len,</span><br><span class="line">		<span class="keyword">unsigned</span> <span class="keyword">long</span> pgoff, <span class="keyword">unsigned</span> <span class="keyword">long</span> flags)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="function"><span class="keyword">unsigned</span> <span class="title">long</span> <span class="params">(*get_area)</span><span class="params">(struct file *, <span class="keyword">unsigned</span> <span class="keyword">long</span>,</span></span></span><br><span class="line"><span class="function"><span class="params">				  <span class="keyword">unsigned</span> <span class="keyword">long</span>, <span class="keyword">unsigned</span> <span class="keyword">long</span>, <span class="keyword">unsigned</span> <span class="keyword">long</span>)</span></span>;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span> error = arch_mmap_check(addr, len, flags);</span><br><span class="line">	<span class="keyword">if</span> (error)</span><br><span class="line">		<span class="keyword">return</span> error;</span><br><span class="line">	<span class="comment">/* Careful about overflows.. */</span></span><br><span class="line">	<span class="keyword">if</span> (len &gt; TASK_SIZE)</span><br><span class="line">		<span class="keyword">return</span> -ENOMEM;</span><br><span class="line">	get_area = current-&gt;mm-&gt;get_unmapped_area;</span><br><span class="line">	<span class="keyword">if</span> (file) &#123;</span><br><span class="line">		<span class="keyword">if</span> (file-&gt;f_op-&gt;get_unmapped_area)</span><br><span class="line">			get_area = file-&gt;f_op-&gt;get_unmapped_area;</span><br><span class="line">	&#125; <span class="keyword">else</span> <span class="keyword">if</span> (flags &amp; MAP_SHARED) &#123;</span><br><span class="line">		<span class="comment">/*</span></span><br><span class="line"><span class="comment">		 * mmap_region() will call shmem_zero_setup() to create a file,</span></span><br><span class="line"><span class="comment">		 * so use shmem's get_unmapped_area in case it can be huge.</span></span><br><span class="line"><span class="comment">		 * do_mmap_pgoff() will clear pgoff, so match alignment.</span></span><br><span class="line"><span class="comment">		 */</span></span><br><span class="line">		pgoff = <span class="number">0</span>;</span><br><span class="line">		get_area = shmem_get_unmapped_area;</span><br><span class="line">	&#125;</span><br><span class="line">	addr = get_area(file, addr, len, pgoff, flags);</span><br><span class="line">	<span class="keyword">if</span> (IS_ERR_VALUE(addr))</span><br><span class="line">		<span class="keyword">return</span> addr;</span><br><span class="line">	<span class="keyword">if</span> (addr &gt; TASK_SIZE - len)</span><br><span class="line">		<span class="keyword">return</span> -ENOMEM;</span><br><span class="line">	<span class="keyword">if</span> (offset_in_page(addr))</span><br><span class="line">		<span class="keyword">return</span> -EINVAL;</span><br><span class="line">	error = security_mmap_addr(addr);</span><br><span class="line">	<span class="keyword">return</span> error ? error : addr;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 
 
@@ -787,7 +794,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">52.7k</span>
+    <span title="Site words total count">53k</span>
   
 </div>
 
