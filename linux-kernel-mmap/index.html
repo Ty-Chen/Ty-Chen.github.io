@@ -86,8 +86,9 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;本文为内存部分最后一篇，介绍内存映射。内存映射不仅是物理内存和虚拟内存间的映射，也包括将文件中的内容映射到虚拟内存空间。这个时候，访问内存空间就能够访问到文件里面的数据。而仅有物理内存和虚拟内存的映射，是一种特殊情况。本文首先分析用户态在堆中申请小块内存的brk和申请大块内存的mmap，之后会分析内核态的内存映射机制vmalloc，kmap_atomic，swap">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/94/b3/94efd92cbeb4d4ff155a645b93d71eb3.jpg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/27/9a/274e22b3f5196a4c68bb6813fb643f9a.png">
 <meta property="article:published_time" content="2020-06-07T13:12:49.000Z">
-<meta property="article:modified_time" content="2020-06-13T13:32:14.016Z">
+<meta property="article:modified_time" content="2020-06-14T09:47:29.901Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -311,8 +312,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-06-13T21:32:14+08:00" content="2020-06-13">
-                2020-06-13
+              <time itemprop="dateUpdated" datetime="2020-06-14T17:47:29+08:00" content="2020-06-14">
+                2020-06-14
               </time>
             </span>
           
@@ -375,7 +376,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  4.2k
+                  4.9k
                 </span>
               
 
@@ -391,7 +392,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  20
+                  23
                 </span>
               
             </div>
@@ -520,10 +521,27 @@
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">vm_fault_t</span> <span class="title">do_swap_page</span><span class="params">(struct vm_fault *vmf)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">......</span><br><span class="line">	entry = pte_to_swp_entry(vmf-&gt;orig_pte);</span><br><span class="line">......</span><br><span class="line">	page = lookup_swap_cache(entry, vma, vmf-&gt;address);</span><br><span class="line">	swapcache = page;</span><br><span class="line">	<span class="keyword">if</span> (!page) &#123;</span><br><span class="line">		<span class="class"><span class="keyword">struct</span> <span class="title">swap_info_struct</span> *<span class="title">si</span> = <span class="title">swp_swap_info</span>(<span class="title">entry</span>);</span></span><br><span class="line">		<span class="keyword">if</span> (si-&gt;flags &amp; SWP_SYNCHRONOUS_IO &amp;&amp;</span><br><span class="line">				__swap_count(si, entry) == <span class="number">1</span>) &#123;</span><br><span class="line">			<span class="comment">/* skip swapcache */</span></span><br><span class="line">			page = alloc_page_vma(GFP_HIGHUSER_MOVABLE, vma,</span><br><span class="line">							vmf-&gt;address);</span><br><span class="line">......</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			page = swapin_readahead(entry, GFP_HIGHUSER_MOVABLE,</span><br><span class="line">						vmf);</span><br><span class="line">			swapcache = page;</span><br><span class="line">		&#125;</span><br><span class="line">......</span><br><span class="line">	pte = mk_pte(page, vma-&gt;vm_page_prot);</span><br><span class="line">......</span><br><span class="line">	set_pte_at(vma-&gt;vm_mm, vmf-&gt;address, vmf-&gt;pte, pte);</span><br><span class="line">	arch_do_swap_page(vma-&gt;vm_mm, vma, vmf-&gt;address, pte, vmf-&gt;orig_pte);</span><br><span class="line">	vmf-&gt;orig_pte = pte;</span><br><span class="line">......</span><br><span class="line">	swap_free(entry);</span><br><span class="line">......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>&emsp;&emsp;通过以上步骤，用户态的缺页异常就处理完毕了。物理内存中有了页面，页表也建立好了映射。接下来，用户程序在虚拟内存空间里面可以通过虚拟地址顺利经过页表映射的访问物理页面上的数据了。页表一般都很大，只能存放在内存中。操作系统每次访问内存都要折腾两步，先通过查询页表得到物理地址，然后访问该物理地址读取指令、数据。为了加快映射速度，我们引入了 <a href="https://en.wikipedia.org/wiki/Translation_lookaside_buffer#:~:text=A%20translation%20lookaside%20buffer%20(TLB,called%20an%20address%2Dtranslation%20cache." target="_blank" rel="noopener">TLB</a>（Translation Lookaside Buffer），我们经常称为快表，专门用来做地址映射的硬件设备。它不在内存中，可存储的数据比较少，但是比内存要快。所以我们可以想象，TLB 就是页表的 Cache，其中存储了当前最可能被访问到的页表项，其内容是部分页表项的一个副本。有了 TLB 之后，我们先查块表，块表中有映射关系，然后直接转换为物理地址。如果在 TLB 查不到映射关系时，才会到内存中查询页表。</p>
+<h2 id="四-内核态内存映射及缺页异常"><a href="#四-内核态内存映射及缺页异常" class="headerlink" title="四. 内核态内存映射及缺页异常"></a>四. 内核态内存映射及缺页异常</h2><p>&emsp;&emsp;和用户态使用<code>malloc()</code>类似，内核态也有相应的内存映射函数：<code>vmalloc()</code>可用于分配不连续物理页（使用伙伴系统），<code>kmem_cache_alloc()</code>和<code>kmem_cache_create()</code>使用slub分配器分配小块内存，而<code>kmalloc()</code>类似于<code>malloc()</code>，在分配大内存的时候会使用伙伴系统，分配小内存则使用slub分配器。分配内存后会转换为虚拟地址，保存在内核页表中进行映射，有需要时直接访问。由于<code>vmalloc()</code>会带来虚拟连续页和物理不连续页的映射，因此一般速度较慢，使用较少，相比而言<code>kmalloc()</code>使用的更为频繁。而<code>kmem_cache_alloc()</code>和<code>kmem_cache_create()</code>会分配更为精准的小内存块用于特定任务，因此也比较常用。</p>
+<p>&emsp;&emsp;相对于用户态，内核态还有一种特殊的映射：临时映射。内核态高端内存地区为了节省空间会选择临时映射，采用<code>kmap_atomic()</code>实现。如果是 32 位有高端地址的，就需要调用 <code>set_pte</code> 通过内核页表进行临时映射；如果是 64 位没有高端地址的，就调用 <code>page_address</code>，里面会调用 <code>lowmem_page_address</code>。其实低端内存的映射，会直接使用 <code>__va</code> 进行临时映射。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">kmap_atomic_prot</span><span class="params">(struct page *page, <span class="keyword">pgprot_t</span> prot)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">......</span><br><span class="line">    <span class="keyword">if</span> (!PageHighMem(page))</span><br><span class="line">        <span class="keyword">return</span> page_address(page);</span><br><span class="line">......</span><br><span class="line">    vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);</span><br><span class="line">    set_pte(kmap_pte-idx, mk_pte(page, prot));</span><br><span class="line">......</span><br><span class="line">    <span class="keyword">return</span> (<span class="keyword">void</span> *)vaddr;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">kmap_atomic</span><span class="params">(struct page *page)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> kmap_atomic_prot(page, kmap_prot);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> __always_inline <span class="keyword">void</span> *<span class="title">lowmem_page_address</span><span class="params">(<span class="keyword">const</span> struct page *page)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> page_to_virt(page);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> page_to_virt(x)  __va(PFN_PHYS(page_to_pfn(x)</span></span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;<code>kmap_atomic ()</code>发现没有页表的时候会直接创建页表进行映射。而 <code>vmalloc ()</code>只分配了内核的虚拟地址。所以访问它的时候，会产生缺页异常。内核态的缺页异常还是会调用 <code>do_page_fault()</code>，最终进入<code>vmalloc_fault()</code>。在这里会实现内核页表项的关联操作，从而完成分配，整体流程和用户态相似。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> noinline <span class="keyword">int</span> <span class="title">vmalloc_fault</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">long</span> address)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> pgd_paddr;</span><br><span class="line">    <span class="keyword">pmd_t</span> *pmd_k;</span><br><span class="line">    <span class="keyword">pte_t</span> *pte_k;</span><br><span class="line">    <span class="comment">/* Make sure we are in vmalloc area: */</span></span><br><span class="line">    <span class="keyword">if</span> (!(address &gt;= VMALLOC_START &amp;&amp; address &lt; VMALLOC_END))</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * Synchronize this task's top level page-table</span></span><br><span class="line"><span class="comment">     * with the 'reference' page table.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * Do _not_ use "current" here. We might be inside</span></span><br><span class="line"><span class="comment">     * an interrupt in the middle of a task switch..</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    pgd_paddr = read_cr3_pa();</span><br><span class="line">    pmd_k = vmalloc_sync_one(__va(pgd_paddr), address);</span><br><span class="line">    <span class="keyword">if</span> (!pmd_k)</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line"></span><br><span class="line">    pte_k = pte_offset_kernel(pmd_k, address);</span><br><span class="line">    <span class="keyword">if</span> (!pte_present(*pte_k))</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="五-总结"><a href="#五-总结" class="headerlink" title="五. 总结"></a>五. 总结</h2><p>&emsp;&emsp;至此，我们分析了内存物理地址和虚拟地址的映射关系，结合前文页的分配和管理，内存部分的主要功能就算是大致分析清楚了，最后引用极客时间中的一幅图作为总结，算是全部知识点的汇总。</p>
+<img src="https://static001.geekbang.org/resource/image/27/9a/274e22b3f5196a4c68bb6813fb643f9a.png" alt="img" style="zoom:33%;" />
+
 <h2 id="代码资料"><a href="#代码资料" class="headerlink" title="代码资料"></a>代码资料</h2><p>[1] <a href="https://code.woboq.org/linux/linux/mm/mmap.c.html#191" target="_blank" rel="noopener">brk</a></p>
 <p>[2] <a href="https://code.woboq.org/linux/linux/mm/mmap.c.html#ksys_mmap_pgoff" target="_blank" rel="noopener">mmap</a></p>
 <p>[3] <a href="https://code.woboq.org/linux/linux/arch/sh/mm/fault.c.html#do_page_fault" target="_blank" rel="noopener">page_fault</a></p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] wiki</p>
+<p>[2] <a href="https://elixir.bootlin.com/linux/v5.7-rc1/source" target="_blank" rel="noopener">elixir.bootlin.com/linux</a></p>
+<p>[3] <a href="https://code.woboq.org/" target="_blank" rel="noopener">woboq</a></p>
+<p>[4] Linux-insides</p>
+<p>[5] 深入理解Linux内核</p>
+<p>[6] Linux内核设计的艺术</p>
+<p>[7] 极客时间 趣谈Linux操作系统</p>
+
       
     </div>
     
@@ -621,6 +639,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/linux-kernel-fs/" rel="prev" title="Linux操作系统学习笔记（十）文件系统">
+                Linux操作系统学习笔记（十）文件系统 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -742,7 +764,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-count">15</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -764,7 +786,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">31</span>
+                  <span class="site-state-item-count">33</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -827,7 +849,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-用户态内存映射"><span class="nav-text">二. 用户态内存映射</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-小块内存申请"><span class="nav-text">2.1 小块内存申请</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-大内存块申请"><span class="nav-text">2.2 大内存块申请</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-用户态缺页异常"><span class="nav-text">三. 用户态缺页异常</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-匿名页映射"><span class="nav-text">3.1 匿名页映射</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-文件映射"><span class="nav-text">3.2 文件映射</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-页交换"><span class="nav-text">3.3 页交换</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#代码资料"><span class="nav-text">代码资料</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-用户态内存映射"><span class="nav-text">二. 用户态内存映射</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-小块内存申请"><span class="nav-text">2.1 小块内存申请</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-大内存块申请"><span class="nav-text">2.2 大内存块申请</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-用户态缺页异常"><span class="nav-text">三. 用户态缺页异常</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-匿名页映射"><span class="nav-text">3.1 匿名页映射</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-文件映射"><span class="nav-text">3.2 文件映射</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-页交换"><span class="nav-text">3.3 页交换</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-内核态内存映射及缺页异常"><span class="nav-text">四. 内核态内存映射及缺页异常</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-总结"><span class="nav-text">五. 总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#代码资料"><span class="nav-text">代码资料</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
@@ -861,7 +883,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">55.9k</span>
+    <span title="Site words total count">57.1k</span>
   
 </div>
 

@@ -2,16 +2,23 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>https://ty-chen.github.io/linux-kernel-mm-mgr/</loc>
+    <loc>https://ty-chen.github.io/linux-kernel-fs/</loc>
     
-    <lastmod>2020-06-13T15:56:29.089Z</lastmod>
+    <lastmod>2020-06-14T09:58:13.371Z</lastmod>
     
   </url>
   
   <url>
     <loc>https://ty-chen.github.io/linux-kernel-mmap/</loc>
     
-    <lastmod>2020-06-13T13:32:14.016Z</lastmod>
+    <lastmod>2020-06-14T09:47:29.901Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://ty-chen.github.io/linux-kernel-mm-mgr/</loc>
+    
+    <lastmod>2020-06-14T08:58:41.370Z</lastmod>
     
   </url>
   
