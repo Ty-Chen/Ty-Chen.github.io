@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;本节开始将分析Linux的文件系统。Linux一切皆文件的思想可谓众所周知，而其文件系统又是字符设备、块设备、管道、进程间通信、网络等等的必备知识，因此其重要性可想而知。本文将先介绍文件系统基础知识，然后介绍最重要的结构体inode。">
 <meta property="article:published_time" content="2020-06-14T09:56:33.000Z">
-<meta property="article:modified_time" content="2020-06-14T16:04:10.966Z">
+<meta property="article:modified_time" content="2020-06-15T13:41:29.596Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -306,7 +306,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-06-15T00:04:10+08:00" content="2020-06-15">
+              <time itemprop="dateUpdated" datetime="2020-06-15T21:41:29+08:00" content="2020-06-15">
                 2020-06-15
               </time>
             </span>
@@ -370,7 +370,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  109
+                  324
                 </span>
               
 
@@ -410,7 +410,21 @@
         <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;本节开始将分析Linux的文件系统。Linux一切皆文件的思想可谓众所周知，而其文件系统又是字符设备、块设备、管道、进程间通信、网络等等的必备知识，因此其重要性可想而知。本文将先介绍文件系统基础知识，然后介绍最重要的结构体<code>inode</code>。</p>
 <a id="more"></a>
 
-<h2 id="二-文件系统基础知识"><a href="#二-文件系统基础知识" class="headerlink" title="二. 文件系统基础知识"></a>二. 文件系统基础知识</h2>
+<h2 id="二-文件系统基础知识"><a href="#二-文件系统基础知识" class="headerlink" title="二. 文件系统基础知识"></a>二. 文件系统基础知识</h2><p>&emsp;&emsp;一切设计均是为了实现需求，因此我们从文件系统需要的基本功能来看看其该如何设计。首先，一个文件系统需要有以下基本要求</p>
+<ul>
+<li>文件需要让人易于读写，并避免名字冲突等</li>
+<li>文件需要易于查找、整理归类</li>
+<li>操作系统需要有文档记录功能以便管理</li>
+</ul>
+<p>&emsp;&emsp;由此，文件系统设计了如下特性</p>
+<ul>
+<li>采取树形结构、文件夹设计</li>
+<li>对热点文件进行缓存，便于读写</li>
+<li>采用索引结构，便于查找分类</li>
+<li>维护一套数据结构用于记录哪些文档正在被哪些任务使用</li>
+</ul>
+<p>&emsp;&emsp;依此基本设计，我们可以开始慢慢展开看看Linux博大而精神的文件系统。</p>
+<h2 id="三-inode结构体"><a href="#三-inode结构体" class="headerlink" title="三. inode结构体"></a>三. inode结构体</h2>
       
     </div>
     
@@ -708,7 +722,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-文件系统基础知识"><span class="nav-text">二. 文件系统基础知识</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-文件系统基础知识"><span class="nav-text">二. 文件系统基础知识</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-inode结构体"><span class="nav-text">三. inode结构体</span></a></li></ol></div>
             
 
           </div>
@@ -742,7 +756,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">57.2k</span>
+    <span title="Site words total count">57.4k</span>
   
 </div>
 
