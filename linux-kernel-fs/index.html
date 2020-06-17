@@ -88,8 +88,12 @@
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/73/e2/73349c0fab1a92d4e1ae0c684cfe06e2.jpeg">
 <meta property="og:image" content="https://ars.els-cdn.com/content/image/1-s2.0-S1742287617300270-gr2.jpg">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/e3/1b/e3718f0af6a2523a43606a0c4003631b.jpeg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/b0/b9/b0bf4690882253a70705acc7368983b9.jpeg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/3e/6d/3ea2ad5704f20538d9c911b02f42086d.jpeg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/45/7b/45a6cfdd9d45e30dc2f38f0d2572be7b.jpeg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/f8/38/f81bf3e5a6cd060c3225a8ae1803a138.png">
 <meta property="article:published_time" content="2020-06-14T09:56:33.000Z">
-<meta property="article:modified_time" content="2020-06-16T15:50:36.010Z">
+<meta property="article:modified_time" content="2020-06-17T16:01:39.573Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -310,8 +314,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-06-16T23:50:36+08:00" content="2020-06-16">
-                2020-06-16
+              <time itemprop="dateUpdated" datetime="2020-06-18T00:01:39+08:00" content="2020-06-18">
+                2020-06-18
               </time>
             </span>
           
@@ -374,7 +378,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1.8k
+                  3k
                 </span>
               
 
@@ -390,7 +394,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  7
+                  11
                 </span>
               
             </div>
@@ -457,7 +461,34 @@
 <img src="https://static001.geekbang.org/resource/image/e3/1b/e3718f0af6a2523a43606a0c4003631b.jpeg" alt="img" style="zoom:33%;" />
 
 <p>&emsp;&emsp;超级块和块组描述符表都是全局信息，而且这些数据很重要。如果这些数据丢失了，整个文件系统都打不开了，这比一个文件的一个块损坏更严重。所以，这两部分我们都需要备份，但是采取不同的策略。</p>
-<h3 id="3-3-目录的存储格式"><a href="#3-3-目录的存储格式" class="headerlink" title="3.3 目录的存储格式"></a>3.3 目录的存储格式</h3><h2 id="源码资料"><a href="#源码资料" class="headerlink" title="源码资料"></a>源码资料</h2><p>[1] <a href="https://code.woboq.org/linux/linux/include/linux/fs.h.html#inode" target="_blank" rel="noopener">inode</a></p>
+<ul>
+<li>默认策略：在每个块中均保存一份超级块和块组描述表的备份</li>
+<li>sparse_super策略：采取稀疏存储的方式，仅在块组索引为 0、3、5、7 的整数幂里存储。</li>
+<li>Meta Block Groups策略：我们将块组分为多个元块组（Meta Block Groups)，每个元块组里面的块组描述符表仅仅包括自己的内容，一个元块组包含 64 个块组，这样一个元块组中的块组描述符表最多 64 项。这种做法类似于<code>merkle tree</code>，可以在很大程度上优化空间。</li>
+</ul>
+<img src="https://static001.geekbang.org/resource/image/b0/b9/b0bf4690882253a70705acc7368983b9.jpeg" alt="img" style="zoom: 50%;" />
+
+<h3 id="3-3-目录的存储格式"><a href="#3-3-目录的存储格式" class="headerlink" title="3.3 目录的存储格式"></a>3.3 目录的存储格式</h3><p>&emsp;&emsp;为了便于文件的查找，我们必须要有索引，即文件目录。其实目录本身也是个文件，也有 <code>inode</code>。<code>inode</code> 里面也是指向一些块。和普通文件不同的是，普通文件的块里面保存的是文件数据，而目录文件的块里面保存的是目录里面一项一项的文件信息。这些信息我们称为 <code>ext4_dir_entry</code>。这里有两个版本，第二个版本 <code>ext4_dir_entry_2</code> 是将一个 16 位的 <code>name_len</code>，变成了一个 8 位的 <code>name_len</code> 和 8 位的 <code>file_type</code>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">ext4_dir_entry</span> &#123;</span></span><br><span class="line">    __le32  inode;      <span class="comment">/* Inode number */</span></span><br><span class="line">    __le16  rec_len;    <span class="comment">/* Directory entry length */</span></span><br><span class="line">    __le16  name_len;    <span class="comment">/* Name length */</span></span><br><span class="line">    <span class="keyword">char</span>  name[EXT4_NAME_LEN];  <span class="comment">/* File name */</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">ext4_dir_entry_2</span> &#123;</span></span><br><span class="line">    __le32  inode;      <span class="comment">/* Inode number */</span></span><br><span class="line">    __le16  rec_len;    <span class="comment">/* Directory entry length */</span></span><br><span class="line">    __u8  name_len;    <span class="comment">/* Name length */</span></span><br><span class="line">    __u8  file_type;</span><br><span class="line">    <span class="keyword">char</span>  name[EXT4_NAME_LEN];  <span class="comment">/* File name */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;在目录文件的块中，最简单的保存格式是列表，就是一项一项地将 <code>ext4_dir_entry_2</code> 列在哪里。每一项都会保存这个目录的下一级的文件的文件名和对应的 <code>inode</code>，通过这个 <code>inode</code>，就能找到真正的文件。第一项是“.”，表示当前目录，第二项是“…”，表示上一级目录，接下来就是一项一项的文件名和 <code>inode</code>。有时候，如果一个目录下面的文件太多的时候，我们想在这个目录下找一个文件，按照列表一个个去找太慢了，于是我们就添加了索引的模式。如果在 <code>inode</code> 中设置 <code>EXT4_INDEX_FL</code> 标志，则目录文件的块的组织形式将发生变化，变成了下面定义的这个样子：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">dx_root</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">fake_dirent</span> <span class="title">dot</span>;</span></span><br><span class="line">    <span class="keyword">char</span> dot_name[<span class="number">4</span>];</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">fake_dirent</span> <span class="title">dotdot</span>;</span></span><br><span class="line">    <span class="keyword">char</span> dotdot_name[<span class="number">4</span>];</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">dx_root_info</span></span></span><br><span class="line"><span class="class">    &#123;</span></span><br><span class="line">      __le32 reserved_zero;</span><br><span class="line">      u8 hash_version;</span><br><span class="line">      u8 info_length; <span class="comment">/* 8 */</span></span><br><span class="line">      u8 indirect_levels;</span><br><span class="line">      u8 unused_flags;</span><br><span class="line">    &#125;</span><br><span class="line">    info;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">dx_entry</span>  <span class="title">entries</span>[0];</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;当前目录和上级目录不变，文件列表改用<code>dx_root_info</code>结构体，其中最重要的成员变量是 indirect_levels，表示间接索引的层数。索引项由结构体 <code>dx_entry</code>表示，本质上是文件名的哈希值和数据块的一个映射关系。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">dx_entry</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    __le32 hash;</span><br><span class="line">    __le32 block;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;如果我们要查找一个目录下面的文件名，可以通过名称取哈希。如果哈希能够匹配上，就说明这个文件的信息在相应的块里面。然后打开这个块，如果里面不再是索引，而是索引树的叶子节点的话，那里面还是 <code>ext4_dir_entry_2</code> 的列表，我们只要一项一项找文件名就行。通过索引树，我们可以将一个目录下面的 N 多的文件分散到很多的块里面，可以很快地进行查找。</p>
+<img src="https://static001.geekbang.org/resource/image/3e/6d/3ea2ad5704f20538d9c911b02f42086d.jpeg" alt="img" style="zoom:33%;" />
+
+<h3 id="3-4-软链接和硬链接的存储格式"><a href="#3-4-软链接和硬链接的存储格式" class="headerlink" title="3.4 软链接和硬链接的存储格式"></a>3.4 软链接和硬链接的存储格式</h3><p>&emsp;&emsp;软链接和硬链接也是文件的一种，可以通过如下命令创建。<code>ln -s</code> 创建的是软链接，不带 <code>-s</code> 创建的是硬链接。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ln [参数][源文件或目录][目标文件或目录]</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;硬链接与原始文件共用一个 <code>inode</code> ，但是 <code>inode</code> 是不跨文件系统的，每个文件系统都有自己的 <code>inode</code> 列表，因而硬链接是没有办法跨文件系统的。而软链接不同，软链接相当于重新创建了一个文件。这个文件也有独立的 <code>inode</code>，只不过打开这个文件看里面内容的时候，内容指向另外的一个文件。这就很灵活了。我们可以跨文件系统，甚至目标文件被删除了链接文件也依然存在，只不过指向的文件找不到了而已。</p>
+<img src="https://static001.geekbang.org/resource/image/45/7b/45a6cfdd9d45e30dc2f38f0d2572be7b.jpeg" alt="img" style="zoom: 33%;" />
+
+<h2 id="四-总结"><a href="#四-总结" class="headerlink" title="四. 总结"></a>四. 总结</h2><p>&emsp;&emsp;本文主要从文件系统的设计角度出发，逐步分析了<code>inode</code>和基于<code>inode</code>的<code>ext4</code>文件系统结构和主要组成部分，下面引用极客时间中的一张图作为总结。</p>
+<p><img src="https://static001.geekbang.org/resource/image/f8/38/f81bf3e5a6cd060c3225a8ae1803a138.png" alt="img"></p>
+<h2 id="源码资料"><a href="#源码资料" class="headerlink" title="源码资料"></a>源码资料</h2><p>[1] <a href="https://code.woboq.org/linux/linux/include/linux/fs.h.html#inode" target="_blank" rel="noopener">inode</a></p>
 <p>[2] <a href="https://code.woboq.org/linux/linux/fs/ext4/ext4.h.html#ext4_inode" target="_blank" rel="noopener">ext4_inode</a></p>
 <p>[3] <a href="https://code.woboq.org/linux/linux/fs/ext4/ext4_extents.h.html#ext4_extent_header" target="_blank" rel="noopener">ext4_extent</a></p>
 <h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1] wiki</p>
@@ -765,7 +796,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-文件系统基础知识"><span class="nav-text">二. 文件系统基础知识</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-inode结构体和文件系统"><span class="nav-text">三. inode结构体和文件系统</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-块存储的表示"><span class="nav-text">3.1 块存储的表示</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-文件系统的格式"><span class="nav-text">3.2 文件系统的格式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-目录的存储格式"><span class="nav-text">3.3 目录的存储格式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源码资料"><span class="nav-text">源码资料</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-text">参考资料</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-文件系统基础知识"><span class="nav-text">二. 文件系统基础知识</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-inode结构体和文件系统"><span class="nav-text">三. inode结构体和文件系统</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-块存储的表示"><span class="nav-text">3.1 块存储的表示</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-文件系统的格式"><span class="nav-text">3.2 文件系统的格式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-目录的存储格式"><span class="nav-text">3.3 目录的存储格式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-软链接和硬链接的存储格式"><span class="nav-text">3.4 软链接和硬链接的存储格式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-总结"><span class="nav-text">四. 总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源码资料"><span class="nav-text">源码资料</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-text">参考资料</span></a></li></ol></div>
             
 
           </div>
@@ -799,7 +830,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">58.9k</span>
+    <span title="Site words total count">60k</span>
   
 </div>
 
