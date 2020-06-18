@@ -81,7 +81,7 @@
 
 <meta name="description" content="一. 前言&amp;emsp;&amp;emsp;本节开始将分析Linux的文件系统。Linux一切皆文件的思想可谓众所周知，而其文件系统又是字符设备、块设备、管道、进程间通信、网络等等的必备知识，因此其重要性可想而知。本文将先介绍文件系统基础知识，然后介绍最重要的结构体inode以及构建于其上的一层层的文件系统。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Linux操作系统学习笔记（十）文件系统">
+<meta property="og:title" content="Linux操作系统学习笔记（十一）文件系统">
 <meta property="og:url" content="https://ty-chen.github.io/linux-kernel-fs/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;本节开始将分析Linux的文件系统。Linux一切皆文件的思想可谓众所周知，而其文件系统又是字符设备、块设备、管道、进程间通信、网络等等的必备知识，因此其重要性可想而知。本文将先介绍文件系统基础知识，然后介绍最重要的结构体inode以及构建于其上的一层层的文件系统。">
@@ -93,7 +93,7 @@
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/45/7b/45a6cfdd9d45e30dc2f38f0d2572be7b.jpeg">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/f8/38/f81bf3e5a6cd060c3225a8ae1803a138.png">
 <meta property="article:published_time" content="2020-06-14T09:56:33.000Z">
-<meta property="article:modified_time" content="2020-06-17T16:01:39.573Z">
+<meta property="article:modified_time" content="2020-06-18T13:14:43.832Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -136,7 +136,7 @@
 
 
 
-  <title>Linux操作系统学习笔记（十）文件系统 | Ty-Chen's Home</title>
+  <title>Linux操作系统学习笔记（十一）文件系统 | Ty-Chen's Home</title>
   
 
 
@@ -290,7 +290,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">Linux操作系统学习笔记（十）文件系统</h1>
+          <h1 class="post-title" itemprop="name headline">Linux操作系统学习笔记（十一）文件系统</h1>
         
 
         <div class="post-meta">
@@ -314,7 +314,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-06-18T00:01:39+08:00" content="2020-06-18">
+              <time itemprop="dateUpdated" datetime="2020-06-18T21:14:43+08:00" content="2020-06-18">
                 2020-06-18
               </time>
             </span>
@@ -547,7 +547,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="https://ty-chen.github.io/linux-kernel-fs/" title="Linux操作系统学习笔记（十）文件系统">https://ty-chen.github.io/linux-kernel-fs/</a>
+    <a href="https://ty-chen.github.io/linux-kernel-fs/" title="Linux操作系统学习笔记（十一）文件系统">https://ty-chen.github.io/linux-kernel-fs/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>
@@ -591,8 +591,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/linux-kernel-vfs/" rel="prev" title="Linux操作系统学习笔记（十一）虚拟文件系统">
-                Linux操作系统学习笔记（十一）虚拟文件系统 <i class="fa fa-chevron-right"></i>
+              <a href="/linux-kernel-vfs/" rel="prev" title="Linux操作系统学习笔记（十二）虚拟文件系统">
+                Linux操作系统学习笔记（十二）虚拟文件系统 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
