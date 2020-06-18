@@ -300,8 +300,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-06-18T21:14:48+08:00" content="2020-06-18">
-                2020-06-18
+              <time itemprop="dateUpdated" datetime="2020-06-19T00:07:49+08:00" content="2020-06-19">
+                2020-06-19
               </time>
             </span>
           
@@ -359,7 +359,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  43
+                  302
                 </span>
               
 
@@ -397,7 +397,14 @@
 
       
         
-          <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;基于上文介绍的文件系统的基本结构，本文将继续深入Linux文件系统的精髓所在：虚拟文件系统。</p>
+          <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;基于上文介绍的文件系统的基本结构，本文将继续深入Linux文件系统的精髓所在：虚拟文件系统。操作文件的本质是将磁盘文件数据映射到进程中，上文的文件系统是如何存储文件数据，而从进程如何映射到该文件系统，中间还有一系列的过程，主要包括</p>
+<ul>
+<li>进程发出文件操作命令，通过系统调用如<code>sys_open</code>、<code>sys_read</code>、<code>sys_write</code>调用相应内核函数</li>
+<li>在内核中为进程打开的文件和系统文件创建数据结构进行维护</li>
+<li>通过虚拟文件系统对各种不同的文件系统操作，如I/O设备、管道、进程间通信、网络等进行抽象并统一接口</li>
+<li>实现虚拟文件系统和实际文件系统如ext4的挂载</li>
+<li>提供文件系统和I/O设备层的设备驱动接口及加快读写效率的缓存</li>
+</ul>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/linux-kernel-vfs/#more" rel="contents">
@@ -1852,8 +1859,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-05-30T11:47:19+08:00" content="2020-05-30">
-                2020-05-30
+              <time itemprop="dateUpdated" datetime="2020-06-18T23:14:30+08:00" content="2020-06-18">
+                2020-06-18
               </time>
             </span>
           
@@ -2351,7 +2358,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">60.1k</span>
+    <span title="Site words total count">60.3k</span>
   
 </div>
 
