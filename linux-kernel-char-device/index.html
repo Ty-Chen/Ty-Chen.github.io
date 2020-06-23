@@ -79,20 +79,22 @@
 
 
 
-<meta name="description" content="一. 前言">
+<meta name="description" content="一. 前言&amp;emsp;&amp;emsp;上文中我们分析了虚拟文件系统的结构以及常见的文件操作从用户态到虚拟文件系统再到底层实际文件系统的过程。而实际上我们并没有说明实际的文件系统如ext4是如何和磁盘进行交互的，这就是本文和下篇文章的重点：I&#x2F;O之块设备和字符设备。输入输出设备我们大致可以分为两类：块设备（Block Device）和字符设备（Character Device）。  块设备将信息存储在固">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux操作系统学习笔记（十三）字符设备">
 <meta property="og:url" content="https://ty-chen.github.io/linux-kernel-char-device/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
-<meta property="og:description" content="一. 前言">
+<meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;上文中我们分析了虚拟文件系统的结构以及常见的文件操作从用户态到虚拟文件系统再到底层实际文件系统的过程。而实际上我们并没有说明实际的文件系统如ext4是如何和磁盘进行交互的，这就是本文和下篇文章的重点：I&#x2F;O之块设备和字符设备。输入输出设备我们大致可以分为两类：块设备（Block Device）和字符设备（Character Device）。  块设备将信息存储在固">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/80/7f/80e152fe768e3cb4c84be62ad8d6d07f.jpg">
 <meta property="article:published_time" content="2020-06-23T16:02:47.000Z">
-<meta property="article:modified_time" content="2020-06-23T16:04:11.033Z">
+<meta property="article:modified_time" content="2020-06-23T16:19:26.089Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
 <meta property="article:tag" content="文件系统">
 <meta property="article:tag" content="字符设备">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://static001.geekbang.org/resource/image/80/7f/80e152fe768e3cb4c84be62ad8d6d07f.jpg">
 
 
 
@@ -306,7 +308,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-06-24T00:04:11+08:00" content="2020-06-24">
+              <time itemprop="dateUpdated" datetime="2020-06-24T00:19:26+08:00" content="2020-06-24">
                 2020-06-24
               </time>
             </span>
@@ -370,7 +372,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  3
+                  322
                 </span>
               
 
@@ -407,7 +409,18 @@
       
 
       
-        <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><a id="more"></a>
+        <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;上文中我们分析了虚拟文件系统的结构以及常见的文件操作从用户态到虚拟文件系统再到底层实际文件系统的过程。而实际上我们并没有说明实际的文件系统如ext4是如何和磁盘进行交互的，这就是本文和下篇文章的重点：I/O之块设备和字符设备。输入输出设备我们大致可以分为两类：块设备（Block Device）和字符设备（Character Device）。</p>
+<ul>
+<li><p>块设备将信息存储在固定大小的块中，每个块都有自己的地址。如硬盘就是常见的块设备。</p>
+</li>
+<li><p>字符设备发送或接收的是字节流，而不用考虑任何块结构，没有办法寻址。如鼠标就是常见的字符设备。</p>
+</li>
+</ul>
+<p>&emsp;&emsp;本文首先介绍虚拟文件系统下层直至硬件输入输出设备的结构关系，然后重点分析字符设备相关的整体逻辑情况。</p>
+<a id="more"></a>
+
+<h2 id="二-I-O架构"><a href="#二-I-O架构" class="headerlink" title="二. I/O架构"></a>二. I/O架构</h2><p>&emsp;&emsp;由于各种输入输出设备具有不同的硬件结构、驱动程序，因此我们采取了设备控制器这一中间层对上提供统一接口。</p>
+<img src="https://static001.geekbang.org/resource/image/80/7f/80e152fe768e3cb4c84be62ad8d6d07f.jpg" alt="img" style="zoom:33%;" />
       
     </div>
     
@@ -705,7 +718,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-I-O架构"><span class="nav-text">二. I&#x2F;O架构</span></a></li></ol></div>
             
 
           </div>
@@ -739,7 +752,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">67.2k</span>
+    <span title="Site words total count">67.5k</span>
   
 </div>
 

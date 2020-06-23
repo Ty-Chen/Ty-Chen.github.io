@@ -300,7 +300,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-06-24T00:04:11+08:00" content="2020-06-24">
+              <time itemprop="dateUpdated" datetime="2020-06-24T00:19:26+08:00" content="2020-06-24">
                 2020-06-24
               </time>
             </span>
@@ -359,7 +359,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  3
+                  322
                 </span>
               
 
@@ -397,7 +397,14 @@
 
       
         
-          <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2>
+          <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;上文中我们分析了虚拟文件系统的结构以及常见的文件操作从用户态到虚拟文件系统再到底层实际文件系统的过程。而实际上我们并没有说明实际的文件系统如ext4是如何和磁盘进行交互的，这就是本文和下篇文章的重点：I/O之块设备和字符设备。输入输出设备我们大致可以分为两类：块设备（Block Device）和字符设备（Character Device）。</p>
+<ul>
+<li><p>块设备将信息存储在固定大小的块中，每个块都有自己的地址。如硬盘就是常见的块设备。</p>
+</li>
+<li><p>字符设备发送或接收的是字节流，而不用考虑任何块结构，没有办法寻址。如鼠标就是常见的字符设备。</p>
+</li>
+</ul>
+<p>&emsp;&emsp;本文首先介绍虚拟文件系统下层直至硬件输入输出设备的结构关系，然后重点分析字符设备相关的整体逻辑情况。</p>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/linux-kernel-char-device/#more" rel="contents">
@@ -2348,7 +2355,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">67.2k</span>
+    <span title="Site words total count">67.5k</span>
   
 </div>
 
