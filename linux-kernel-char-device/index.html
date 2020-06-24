@@ -87,7 +87,7 @@
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;上文中我们分析了虚拟文件系统的结构以及常见的文件操作从用户态到虚拟文件系统再到底层实际文件系统的过程。而实际上我们并没有说明实际的文件系统如ext4是如何和磁盘进行交互的，这就是本文和下篇文章的重点：I&#x2F;O之块设备和字符设备。输入输出设备我们大致可以分为两类：块设备（Block Device）和字符设备（Character Device）。  块设备将信息存储在固">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/80/7f/80e152fe768e3cb4c84be62ad8d6d07f.jpg">
 <meta property="article:published_time" content="2020-06-23T16:02:47.000Z">
-<meta property="article:modified_time" content="2020-06-23T16:19:26.089Z">
+<meta property="article:modified_time" content="2020-06-24T16:13:21.167Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -308,8 +308,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-06-24T00:19:26+08:00" content="2020-06-24">
-                2020-06-24
+              <time itemprop="dateUpdated" datetime="2020-06-25T00:13:21+08:00" content="2020-06-25">
+                2020-06-25
               </time>
             </span>
           
@@ -372,7 +372,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  322
+                  813
                 </span>
               
 
@@ -388,7 +388,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  1
+                  2
                 </span>
               
             </div>
@@ -419,8 +419,34 @@
 <p>&emsp;&emsp;本文首先介绍虚拟文件系统下层直至硬件输入输出设备的结构关系，然后重点分析字符设备相关的整体逻辑情况。</p>
 <a id="more"></a>
 
-<h2 id="二-I-O架构"><a href="#二-I-O架构" class="headerlink" title="二. I/O架构"></a>二. I/O架构</h2><p>&emsp;&emsp;由于各种输入输出设备具有不同的硬件结构、驱动程序，因此我们采取了设备控制器这一中间层对上提供统一接口。</p>
+<h2 id="二-I-O架构"><a href="#二-I-O架构" class="headerlink" title="二. I/O架构"></a>二. I/O架构</h2><p>&emsp;&emsp;由于各种输入输出设备具有不同的硬件结构、驱动程序，因此我们采取了设备控制器这一中间层对上提供统一接口。设备控制器通过缓存来处理CPU和硬件I/O之间的交互关系，通过中断进行通知，因此我们需要有中断处理器对各种中断进行统一。由于每种设备的控制器的寄存器、缓冲区等使用模式，指令都不同，所以对于操作系统还需要一层对接各个设备控制器的设备驱动程序。</p>
+<p>&emsp;&emsp;这里需要注意的是，设备控制器不属于操作系统的一部分，但是设备驱动程序属于操作系统的一部分。操作系统的内核代码可以像调用本地代码一样调用驱动程序的代码，而驱动程序的代码需要发出特殊的面向设备控制器的指令，才能操作设备控制器。设备驱动程序中是一些面向特殊设备控制器的代码，不同的设备不同。但是对于操作系统其它部分的代码而言，设备驱动程序有统一的接口。</p>
 <img src="https://static001.geekbang.org/resource/image/80/7f/80e152fe768e3cb4c84be62ad8d6d07f.jpg" alt="img" style="zoom:33%;" />
+
+<p>&emsp;&emsp;设备驱动本身作为一个内核模块，通常以<code>ko</code>文件的形式存在，它有着其独特的代码结构：</p>
+<ul>
+<li><p>头文件部分。设备驱动程序至少需要以下头文件</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;linux/module.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;linux/init.h&gt;</span></span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>初始化函数<code>module_init</code>和退出函数<code>module_exit</code>，用于加载和卸载<code>ko</code>文件</p>
+</li>
+<li><p>文件系统的接口<code>file_operation</code>结构体定义</p>
+</li>
+<li><p>定义需要的函数</p>
+</li>
+<li><p>声明<code>lisence</code>，调用<code>MODULE_LICENSE</code></p>
+</li>
+</ul>
+<p>&emsp;&emsp;在下文的分析中，我们就将按照此顺序来剖析字符设备的源码，以弄懂字符设备的一般运行逻辑。</p>
+<h2 id="三-字符设备"><a href="#三-字符设备" class="headerlink" title="三. 字符设备"></a>三. 字符设备</h2><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="源码资料"><a href="#源码资料" class="headerlink" title="源码资料"></a>源码资料</h2><p>[1] </p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1] wiki</p>
+<p>[2] <a href="https://elixir.bootlin.com/linux/v5.7-rc1/source" target="_blank" rel="noopener">elixir.bootlin.com/linux</a></p>
+<p>[3] <a href="https://code.woboq.org/" target="_blank" rel="noopener">woboq</a></p>
+<p>[4] Linux-insides</p>
+<p>[5] 深入理解Linux内核</p>
+<p>[6] Linux内核设计的艺术</p>
+<p>[7] 极客时间 趣谈Linux操作系统</p>
+
       
     </div>
     
@@ -718,7 +744,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-I-O架构"><span class="nav-text">二. I&#x2F;O架构</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-I-O架构"><span class="nav-text">二. I&#x2F;O架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-字符设备"><span class="nav-text">三. 字符设备</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源码资料"><span class="nav-text">源码资料</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-text">参考资料</span></a></li></ol></div>
             
 
           </div>
@@ -752,7 +778,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">67.5k</span>
+    <span title="Site words total count">68k</span>
   
 </div>
 
