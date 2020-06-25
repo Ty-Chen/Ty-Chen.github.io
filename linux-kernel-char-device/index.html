@@ -87,7 +87,7 @@
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;上文中我们分析了虚拟文件系统的结构以及常见的文件操作从用户态到虚拟文件系统再到底层实际文件系统的过程。而实际上我们并没有说明实际的文件系统如ext4是如何和磁盘进行交互的，这就是本文和下篇文章的重点：I&#x2F;O之块设备和字符设备。输入输出设备我们大致可以分为两类：块设备（Block Device）和字符设备（Character Device）。  块设备将信息存储在固">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/80/7f/80e152fe768e3cb4c84be62ad8d6d07f.jpg">
 <meta property="article:published_time" content="2020-06-23T16:02:47.000Z">
-<meta property="article:modified_time" content="2020-06-24T16:13:21.167Z">
+<meta property="article:modified_time" content="2020-06-25T16:43:28.752Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -308,8 +308,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-06-25T00:13:21+08:00" content="2020-06-25">
-                2020-06-25
+              <time itemprop="dateUpdated" datetime="2020-06-26T00:43:28+08:00" content="2020-06-26">
+                2020-06-26
               </time>
             </span>
           
@@ -372,7 +372,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  813
+                  1.3k
                 </span>
               
 
@@ -388,7 +388,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  2
+                  5
                 </span>
               
             </div>
@@ -428,17 +428,35 @@
 <li><p>头文件部分。设备驱动程序至少需要以下头文件</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;linux/module.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;linux/init.h&gt;</span></span></span><br></pre></td></tr></table></figure>
 </li>
-<li><p>初始化函数<code>module_init</code>和退出函数<code>module_exit</code>，用于加载和卸载<code>ko</code>文件</p>
+<li><p>调用<code>MODULE_LICENSE</code>声明<code>lisence</code></p>
+</li>
+<li><p>初始化函数<code>module_init</code>和退出函数<code>module_exit</code>的定义，用于加载和卸载<code>ko</code>文件</p>
 </li>
 <li><p>文件系统的接口<code>file_operation</code>结构体定义</p>
 </li>
 <li><p>定义需要的函数</p>
 </li>
-<li><p>声明<code>lisence</code>，调用<code>MODULE_LICENSE</code></p>
-</li>
 </ul>
-<p>&emsp;&emsp;在下文的分析中，我们就将按照此顺序来剖析字符设备的源码，以弄懂字符设备的一般运行逻辑。</p>
-<h2 id="三-字符设备"><a href="#三-字符设备" class="headerlink" title="三. 字符设备"></a>三. 字符设备</h2><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="源码资料"><a href="#源码资料" class="headerlink" title="源码资料"></a>源码资料</h2><p>[1] </p>
+<p>&emsp;&emsp;在下文的分析中，我们就将按照此顺序来剖析字符设备的源码，以弄懂字符设备的一般运行逻辑。关于设备驱动代码编写的详细知识可以参考《Linux设备驱动》一书，本文重点不在于如何编写代码，而是在于操作系统中的字符设备和块设备如何工作。</p>
+<h2 id="三-字符设备"><a href="#三-字符设备" class="headerlink" title="三. 字符设备"></a>三. 字符设备</h2><p>&emsp;&emsp;字符设备有很多种，这里以打印机设备为输出设备的例子，源码位于<code>drivers/char/lp.c</code>。以鼠标为输入设备的例子，源码位于<code>drivers/input/mouse/logibm.c</code>。</p>
+<h3 id="3-1-加载"><a href="#3-1-加载" class="headerlink" title="3.1 加载"></a>3.1 加载</h3><p>&emsp;&emsp;字符设备的使用从加载开始，通常我们会使用<code>insmod</code>命令或者<code>modprobe</code>命令加载<code>ko</code>文件，<code>ko</code>文件的加载则从<code>module_init</code>调用该设备自定义的初始函数开始。对于打印机来说，其初始化函数定义为<code>lp_init_module()</code>，实际调用<code>lp_init()</code>。<code>lp_init()</code>会初始化打印机结构体，并调用<code>register_chardev()</code>注册该字符设备。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">module_init(lp_init_module);</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> __init <span class="title">lp_init_module</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">......</span><br><span class="line">	<span class="keyword">return</span> lp_init();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> __init <span class="title">lp_init</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">......</span><br><span class="line">	<span class="keyword">if</span> (register_chrdev(LP_MAJOR, <span class="string">"lp"</span>, &amp;lp_fops)) &#123;</span><br><span class="line">		printk(KERN_ERR <span class="string">"lp: unable to get major %d\n"</span>, LP_MAJOR);</span><br><span class="line">		<span class="keyword">return</span> -EIO;</span><br><span class="line">	&#125;</span><br><span class="line">......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>register_chrdev()</code>实际调用<code>__register_chrdev()</code>，该函数会进行字符设备的注册操作。其主要逻辑如下</p>
+<ul>
+<li>调用<code>__register_chrdev_region()</code>注册字符设备的主设备号和名称</li>
+<li>调用<code>cdev_alloc()</code>分配结构体<code>struct cdev</code></li>
+<li>将 <code>cdev</code> 的 <code>ops</code> 成员变量指向这个模块声明的 <code>file_operations</code></li>
+<li>调用<code>cdev_add()</code>将这个字符设备添加到结构体 <code>struct kobj_map *cdev_map</code> ，该结构体用于统一管理所有字符设备。</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">int</span> <span class="title">register_chrdev</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">int</span> major, <span class="keyword">const</span> <span class="keyword">char</span> *name,</span></span></span><br><span class="line"><span class="function"><span class="params">				  <span class="keyword">const</span> struct file_operations *fops)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">return</span> __register_chrdev(major, <span class="number">0</span>, <span class="number">256</span>, name, fops);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> __register_chrdev(<span class="keyword">unsigned</span> <span class="keyword">int</span> major, <span class="keyword">unsigned</span> <span class="keyword">int</span> baseminor,</span><br><span class="line">		      <span class="keyword">unsigned</span> <span class="keyword">int</span> count, <span class="keyword">const</span> <span class="keyword">char</span> *name,</span><br><span class="line">		      <span class="keyword">const</span> struct file_operations *fops)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">char_device_struct</span> *<span class="title">cd</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">cdev</span> *<span class="title">cdev</span>;</span></span><br><span class="line">	<span class="keyword">int</span> err = -ENOMEM;</span><br><span class="line">	cd = __register_chrdev_region(major, baseminor, count, name);</span><br><span class="line">	<span class="keyword">if</span> (IS_ERR(cd))</span><br><span class="line">		<span class="keyword">return</span> PTR_ERR(cd);</span><br><span class="line">	cdev = cdev_alloc();</span><br><span class="line">	<span class="keyword">if</span> (!cdev)</span><br><span class="line">		<span class="keyword">goto</span> out2;</span><br><span class="line">	cdev-&gt;owner = fops-&gt;owner;</span><br><span class="line">	cdev-&gt;ops = fops;</span><br><span class="line">	kobject_set_name(&amp;cdev-&gt;kobj, <span class="string">"%s"</span>, name);</span><br><span class="line">	err = cdev_add(cdev, MKDEV(cd-&gt;major, baseminor), count);</span><br><span class="line">......</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 拼接ma和mi</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MINORBITS	20</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MKDEV(ma,mi)	(((ma) &lt;&lt; MINORBITS) | (mi))</span></span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="源码资料"><a href="#源码资料" class="headerlink" title="源码资料"></a>源码资料</h2><p>[1] <a href="https://code.woboq.org/linux/linux/drivers/char/lp.c.html" target="_blank" rel="noopener">lp.c</a></p>
+<p>[2] <a href="https://code.woboq.org/linux/linux/fs/char_dev.c.html" target="_blank" rel="noopener">char_dev</a></p>
 <h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1] wiki</p>
 <p>[2] <a href="https://elixir.bootlin.com/linux/v5.7-rc1/source" target="_blank" rel="noopener">elixir.bootlin.com/linux</a></p>
 <p>[3] <a href="https://code.woboq.org/" target="_blank" rel="noopener">woboq</a></p>
@@ -446,6 +464,7 @@
 <p>[5] 深入理解Linux内核</p>
 <p>[6] Linux内核设计的艺术</p>
 <p>[7] 极客时间 趣谈Linux操作系统</p>
+<p>[8] Linux设备驱动程序</p>
 
       
     </div>
@@ -744,7 +763,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-I-O架构"><span class="nav-text">二. I&#x2F;O架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-字符设备"><span class="nav-text">三. 字符设备</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源码资料"><span class="nav-text">源码资料</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-text">参考资料</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-I-O架构"><span class="nav-text">二. I&#x2F;O架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-字符设备"><span class="nav-text">三. 字符设备</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-加载"><span class="nav-text">3.1 加载</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源码资料"><span class="nav-text">源码资料</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-text">参考资料</span></a></li></ol></div>
             
 
           </div>
@@ -778,7 +797,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">68k</span>
+    <span title="Site words total count">68.5k</span>
   
 </div>
 
