@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="编程范式," />
+  <meta name="keywords" content="Linux,操作系统,文件系统,设备驱动,块设备," />
 
 
 
@@ -79,16 +79,20 @@
 
 
 
-<meta name="description" content="前言&amp;emsp;&amp;emsp;本文记录各种不同的编程范式及他们之间的联系和区别，由于经验尚浅可能无法写的十分入味，后续待资历渐长再慢慢修改润色。">
+<meta name="description" content="一. 前言&amp;emsp;&amp;emsp;上文我们分析了字符设备，本文接着分析块设备。我们首先分析块设备的基本结构体，然后分析块设备生成、加载的整个过程，最后分析块设备的直接I&#x2F;O访问和缓存I&#x2F;O访问。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="编程范式学习记录">
-<meta property="og:url" content="https://ty-chen.github.io/paradigms/index.html">
+<meta property="og:title" content="Linux操作系统学习笔记（十四）块设备">
+<meta property="og:url" content="https://ty-chen.github.io/linux-kernel-block-device/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
-<meta property="og:description" content="前言&amp;emsp;&amp;emsp;本文记录各种不同的编程范式及他们之间的联系和区别，由于经验尚浅可能无法写的十分入味，后续待资历渐长再慢慢修改润色。">
-<meta property="article:published_time" content="2020-04-24T15:10:13.000Z">
-<meta property="article:modified_time" content="2020-04-25T04:42:08.681Z">
+<meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;上文我们分析了字符设备，本文接着分析块设备。我们首先分析块设备的基本结构体，然后分析块设备生成、加载的整个过程，最后分析块设备的直接I&#x2F;O访问和缓存I&#x2F;O访问。">
+<meta property="article:published_time" content="2020-06-27T12:12:56.000Z">
+<meta property="article:modified_time" content="2020-06-27T15:49:39.042Z">
 <meta property="article:author" content="Ty Chen">
-<meta property="article:tag" content="编程范式">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="操作系统">
+<meta property="article:tag" content="文件系统">
+<meta property="article:tag" content="设备驱动">
+<meta property="article:tag" content="块设备">
 <meta name="twitter:card" content="summary">
 
 
@@ -119,13 +123,13 @@
 
 
 
-  <link rel="canonical" href="https://ty-chen.github.io/paradigms/"/>
+  <link rel="canonical" href="https://ty-chen.github.io/linux-kernel-block-device/"/>
 
 
 
 
 
-  <title>编程范式学习记录 | Ty-Chen's Home</title>
+  <title>Linux操作系统学习笔记（十四）块设备 | Ty-Chen's Home</title>
   
 
 
@@ -262,7 +266,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://ty-chen.github.io/paradigms/">
+    <link itemprop="mainEntityOfPage" href="https://ty-chen.github.io/linux-kernel-block-device/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Ty Chen">
@@ -279,7 +283,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">编程范式学习记录</h1>
+          <h1 class="post-title" itemprop="name headline">Linux操作系统学习笔记（十四）块设备</h1>
         
 
         <div class="post-meta">
@@ -291,8 +295,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-04-24T23:10:13+08:00">
-                2020-04-24
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-06-27T20:12:56+08:00">
+                2020-06-27
               </time>
             
 
@@ -303,8 +307,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-04-25T12:42:08+08:00" content="2020-04-25">
-                2020-04-25
+              <time itemprop="dateUpdated" datetime="2020-06-27T23:49:39+08:00" content="2020-06-27">
+                2020-06-27
               </time>
             </span>
           
@@ -321,8 +325,8 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%BC%96%E7%A8%8B%E8%8C%83%E5%BC%8F/" itemprop="url" rel="index">
-                    <span itemprop="name">编程范式</span>
+                  <a href="/categories/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%86%85%E6%A0%B8%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index">
+                    <span itemprop="name">Linux操作系统内核学习</span>
                   </a>
                 </span>
 
@@ -339,8 +343,8 @@
                 <span class="post-meta-item-icon">
                   <i class="fa fa-comment-o"></i>
                 </span>
-                <a href="/paradigms/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count valine-comment-count" data-xid="/paradigms/" itemprop="commentCount"></span>
+                <a href="/linux-kernel-block-device/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/linux-kernel-block-device/" itemprop="commentCount"></span>
                 </a>
               </span>
             
@@ -367,7 +371,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  58
+                  338
                 </span>
               
 
@@ -404,8 +408,20 @@
       
 
       
-        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>&emsp;&emsp;本文记录各种不同的编程范式及他们之间的联系和区别，由于经验尚浅可能无法写的十分入味，后续待资历渐长再慢慢修改润色。</p>
+        <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;上文我们分析了字符设备，本文接着分析块设备。我们首先分析块设备的基本结构体，然后分析块设备生成、加载的整个过程，最后分析块设备的直接I/O访问和缓存I/O访问。</p>
 <a id="more"></a>
+
+<h2 id="二-块设备基本结构体"><a href="#二-块设备基本结构体" class="headerlink" title="二. 块设备基本结构体"></a>二. 块设备基本结构体</h2><p>&emsp;&emsp;上文中我们分析了字符设备驱动程序的抽象结构体<code>cdev</code>和管理<code>cdev</code>的结构体<code>cdev_map</code>，在块设备中会相对复杂一些，因为涉及到一个概念：伪文件系统<code>bdevfs</code>。在此之下主要有三个结构体：对块设备或设备分区的抽象结构体<code>block_device</code>，对磁盘的通用描述<code>gendisk</code>以及磁盘分区描述<code>hd_struct</code>。其中<code>block_device</code>和<code>hd_struct</code>一一互相关联，而<code>gendisk</code>统一管理众多<code>hd_struct</code>。当虚拟文件系统需要使用该块设备时，则会利用<code>block_device</code>去<code>gendisk</code>中寻找对应的<code>hd_struct</code>从而实现读写等访问操作。除了这三个结构体以外，同字符设备驱动一样，块设备也有对<code>gendisk</code>的管理结构体<code>bdev_map</code>。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="源码资料"><a href="#源码资料" class="headerlink" title="源码资料"></a>源码资料</h2><p>[1]</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1] wiki</p>
+<p>[2] <a href="https://elixir.bootlin.com/linux/v5.7-rc1/source" target="_blank" rel="noopener">elixir.bootlin.com/linux</a></p>
+<p>[3] <a href="https://code.woboq.org/" target="_blank" rel="noopener">woboq</a></p>
+<p>[4] Linux-insides</p>
+<p>[5] 深入理解Linux内核</p>
+<p>[6] Linux内核设计的艺术</p>
+<p>[7] 极客时间 趣谈Linux操作系统</p>
+<p>[8] Linux设备驱动程序</p>
+
       
     </div>
     
@@ -454,7 +470,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="https://ty-chen.github.io/paradigms/" title="编程范式学习记录">https://ty-chen.github.io/paradigms/</a>
+    <a href="https://ty-chen.github.io/linux-kernel-block-device/" title="Linux操作系统学习笔记（十四）块设备">https://ty-chen.github.io/linux-kernel-block-device/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>
@@ -469,7 +485,15 @@
       
         <div class="post-tags">
           
-            <a href="/tags/%E7%BC%96%E7%A8%8B%E8%8C%83%E5%BC%8F/" rel="tag"># 编程范式</a>
+            <a href="/tags/Linux/" rel="tag"># Linux</a>
+          
+            <a href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" rel="tag"># 操作系统</a>
+          
+            <a href="/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/" rel="tag"># 文件系统</a>
+          
+            <a href="/tags/%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8/" rel="tag"># 设备驱动</a>
+          
+            <a href="/tags/%E5%9D%97%E8%AE%BE%E5%A4%87/" rel="tag"># 块设备</a>
           
         </div>
       
@@ -482,8 +506,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/%E5%85%B3%E4%BA%8EMMORPG%E5%A4%9A%E4%BA%BA%E5%AF%B9%E6%88%98%E4%B8%AD%E7%83%AD%E7%82%B9%E9%97%AE%E9%A2%98%E7%9A%84%E8%A7%A3%E5%86%B3%E6%80%9D%E8%B7%AF%E8%AE%A8%E8%AE%BA/" rel="next" title="关于MMORPG多人对战中热点问题的解决思路讨论">
-                <i class="fa fa-chevron-left"></i> 关于MMORPG多人对战中热点问题的解决思路讨论
+              <a href="/linux-kernel-char-device/" rel="next" title="Linux操作系统学习笔记（十三）字符设备">
+                <i class="fa fa-chevron-left"></i> Linux操作系统学习笔记（十三）字符设备
               </a>
             
           </div>
@@ -491,10 +515,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/distributed-system-design/" rel="prev" title="分布式系统设计学习笔记">
-                分布式系统设计学习笔记 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -701,7 +721,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-text">前言</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-块设备基本结构体"><span class="nav-text">二. 块设备基本结构体</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源码资料"><span class="nav-text">源码资料</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-text">参考资料</span></a></li></ol></div>
             
 
           </div>
