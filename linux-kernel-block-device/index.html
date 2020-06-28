@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;上文我们分析了字符设备，本文接着分析块设备。我们首先分析块设备的基本结构体，然后分析块设备生成、加载的整个过程，最后分析块设备的直接I&#x2F;O访问和缓存I&#x2F;O访问。">
 <meta property="article:published_time" content="2020-06-27T12:12:56.000Z">
-<meta property="article:modified_time" content="2020-06-27T15:49:39.042Z">
+<meta property="article:modified_time" content="2020-06-28T16:12:40.194Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -307,8 +307,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-06-27T23:49:39+08:00" content="2020-06-27">
-                2020-06-27
+              <time itemprop="dateUpdated" datetime="2020-06-29T00:12:40+08:00" content="2020-06-29">
+                2020-06-29
               </time>
             </span>
           
@@ -371,7 +371,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  338
+                  530
                 </span>
               
 
@@ -412,6 +412,7 @@
 <a id="more"></a>
 
 <h2 id="二-块设备基本结构体"><a href="#二-块设备基本结构体" class="headerlink" title="二. 块设备基本结构体"></a>二. 块设备基本结构体</h2><p>&emsp;&emsp;上文中我们分析了字符设备驱动程序的抽象结构体<code>cdev</code>和管理<code>cdev</code>的结构体<code>cdev_map</code>，在块设备中会相对复杂一些，因为涉及到一个概念：伪文件系统<code>bdevfs</code>。在此之下主要有三个结构体：对块设备或设备分区的抽象结构体<code>block_device</code>，对磁盘的通用描述<code>gendisk</code>以及磁盘分区描述<code>hd_struct</code>。其中<code>block_device</code>和<code>hd_struct</code>一一互相关联，而<code>gendisk</code>统一管理众多<code>hd_struct</code>。当虚拟文件系统需要使用该块设备时，则会利用<code>block_device</code>去<code>gendisk</code>中寻找对应的<code>hd_struct</code>从而实现读写等访问操作。除了这三个结构体以外，同字符设备驱动一样，块设备也有对<code>gendisk</code>的管理结构体<code>bdev_map</code>。</p>
+<p>&emsp;&emsp;这里首先说明一下伪文件系统。在前文中我们已经分析了文件系统，而文件系统的精髓所在是让用户可以通过文件描述符来对指定的<code>inode</code>进行一系列的操作。伪文件系统和普通文件系统的区别在于，其<code>inode</code>对用户不可访问，即仅在内核态可见，从用户层的视角来看该文件系统并不存在。伪文件系统的作用是对一些操作系统中的元素进行封装，和普通的文件统一接口，如块设备<code>bdev</code>，管道文件<code>pipefs</code>，套接字<code>socketfs</code>等。通过这种方式的统一封装，才实现了Linux一切皆文件的思想。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="源码资料"><a href="#源码资料" class="headerlink" title="源码资料"></a>源码资料</h2><p>[1]</p>
 <h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1] wiki</p>
 <p>[2] <a href="https://elixir.bootlin.com/linux/v5.7-rc1/source" target="_blank" rel="noopener">elixir.bootlin.com/linux</a></p>
@@ -755,7 +756,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">71.7k</span>
+    <span title="Site words total count">71.9k</span>
   
 </div>
 
