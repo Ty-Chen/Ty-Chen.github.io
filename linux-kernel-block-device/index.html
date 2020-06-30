@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;上文我们分析了字符设备，本文接着分析块设备。我们首先分析块设备的基本结构体，然后分析块设备生成、加载的整个过程，最后分析块设备的直接I&#x2F;O访问和缓存I&#x2F;O访问。">
 <meta property="article:published_time" content="2020-06-27T12:12:56.000Z">
-<meta property="article:modified_time" content="2020-06-29T16:07:27.963Z">
+<meta property="article:modified_time" content="2020-06-30T16:02:10.472Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -307,8 +307,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-06-30T00:07:27+08:00" content="2020-06-30">
-                2020-06-30
+              <time itemprop="dateUpdated" datetime="2020-07-01T00:02:10+08:00" content="2020-07-01">
+                2020-07-01
               </time>
             </span>
           
@@ -371,7 +371,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1.5k
+                  1.7k
                 </span>
               
 
@@ -387,7 +387,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  6
+                  7
                 </span>
               
             </div>
@@ -413,7 +413,10 @@
 
 <h2 id="二-块设备基本结构体"><a href="#二-块设备基本结构体" class="headerlink" title="二. 块设备基本结构体"></a>二. 块设备基本结构体</h2><p>&emsp;&emsp;上文中我们分析了字符设备驱动程序的抽象结构体<code>cdev</code>和管理<code>cdev</code>的结构体<code>cdev_map</code>，在块设备中会相对复杂一些，因为涉及到一个概念：伪文件系统<code>bdevfs</code>。在此之下主要有三个结构体：对块设备或设备分区的抽象结构体<code>block_device</code>，对磁盘的通用描述<code>gendisk</code>以及磁盘分区描述<code>hd_struct</code>。其中<code>block_device</code>和<code>hd_struct</code>一一互相关联，而<code>gendisk</code>统一管理众多<code>hd_struct</code>。当虚拟文件系统需要使用该块设备时，则会利用<code>block_device</code>去<code>gendisk</code>中寻找对应的<code>hd_struct</code>从而实现读写等访问操作。除了这三个结构体以外，同字符设备驱动一样，块设备也有对<code>gendisk</code>的管理结构体<code>bdev_map</code>，同样是<code>kobj_map</code>结构体，所以不做赘述。</p>
 <p>&emsp;&emsp;这里首先说明一下伪文件系统。在前文中我们已经分析了文件系统，而文件系统的精髓所在是让用户可以通过文件描述符来对指定的<code>inode</code>进行一系列的操作。伪文件系统和普通文件系统的区别在于，其<code>inode</code>对用户不可访问，即仅在内核态可见，从用户层的视角来看该文件系统并不存在。伪文件系统的作用是对一些操作系统中的元素进行封装，和普通的文件统一接口，如块设备<code>bdevfs</code>，管道文件<code>pipefs</code>，套接字<code>socketfs</code>等。通过这种方式的统一封装，才实现了Linux一切皆文件的思想。</p>
-<p>&emsp;&emsp;首先看看<code>block_device</code>结构体，其实和<code>char_device</code>有很多相似之处，如设备号<code>bd_dev</code>，打开用户数统计<code>bd_openers</code>等，从这里可以看到块设备的抽象结构体会直接和超级块以及对应的特殊<code>inode</code>关联，而且和<code>hd_struct</code>一一关联。其中<code>bd_disk</code>指向对应的磁盘<code>gendisk</code>，需要使用时通过<code>hd_struct</code>获取对应的磁盘分区信息并使用，请求队列<code>bd_queue</code>会传递给<code>gendisk</code>。</p>
+<p>&emsp;&emsp;<code>bdevfs</code>对应的超级块名为<code>blockdev_superblock</code>，初始化工作在系统初始化时调用<code>bdev_cache_init()</code>完成。所有表示块设备的 <code>inode</code> 都保存在伪文件系统 <code>bdevfs</code> 中以方便块设备的管理。Linux 将块设备的 <code>block_device</code> 和 <code>bdev</code> 文件系统的块设备的 <code>inode</code>通过 <code>struct bdev_inode</code> 进行关联。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">super_block</span> *<span class="title">blockdev_superblock</span> __<span class="title">read_mostly</span>;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">struct</span> <span class="title">file_system_type</span> <span class="title">bd_type</span> = &#123;</span> </span><br><span class="line">    .name = <span class="string">"bdev"</span>, </span><br><span class="line">    .mount = bd_mount, </span><br><span class="line">    .kill_sb = kill_anon_super,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> __init <span class="title">bdev_cache_init</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> err;</span><br><span class="line">	<span class="keyword">static</span> <span class="class"><span class="keyword">struct</span> <span class="title">vfsmount</span> *<span class="title">bd_mnt</span>;</span></span><br><span class="line">	bdev_cachep = kmem_cache_create(<span class="string">"bdev_cache"</span>, <span class="keyword">sizeof</span>(struct bdev_inode),</span><br><span class="line">			<span class="number">0</span>, (SLAB_HWCACHE_ALIGN|SLAB_RECLAIM_ACCOUNT|</span><br><span class="line">				SLAB_MEM_SPREAD|SLAB_ACCOUNT|SLAB_PANIC),</span><br><span class="line">			init_once);</span><br><span class="line">	err = register_filesystem(&amp;bd_type);</span><br><span class="line">	<span class="keyword">if</span> (err)</span><br><span class="line">		panic(<span class="string">"Cannot register bdev pseudo-fs"</span>);</span><br><span class="line">	bd_mnt = kern_mount(&amp;bd_type);</span><br><span class="line">	<span class="keyword">if</span> (IS_ERR(bd_mnt))</span><br><span class="line">		panic(<span class="string">"Cannot create bdev pseudo-fs"</span>);</span><br><span class="line">	blockdev_superblock = bd_mnt-&gt;mnt_sb;   <span class="comment">/* For writeback */</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">bdev_inode</span> &#123;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">block_device</span> <span class="title">bdev</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">inode</span> <span class="title">vfs_inode</span>;</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;下面先看看<code>block_device</code>结构体，其实和<code>char_device</code>有很多相似之处，如设备号<code>bd_dev</code>，打开用户数统计<code>bd_openers</code>等，从这里可以看到块设备的抽象结构体会直接和超级块以及对应的特殊<code>inode</code>关联，而且和<code>hd_struct</code>一一关联。其中<code>bd_disk</code>指向对应的磁盘<code>gendisk</code>，需要使用时通过<code>hd_struct</code>获取对应的磁盘分区信息并使用，请求队列<code>bd_queue</code>会传递给<code>gendisk</code>。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">block_device</span> &#123;</span></span><br><span class="line">	<span class="keyword">dev_t</span>			bd_dev;  <span class="comment">/* not a kdev_t - it's a search key */</span></span><br><span class="line">	<span class="keyword">int</span>			bd_openers;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">inode</span> *		<span class="title">bd_inode</span>;</span>	<span class="comment">/* will die */</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">super_block</span> *	<span class="title">bd_super</span>;</span></span><br><span class="line">......</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">block_device</span> *	<span class="title">bd_contains</span>;</span></span><br><span class="line">	<span class="keyword">unsigned</span>		bd_block_size;</span><br><span class="line">	u8			bd_partno;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">hd_struct</span> *	<span class="title">bd_part</span>;</span></span><br><span class="line">	<span class="comment">/* number of times partitions within this device have been opened. */</span></span><br><span class="line">	<span class="keyword">unsigned</span>		bd_part_count;</span><br><span class="line">	<span class="keyword">int</span>			bd_invalidated;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">gendisk</span> *	<span class="title">bd_disk</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">request_queue</span> *  <span class="title">bd_queue</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">backing_dev_info</span> *<span class="title">bd_bdi</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">list_head</span>	<span class="title">bd_list</span>;</span></span><br><span class="line">......</span><br><span class="line">&#125; __randomize_layout;</span><br></pre></td></tr></table></figure>
 
 <p>&emsp;&emsp;<code>gendisk</code>代表磁盘，<code>major</code> 是主设备号，<code>first_minor</code> 表示第一个分区的从设备号，<code>minors</code> 表示分区的数目。<code>disk_name</code> 给出了磁盘块设备的名称。<code>struct disk_part_tbl</code> 结构里是一个 <code>struct hd_struct</code> 的数组，用于表示各个分区。<code>struct block_device_operations fops</code> 指向对于这个块设备的各种操作。<code>struct request_queue queue</code> 表示在这个块设备上的请求队列。</p>
@@ -447,7 +450,7 @@
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="源码资料"><a href="#源码资料" class="headerlink" title="源码资料"></a>源码资料</h2><p>[1] <a href="https://code.woboq.org/linux/linux/include/linux/fs.h.html#block_device" target="_blank" rel="noopener">block_device</a></p>
 <p>[2] <a href="https://code.woboq.org/linux/linux/include/linux/genhd.h.html#gendisk" target="_blank" rel="noopener">gendisk</a></p>
 <p>[3] <a href="https://code.woboq.org/linux/linux/include/linux/genhd.h.html#hd_struct" target="_blank" rel="noopener">hd_struct</a></p>
-<p>[4] </p>
+<p>[4] <a href="https://code.woboq.org/linux/linux/fs/block_dev.c.html#bdev_cache_init" target="_blank" rel="noopener">bdev_cache_init</a></p>
 <h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1] wiki</p>
 <p>[2] <a href="https://elixir.bootlin.com/linux/v5.7-rc1/source" target="_blank" rel="noopener">elixir.bootlin.com/linux</a></p>
 <p>[3] <a href="https://code.woboq.org/" target="_blank" rel="noopener">woboq</a></p>
@@ -790,7 +793,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">72.9k</span>
+    <span title="Site words total count">73k</span>
   
 </div>
 
