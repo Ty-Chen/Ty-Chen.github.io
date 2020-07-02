@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;上文我们分析了字符设备，本文接着分析块设备。我们首先分析块设备的基本结构体，然后分析块设备生成、加载的整个过程，最后分析块设备的直接I&#x2F;O访问和缓存I&#x2F;O访问。">
 <meta property="article:published_time" content="2020-06-27T12:12:56.000Z">
-<meta property="article:modified_time" content="2020-06-30T16:02:10.472Z">
+<meta property="article:modified_time" content="2020-07-01T15:47:37.849Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -307,7 +307,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-07-01T00:02:10+08:00" content="2020-07-01">
+              <time itemprop="dateUpdated" datetime="2020-07-01T23:47:37+08:00" content="2020-07-01">
                 2020-07-01
               </time>
             </span>
@@ -371,7 +371,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1.7k
+                  1.8k
                 </span>
               
 
@@ -433,7 +433,7 @@
 <li>根据<code>/dev/xxx</code>名字找到该块设备<code>block_device</code>并打开：找到在<code>devtmpfs</code>文件系统中的对应<code>dentry</code>和<code>inode</code>，并由此找到<code>block_device</code><ol>
 <li>查找函数为<code>lookup_bdev()</code>，找到<code>inode</code>后调用<code>bd_acquire()</code>去获取<code>block_device()</code></li>
 <li><code>bd_acquire()-&gt;bdget()</code>，使用<code>inode</code>的<code>i_rdev</code>，即设备号进行查找</li>
-<li>该查找过程实际在伪文件系统<code>bdevfs：blockdev_superblock</code>中进行，<code>i_rdev</code>会对应<code>bdevfs</code>中的一个<code>bdev_inode</code>，并由此获取到block_device</li>
+<li>该查找过程实际在伪文件系统<code>bdevfs：blockdev_superblock</code>中进行，<code>i_rdev</code>会对应<code>bdevfs</code>中的一个<code>bdev_inode</code>，并由此获取到<code>block_device</code></li>
 </ol>
 </li>
 <li>根据打开的设备填充<code>ext4</code>的超级块，并以此为基础建立整套文件系统<code>ext4fs</code></li>
@@ -442,6 +442,9 @@
 </ol>
 <p>&emsp;&emsp;下面具体分析每一步过程。块设备和字符设备一样通过<code>mknod</code>加载<code>ko</code>文件并挂载在<code>/dev</code>目录下的文件系统<code>devtmpfs</code>中。我们会为这个块设备文件分配一个特殊的 <code>inode</code>，这一点和字符设备也是一样的。只不过字符设备走 <code>S_ISCHR</code> 这个分支，对应 <code>inode</code> 的 <code>file_operations</code> 是 <code>def_chr_fops</code>；而块设备走 <code>S_ISBLK</code> 这个分支，对应的 <code>inode</code> 的 <code>file_operations</code> 是 <code>def_blk_fops</code>。这里要注意，<code>inode</code> 里面的 <code>i_rdev</code> 被设置成了块设备的设备号 <code>dev_t</code>。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">init_special_inode</span><span class="params">(struct inode *inode, <span class="keyword">umode_t</span> mode, <span class="keyword">dev_t</span> rdev)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    inode-&gt;i_mode = mode;</span><br><span class="line">    <span class="keyword">if</span> (S_ISCHR(mode)) &#123;</span><br><span class="line">    	inode-&gt;i_fop = &amp;def_chr_fops;</span><br><span class="line">    	inode-&gt;i_rdev = rdev;</span><br><span class="line">  	&#125; <span class="keyword">else</span> <span class="keyword">if</span> (S_ISBLK(mode)) &#123;</span><br><span class="line">    	inode-&gt;i_fop = &amp;def_blk_fops;</span><br><span class="line">    	inode-&gt;i_rdev = rdev;</span><br><span class="line">  	&#125; <span class="keyword">else</span> <span class="keyword">if</span> (S_ISFIFO(mode))</span><br><span class="line">    	inode-&gt;i_fop = &amp;pipefifo_fops;</span><br><span class="line">  	<span class="keyword">else</span> <span class="keyword">if</span> (S_ISSOCK(mode))</span><br><span class="line">    ;  <span class="comment">/* leave it no_open_fops */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;挂载到某个文件夹下同样采用<code>mount</code>系统调用，实际会调用文件系统对应的挂载函数，如<code>ext4</code>的挂载函数<code>ext4_mount()</code>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> struct dentry *<span class="title">ext4_mount</span><span class="params">(struct file_system_type *fs_type, <span class="keyword">int</span> flags, </span></span></span><br><span class="line"><span class="function"><span class="params">                                 <span class="keyword">const</span> <span class="keyword">char</span> *dev_name, <span class="keyword">void</span> *data)</span></span></span><br><span class="line"><span class="function"></span>&#123; </span><br><span class="line">    <span class="keyword">return</span> mount_bdev(fs_type, flags, dev_name, data, ext4_fill_super);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">struct dentry *<span class="title">mount_bdev</span><span class="params">(struct file_system_type *fs_type,</span></span></span><br><span class="line"><span class="function"><span class="params">	<span class="keyword">int</span> flags, <span class="keyword">const</span> <span class="keyword">char</span> *dev_name, <span class="keyword">void</span> *data,</span></span></span><br><span class="line"><span class="function"><span class="params">	<span class="keyword">int</span> (*fill_super)(struct super_block *, <span class="keyword">void</span> *, <span class="keyword">int</span>))</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">block_device</span> *<span class="title">bdev</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">super_block</span> *<span class="title">s</span>;</span></span><br><span class="line">	<span class="keyword">fmode_t</span> mode = FMODE_READ | FMODE_EXCL;</span><br><span class="line">	<span class="keyword">int</span> error = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">if</span> (!(flags &amp; SB_RDONLY))</span><br><span class="line">		mode |= FMODE_WRITE;</span><br><span class="line">	bdev = blkdev_get_by_path(dev_name, mode, fs_type);</span><br><span class="line">......</span><br><span class="line">	s = sget(fs_type, test_bdev_super, set_bdev_super, flags | SB_NOSEC,</span><br><span class="line">		 bdev);</span><br><span class="line">......</span><br><span class="line">	<span class="keyword">return</span> dget(s-&gt;s_root);</span><br><span class="line">......</span><br><span class="line">&#125;</span><br><span class="line">EXPORT_SYMBOL(mount_bdev);</span><br></pre></td></tr></table></figure>
 
 
 
@@ -793,7 +796,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">73k</span>
+    <span title="Site words total count">73.1k</span>
   
 </div>
 
