@@ -87,7 +87,7 @@
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;在前面的文章里，我们多次见到了中断的作用，如任务调度，系统调用从用户态陷入内核，文件系统的读写操作等。本文就Linux的中断机制进行较为全面的剖析。">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/dd/13/dd492efdcf956cb22ce3d51592cdc113.png">
 <meta property="article:published_time" content="2020-07-05T11:28:06.000Z">
-<meta property="article:modified_time" content="2020-07-06T16:24:03.639Z">
+<meta property="article:modified_time" content="2020-07-07T15:30:17.951Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -307,7 +307,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-07-07T00:24:03+08:00" content="2020-07-07">
+              <time itemprop="dateUpdated" datetime="2020-07-07T23:30:17+08:00" content="2020-07-07">
                 2020-07-07
               </time>
             </span>
@@ -371,7 +371,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1.2k
+                  1.6k
                 </span>
               
 
@@ -387,7 +387,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  5
+                  6
                 </span>
               
             </div>
@@ -448,7 +448,23 @@
 <p>&emsp;&emsp;众多的中断<code>irq_desc</code>则采取类似于内存管理中所用到的基数树radix tree的方式进行管理。这种结构对于从某个整型 key 找到 value 速度很快，中断信号 <code>irq</code> 是这个整数。通过它，我们很快就能定位到对应的 <code>irq_desc</code>。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> CONFIG_SPARSE_IRQ</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="title">RADIX_TREE</span><span class="params">(irq_desc_tree, GFP_KERNEL)</span></span>;</span><br><span class="line"><span class="function">struct irq_desc *<span class="title">irq_to_desc</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">int</span> irq)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> radix_tree_lookup(&amp;irq_desc_tree, irq);</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span> <span class="comment">/* !CONFIG_SPARSE_IRQ */</span></span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">irq_desc</span> <span class="title">irq_desc</span>[<span class="title">NR_IRQS</span>] __<span class="title">cacheline_aligned_in_smp</span> = &#123;</span></span><br><span class="line">    [<span class="number">0</span> ... NR_IRQS<span class="number">-1</span>] = &#123;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="function">struct irq_desc *<span class="title">irq_to_desc</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">int</span> irq)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> (irq &lt; NR_IRQS) ? irq_desc + irq : <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span> <span class="comment">/* !CONFIG_SPARSE_IRQ */</span></span></span><br></pre></td></tr></table></figure>
 
-<h2 id="四-中断流程"><a href="#四-中断流程" class="headerlink" title="四. 中断流程"></a>四. 中断流程</h2><h2 id="源码资料"><a href="#源码资料" class="headerlink" title="源码资料"></a>源码资料</h2><p>[1] <a href="https://code.woboq.org/linux/linux/include/linux/irqdesc.h.html#irq_desc" target="_blank" rel="noopener">irq_desc</a></p>
+<h2 id="四-中断流程"><a href="#四-中断流程" class="headerlink" title="四. 中断流程"></a>四. 中断流程</h2><p>&emsp;&emsp;我们从 CPU 收到中断向量开始分析.CPU收到的中断向量定义于<a href="https://code.woboq.org/linux/linux/arch/x86/include/asm/irq_vectors.h.html" target="_blank" rel="noopener"><code>irq_vectors.h</code></a>。下面这一段是该头文件的注释，详细描述了IRQ向量的基本信息：</p>
+<ul>
+<li>单个CPU拥有256（8位）IDT，即能处理256个中断，定义为<code>NR_VECTORS</code></li>
+<li>CPU处理的中断分为几类<ul>
+<li>0到31位为系统陷入或者异常，这些属于无法屏蔽的中断，必须进行处理</li>
+<li>32到127位为设备中断</li>
+<li>128位即我们常说的int80系统调用中断</li>
+<li>129至<code>INVALIDATE_TLB_VECTOR_START</code>也用来保存设备中断</li>
+<li><code>INVALIDATE_TLB_VECTOR_START</code>至255作为特殊中断</li>
+</ul>
+</li>
+<li>64位架构下每个CPU有独立的IDT表，而32位则共享一张表</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * Linux IRQ vector layout.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * There are 256 IDT entries (per CPU - each entry is 8 bytes) which can</span></span><br><span class="line"><span class="comment"> * be defined by Linux. They are used as a jump table by the CPU when a</span></span><br><span class="line"><span class="comment"> * given vector is triggered - by a CPU-external, CPU-internal or</span></span><br><span class="line"><span class="comment"> * software-triggered event.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Linux sets the kernel code address each entry jumps to early during</span></span><br><span class="line"><span class="comment"> * bootup, and never changes them. This is the general layout of the</span></span><br><span class="line"><span class="comment"> * IDT entries:</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> *  Vectors   0 ...  31 : system traps and exceptions - hardcoded events</span></span><br><span class="line"><span class="comment"> *  Vectors  32 ... 127 : device interrupts</span></span><br><span class="line"><span class="comment"> *  Vector  128         : legacy int80 syscall interface</span></span><br><span class="line"><span class="comment"> *  Vectors 129 ... INVALIDATE_TLB_VECTOR_START-1 except 204 : device interrupts</span></span><br><span class="line"><span class="comment"> *  Vectors INVALIDATE_TLB_VECTOR_START ... 255 : special interrupts</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * 64-bit x86 has per CPU IDT tables, 32-bit has one shared IDT table.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * This file enumerates the exact layout of them:</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IRQ_MOVE_CLEANUP_VECTOR		FIRST_EXTERNAL_VECTOR</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IA32_SYSCALL_VECTOR		0x80</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> NR_VECTORS 256</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> FIRST_SYSTEM_VECTOR NR_VECTORS</span></span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;在<a href="https://ty-chen.github.io/linux-kernel-zero-process/#more">前文</a>中有分析内核的开始源于<code>start_kernel()</code>，</p>
+<h2 id="源码资料"><a href="#源码资料" class="headerlink" title="源码资料"></a>源码资料</h2><p>[1] <a href="https://code.woboq.org/linux/linux/include/linux/irqdesc.h.html#irq_desc" target="_blank" rel="noopener">irq_desc</a></p>
 <h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1] wiki</p>
 <p>[2] <a href="https://elixir.bootlin.com/linux/v5.7-rc1/source" target="_blank" rel="noopener">elixir.bootlin.com/linux</a></p>
 <p>[3] <a href="https://code.woboq.org/" target="_blank" rel="noopener">woboq</a></p>
@@ -786,7 +802,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">79.9k</span>
+    <span title="Site words total count">80.3k</span>
   
 </div>
 
