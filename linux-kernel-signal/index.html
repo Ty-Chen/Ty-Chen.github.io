@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="分布式系统设计," />
+  <meta name="keywords" content="Linux,操作系统,进程间通信,信号," />
 
 
 
@@ -79,16 +79,19 @@
 
 
 
-<meta name="description" content="前言&amp;emsp;&amp;emsp;本文挖个新坑，记录分布式系统设计中的点点滴滴，主要包括  分布式系统技术栈 分布式系统关键技术 分布式系统弹力设计 分布式系统管理设计 分布式系统性能设计  &amp;emsp;&amp;emsp;每一个部分展开都有着宏伟壮阔的篇章，不是一时半会能够学完学透的，必须沉下心来扎扎实实学习，并通过不断地实践巩固和提高。">
+<meta name="description" content="一. 前言&amp;emsp;&amp;emsp;众所周知，System V IPC进程间通信机制体系中有着多种多样的进程间通信方式，如管道和有名管道，消息队列，信号，共享内存和信号量。从本文开始我们就逐个剖析进程间通信的机制和底层原理，就从信号开始讲起吧。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="分布式系统设计学习笔记">
-<meta property="og:url" content="https://ty-chen.github.io/distributed-system-design/index.html">
+<meta property="og:title" content="Linux操作系统学习笔记（十六）进程间通信之信号">
+<meta property="og:url" content="https://ty-chen.github.io/linux-kernel-signal/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
-<meta property="og:description" content="前言&amp;emsp;&amp;emsp;本文挖个新坑，记录分布式系统设计中的点点滴滴，主要包括  分布式系统技术栈 分布式系统关键技术 分布式系统弹力设计 分布式系统管理设计 分布式系统性能设计  &amp;emsp;&amp;emsp;每一个部分展开都有着宏伟壮阔的篇章，不是一时半会能够学完学透的，必须沉下心来扎扎实实学习，并通过不断地实践巩固和提高。">
-<meta property="article:published_time" content="2020-04-24T15:15:07.000Z">
-<meta property="article:modified_time" content="2020-04-25T04:21:01.562Z">
+<meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;众所周知，System V IPC进程间通信机制体系中有着多种多样的进程间通信方式，如管道和有名管道，消息队列，信号，共享内存和信号量。从本文开始我们就逐个剖析进程间通信的机制和底层原理，就从信号开始讲起吧。">
+<meta property="article:published_time" content="2020-07-08T16:44:20.000Z">
+<meta property="article:modified_time" content="2020-07-09T16:25:06.206Z">
 <meta property="article:author" content="Ty Chen">
-<meta property="article:tag" content="分布式系统设计">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="操作系统">
+<meta property="article:tag" content="进程间通信">
+<meta property="article:tag" content="信号">
 <meta name="twitter:card" content="summary">
 
 
@@ -119,13 +122,13 @@
 
 
 
-  <link rel="canonical" href="https://ty-chen.github.io/distributed-system-design/"/>
+  <link rel="canonical" href="https://ty-chen.github.io/linux-kernel-signal/"/>
 
 
 
 
 
-  <title>分布式系统设计学习笔记 | Ty-Chen's Home</title>
+  <title>Linux操作系统学习笔记（十六）进程间通信之信号 | Ty-Chen's Home</title>
   
 
 
@@ -262,7 +265,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://ty-chen.github.io/distributed-system-design/">
+    <link itemprop="mainEntityOfPage" href="https://ty-chen.github.io/linux-kernel-signal/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Ty Chen">
@@ -279,7 +282,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">分布式系统设计学习笔记</h1>
+          <h1 class="post-title" itemprop="name headline">Linux操作系统学习笔记（十六）进程间通信之信号</h1>
         
 
         <div class="post-meta">
@@ -291,8 +294,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-04-24T23:15:07+08:00">
-                2020-04-24
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-07-09T00:44:20+08:00">
+                2020-07-09
               </time>
             
 
@@ -303,8 +306,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-04-25T12:21:01+08:00" content="2020-04-25">
-                2020-04-25
+              <time itemprop="dateUpdated" datetime="2020-07-10T00:25:06+08:00" content="2020-07-10">
+                2020-07-10
               </time>
             </span>
           
@@ -321,8 +324,8 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/" itemprop="url" rel="index">
-                    <span itemprop="name">分布式系统设计</span>
+                  <a href="/categories/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%86%85%E6%A0%B8%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index">
+                    <span itemprop="name">Linux操作系统内核学习</span>
                   </a>
                 </span>
 
@@ -339,8 +342,8 @@
                 <span class="post-meta-item-icon">
                   <i class="fa fa-comment-o"></i>
                 </span>
-                <a href="/distributed-system-design/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count valine-comment-count" data-xid="/distributed-system-design/" itemprop="commentCount"></span>
+                <a href="/linux-kernel-signal/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/linux-kernel-signal/" itemprop="commentCount"></span>
                 </a>
               </span>
             
@@ -367,7 +370,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  154
+                  716
                 </span>
               
 
@@ -383,7 +386,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  1
+                  3
                 </span>
               
             </div>
@@ -404,18 +407,25 @@
       
 
       
-        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>&emsp;&emsp;本文挖个新坑，记录分布式系统设计中的点点滴滴，主要包括</p>
-<ul>
-<li>分布式系统技术栈</li>
-<li>分布式系统关键技术</li>
-<li>分布式系统弹力设计</li>
-<li>分布式系统管理设计</li>
-<li>分布式系统性能设计</li>
-</ul>
-<p>&emsp;&emsp;每一个部分展开都有着宏伟壮阔的篇章，不是一时半会能够学完学透的，必须沉下心来扎扎实实学习，并通过不断地实践巩固和提高。</p>
+        <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;众所周知，<a href="https://en.wikipedia.org/wiki/UNIX_System_V" target="_blank" rel="noopener"><code>System V IPC</code></a>进程间通信机制体系中有着多种多样的进程间通信方式，如管道和有名管道，消息队列，信号，共享内存和信号量。从本文开始我们就逐个剖析进程间通信的机制和底层原理，就从信号开始讲起吧。</p>
 <a id="more"></a>
 
-<h2 id="分布式系统技术栈"><a href="#分布式系统技术栈" class="headerlink" title="分布式系统技术栈"></a>分布式系统技术栈</h2><h2 id="关键技术"><a href="#关键技术" class="headerlink" title="关键技术"></a>关键技术</h2><h2 id="弹力设计"><a href="#弹力设计" class="headerlink" title="弹力设计"></a>弹力设计</h2><h2 id="管理设计"><a href="#管理设计" class="headerlink" title="管理设计"></a>管理设计</h2><h2 id="性能设计"><a href="#性能设计" class="headerlink" title="性能设计"></a>性能设计</h2>
+<h2 id="二-信号基本知识"><a href="#二-信号基本知识" class="headerlink" title="二. 信号基本知识"></a>二. 信号基本知识</h2><p>&emsp;&emsp;信号是进程处理紧急情况所用的一种方式，它没有特别复杂的数据结构，就是用一个代号一样的数字。Linux 提供了几十种信号，分别代表不同的意义。我们可以通过<code>kill -l</code>命令查看信号。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"># kill -l</span></span><br><span class="line"> <span class="number">1</span>) SIGHUP       <span class="number">2</span>) SIGINT       <span class="number">3</span>) SIGQUIT      <span class="number">4</span>) SIGILL       <span class="number">5</span>) SIGTRAP</span><br><span class="line"> <span class="number">6</span>) SIGABRT      <span class="number">7</span>) SIGBUS       <span class="number">8</span>) SIGFPE       <span class="number">9</span>) SIGKILL     <span class="number">10</span>) SIGUSR1</span><br><span class="line"><span class="number">11</span>) SIGSEGV     <span class="number">12</span>) SIGUSR2     <span class="number">13</span>) SIGPIPE     <span class="number">14</span>) SIGALRM     <span class="number">15</span>) SIGTERM</span><br><span class="line"><span class="number">16</span>) SIGSTKFLT   <span class="number">17</span>) SIGCHLD     <span class="number">18</span>) SIGCONT     <span class="number">19</span>) SIGSTOP     <span class="number">20</span>) SIGTSTP</span><br><span class="line"><span class="number">21</span>) SIGTTIN     <span class="number">22</span>) SIGTTOU     <span class="number">23</span>) SIGURG      <span class="number">24</span>) SIGXCPU     <span class="number">25</span>) SIGXFSZ</span><br><span class="line"><span class="number">26</span>) SIGVTALRM   <span class="number">27</span>) SIGPROF     <span class="number">28</span>) SIGWINCH    <span class="number">29</span>) SIGIO       <span class="number">30</span>) SIGPWR</span><br><span class="line"><span class="number">31</span>) SIGSYS      <span class="number">34</span>) SIGRTMIN    <span class="number">35</span>) SIGRTMIN+<span class="number">1</span>  <span class="number">36</span>) SIGRTMIN+<span class="number">2</span>  <span class="number">37</span>) SIGRTMIN+<span class="number">3</span></span><br><span class="line"><span class="number">38</span>) SIGRTMIN+<span class="number">4</span>  <span class="number">39</span>) SIGRTMIN+<span class="number">5</span>  <span class="number">40</span>) SIGRTMIN+<span class="number">6</span>  <span class="number">41</span>) SIGRTMIN+<span class="number">7</span>  <span class="number">42</span>) SIGRTMIN+<span class="number">8</span></span><br><span class="line"><span class="number">43</span>) SIGRTMIN+<span class="number">9</span>  <span class="number">44</span>) SIGRTMIN+<span class="number">10</span> <span class="number">45</span>) SIGRTMIN+<span class="number">11</span> <span class="number">46</span>) SIGRTMIN+<span class="number">12</span> <span class="number">47</span>) SIGRTMIN+<span class="number">13</span></span><br><span class="line"><span class="number">48</span>) SIGRTMIN+<span class="number">14</span> <span class="number">49</span>) SIGRTMIN+<span class="number">15</span> <span class="number">50</span>) SIGRTMAX<span class="number">-14</span> <span class="number">51</span>) SIGRTMAX<span class="number">-13</span> <span class="number">52</span>) SIGRTMAX<span class="number">-12</span></span><br><span class="line"><span class="number">53</span>) SIGRTMAX<span class="number">-11</span> <span class="number">54</span>) SIGRTMAX<span class="number">-10</span> <span class="number">55</span>) SIGRTMAX<span class="number">-9</span>  <span class="number">56</span>) SIGRTMAX<span class="number">-8</span>  <span class="number">57</span>) SIGRTMAX<span class="number">-7</span></span><br><span class="line"><span class="number">58</span>) SIGRTMAX<span class="number">-6</span>  <span class="number">59</span>) SIGRTMAX<span class="number">-5</span>  <span class="number">60</span>) SIGRTMAX<span class="number">-4</span>  <span class="number">61</span>) SIGRTMAX<span class="number">-3</span>  <span class="number">62</span>) SIGRTMAX<span class="number">-2</span></span><br><span class="line"><span class="number">63</span>) SIGRTMAX<span class="number">-1</span>  <span class="number">64</span>) SIGRTMAX</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;信号可以在任何时候发送给某一进程，进程需要为这个信号配置信号处理函数。当某个信号发生的时候，就默认执行这个函数就可以了。通过<code>man 7 signal</code>可以查看各个信号的具体含义和对应的处理方法</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">Signal     Value     Action   Comment</span><br><span class="line">──────────────────────────────────────────────────────────────────────</span><br><span class="line">SIGHUP        <span class="number">1</span>       Term    Hangup detected on controlling terminal</span><br><span class="line">                              <span class="keyword">or</span> death of controlling <span class="built_in">process</span></span><br><span class="line">SIGINT        <span class="number">2</span>       Term    Interrupt from keyboard</span><br><span class="line">SIGQUIT       <span class="number">3</span>       Core    Quit from keyboard</span><br><span class="line">SIGILL        <span class="number">4</span>       Core    Illegal Instruction</span><br><span class="line"></span><br><span class="line">SIGABRT       <span class="number">6</span>       <span class="function">Core    Abort signal from <span class="title">abort</span><span class="params">(<span class="number">3</span>)</span></span></span><br><span class="line"><span class="function">SIGFPE        8       Core    Floating <span class="built_in">point</span> exception</span></span><br><span class="line"><span class="function">SIGKILL       9       Term    Kill signal</span></span><br><span class="line"><span class="function">SIGSEGV      11       Core    Invalid memory reference</span></span><br><span class="line"><span class="function">SIGPIPE      13       Term    Broken pipe: <span class="built_in">write</span> to pipe with no</span></span><br><span class="line"><span class="function">                              readers</span></span><br><span class="line"><span class="function">SIGALRM      14       Term    Timer signal from <span class="title">alarm</span><span class="params">(<span class="number">2</span>)</span></span></span><br><span class="line"><span class="function">SIGTERM      15       Term    Termination signal</span></span><br><span class="line">SIGUSR1   30,10,16    Term    User-defined signal 1</span><br><span class="line">SIGUSR2   <span class="number">31</span>,<span class="number">12</span>,<span class="number">17</span>    Term    User-defined signal <span class="number">2</span></span><br><span class="line">……</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;由上表可见，信号的处理通常分为三种：</p>
+<ul>
+<li><p>执行默认操作。Linux 对每种信号都规定了默认操作，例如上面列表中的 <code>Term</code>，就是终止进程的意思。<code>Core</code> 的意思是 <code>Core Dump</code>，也即终止进程后通过 <code>Core Dump</code> 将当前进程的运行状态保存在文件里面，方便程序员事后进行分析问题在哪里。</p>
+</li>
+<li><p>捕捉信号。我们可以为信号定义一个信号处理函数。当信号发生时，我们就执行相应的信号处理函数。</p>
+</li>
+<li><p>忽略信号。当我们不希望处理某些信号的时候，就可以忽略该信号，不做任何处理。<strong>有两个信号是应用进程无法捕捉和忽略的，即 <code>SIGKILL</code> 和 <code>SEGSTOP</code></strong>，它们用于在任何时候中断或结束某一进程。</p>
+</li>
+</ul>
+
       
     </div>
     
@@ -464,7 +474,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="https://ty-chen.github.io/distributed-system-design/" title="分布式系统设计学习笔记">https://ty-chen.github.io/distributed-system-design/</a>
+    <a href="https://ty-chen.github.io/linux-kernel-signal/" title="Linux操作系统学习笔记（十六）进程间通信之信号">https://ty-chen.github.io/linux-kernel-signal/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>
@@ -479,7 +489,13 @@
       
         <div class="post-tags">
           
-            <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/" rel="tag"># 分布式系统设计</a>
+            <a href="/tags/Linux/" rel="tag"># Linux</a>
+          
+            <a href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" rel="tag"># 操作系统</a>
+          
+            <a href="/tags/%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/" rel="tag"># 进程间通信</a>
+          
+            <a href="/tags/%E4%BF%A1%E5%8F%B7/" rel="tag"># 信号</a>
           
         </div>
       
@@ -492,8 +508,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/paradigms/" rel="next" title="编程范式学习记录">
-                <i class="fa fa-chevron-left"></i> 编程范式学习记录
+              <a href="/linux-kernel-interrupt/" rel="next" title="Linux操作系统学习笔记（十五）中断">
+                <i class="fa fa-chevron-left"></i> Linux操作系统学习笔记（十五）中断
               </a>
             
           </div>
@@ -501,10 +517,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/linux-kernel-bootstrap/" rel="prev" title="Linux操作系统学习笔记（一）启动">
-                Linux操作系统学习笔记（一）启动 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -711,7 +723,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#分布式系统技术栈"><span class="nav-text">分布式系统技术栈</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#关键技术"><span class="nav-text">关键技术</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#弹力设计"><span class="nav-text">弹力设计</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#管理设计"><span class="nav-text">管理设计</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#性能设计"><span class="nav-text">性能设计</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-信号基本知识"><span class="nav-text">二. 信号基本知识</span></a></li></ol></div>
             
 
           </div>
