@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;上文中我们介绍了进程间通信的方法之一：信号，本文将继续介绍另一种进程间通信的方法，即管道。管道是Linux中使用shell经常用到的一个技术，本文将深入剖析管道的实现和运行逻辑。">
 <meta property="article:published_time" content="2020-07-12T13:58:53.000Z">
-<meta property="article:modified_time" content="2020-07-14T15:22:50.454Z">
+<meta property="article:modified_time" content="2020-07-15T14:37:56.130Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -306,8 +306,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-07-14T23:22:50+08:00" content="2020-07-14">
-                2020-07-14
+              <time itemprop="dateUpdated" datetime="2020-07-15T22:37:56+08:00" content="2020-07-15">
+                2020-07-15
               </time>
             </span>
           
@@ -426,7 +426,7 @@
 <h2 id="三-管道创建"><a href="#三-管道创建" class="headerlink" title="三. 管道创建"></a>三. 管道创建</h2><p>&emsp;&emsp;实际管道的创建调用的是系统调用<code>pipe()</code>，该函数建了一个管道 <code>pipe</code>，返回了两个文件描述符，这表示管道的两端，一个是管道的读取端描述符 <code>fd[0]</code>，另一个是管道的写入端描述符 <code>fd[1]</code>。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pipe</span><span class="params">(<span class="keyword">int</span> fd[<span class="number">2</span>])</span></span></span><br></pre></td></tr></table></figure>
 
-<p>&emsp;&emsp;其内核实现如下所示，<code>pipe2 ()</code>创建一个数组 files来存放管道的两端的打开文件，另一个数组 <code>fd</code> 存放管道的两端的文件描述符。如果调用 <code>__do_pipe_flags()</code> 没有错误，那就调用 <code>fd_install()</code>将两个 <code>fd</code> 和两个 <code>struct file</code> 关联起来，这一点和打开一个文件的过程类似。</p>
+<p>&emsp;&emsp;其内核实现如下所示，<code>pipe2 ()</code>调用 <code>__do_pipe_flags()</code> 创建一个数组 files来存放管道的两端的打开文件，另一个数组 <code>fd</code> 存放管道的两端的文件描述符。如果 <code>__do_pipe_flags()</code> 没有错误，那就调用 <code>fd_install()</code>将两个 <code>fd</code> 和两个 <code>struct file</code> 关联起来，这一点和打开一个文件的过程类似。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">SYSCALL_DEFINE1(pipe, <span class="keyword">int</span> __user *, fildes)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> sys_pipe2(fildes, <span class="number">0</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">SYSCALL_DEFINE2(pipe2, <span class="keyword">int</span> __user *, fildes, <span class="keyword">int</span>, flags)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">file</span> *<span class="title">files</span>[2];</span></span><br><span class="line">    <span class="keyword">int</span> fd[<span class="number">2</span>];</span><br><span class="line">  	<span class="keyword">int</span> error;</span><br><span class="line"></span><br><span class="line">  	error = __do_pipe_flags(fd, files, flags);</span><br><span class="line">  	<span class="keyword">if</span> (!error) &#123;</span><br><span class="line">    	<span class="keyword">if</span> (unlikely(copy_to_user(fildes, fd, <span class="keyword">sizeof</span>(fd)))) &#123;</span><br><span class="line">......</span><br><span class="line">      		error = -EFAULT;</span><br><span class="line">    	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      		fd_install(fd[<span class="number">0</span>], files[<span class="number">0</span>]);</span><br><span class="line">      		fd_install(fd[<span class="number">1</span>], files[<span class="number">1</span>]);</span><br><span class="line">    	&#125;</span><br><span class="line">  	&#125;</span><br><span class="line">  	<span class="keyword">return</span> error;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>&emsp;&emsp;<code>__do_pipe_flags()</code>调用了<code>create_pipe_files()</code>生成<code>fd</code>，然后调用<code>get_unused_fd_flags()</code>赋值<code>fdr</code>和<code>fdw</code>，即读文件描述符和写文件描述符。由此也可以看出管道的特性：由一端写入，由另一端读出。</p>
