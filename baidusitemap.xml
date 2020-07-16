@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://ty-chen.github.io/linux-kernel-signal/</loc>
+    <lastmod>2020-07-16</lastmod>
+  </url>  <url>
     <loc>https://ty-chen.github.io/linux-kernel-shm-semaphore/</loc>
     <lastmod>2020-07-16</lastmod>
   </url>  <url>
@@ -9,9 +12,6 @@
   </url>  <url>
     <loc>https://ty-chen.github.io/linux-kernel-interrupt/</loc>
     <lastmod>2020-07-16</lastmod>
-  </url>  <url>
-    <loc>https://ty-chen.github.io/linux-kernel-signal/</loc>
-    <lastmod>2020-07-12</lastmod>
   </url>  <url>
     <loc>https://ty-chen.github.io/linux-kernel-block-device/</loc>
     <lastmod>2020-07-04</lastmod>
