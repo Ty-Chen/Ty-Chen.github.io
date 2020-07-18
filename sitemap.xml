@@ -2,37 +2,107 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>https://ty-chen.github.io/linux-kernel-process-create/</loc>
+    <loc>https://ty-chen.github.io/linux-kernel-zero-process/</loc>
     
-    <lastmod>2020-07-18T04:09:20.401Z</lastmod>
+    <lastmod>2020-07-18T05:56:57.581Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://ty-chen.github.io/linux-kernel-vfs/</loc>
+    
+    <lastmod>2020-07-18T05:56:49.454Z</lastmod>
     
   </url>
   
   <url>
     <loc>https://ty-chen.github.io/linux-kernel-task-struct/</loc>
     
-    <lastmod>2020-07-17T18:21:51.427Z</lastmod>
+    <lastmod>2020-07-18T05:56:43.070Z</lastmod>
     
   </url>
   
   <url>
     <loc>https://ty-chen.github.io/linux-kernel-system-call/</loc>
     
-    <lastmod>2020-07-17T17:49:55.584Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://ty-chen.github.io/linux-kernel-zero-process/</loc>
-    
-    <lastmod>2020-07-17T14:33:35.847Z</lastmod>
+    <lastmod>2020-07-18T05:56:35.672Z</lastmod>
     
   </url>
   
   <url>
     <loc>https://ty-chen.github.io/linux-kernel-signal/</loc>
     
-    <lastmod>2020-07-16T17:12:15.366Z</lastmod>
+    <lastmod>2020-07-18T05:56:28.432Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://ty-chen.github.io/linux-kernel-schedule/</loc>
+    
+    <lastmod>2020-07-18T05:56:17.806Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://ty-chen.github.io/linux-kernel-process-create/</loc>
+    
+    <lastmod>2020-07-18T05:56:00.360Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://ty-chen.github.io/linux-kernel-pipe/</loc>
+    
+    <lastmod>2020-07-18T05:55:49.164Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://ty-chen.github.io/linux-kernel-mmstruct/</loc>
+    
+    <lastmod>2020-07-18T05:55:34.242Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://ty-chen.github.io/linux-kernel-mm-mgr/</loc>
+    
+    <lastmod>2020-07-18T05:55:19.001Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://ty-chen.github.io/linux-kernel-mmap/</loc>
+    
+    <lastmod>2020-07-18T05:54:53.812Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://ty-chen.github.io/linux-kernel-interrupt/</loc>
+    
+    <lastmod>2020-07-18T05:54:18.556Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://ty-chen.github.io/linux-kernel-fs/</loc>
+    
+    <lastmod>2020-07-18T05:53:52.400Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://ty-chen.github.io/linux-kernel-char-device/</loc>
+    
+    <lastmod>2020-07-18T05:53:40.719Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://ty-chen.github.io/linux-kernel-block-device/</loc>
+    
+    <lastmod>2020-07-18T05:50:53.725Z</lastmod>
     
   </url>
   
@@ -44,79 +114,9 @@
   </url>
   
   <url>
-    <loc>https://ty-chen.github.io/linux-kernel-pipe/</loc>
-    
-    <lastmod>2020-07-16T16:54:09.746Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://ty-chen.github.io/linux-kernel-interrupt/</loc>
-    
-    <lastmod>2020-07-16T16:23:58.754Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://ty-chen.github.io/linux-kernel-block-device/</loc>
-    
-    <lastmod>2020-07-04T19:23:29.999Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://ty-chen.github.io/linux-kernel-char-device/</loc>
-    
-    <lastmod>2020-06-27T12:13:52.705Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://ty-chen.github.io/linux-kernel-vfs/</loc>
-    
-    <lastmod>2020-06-22T15:03:57.220Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://ty-chen.github.io/linux-kernel-fs/</loc>
-    
-    <lastmod>2020-06-19T16:35:32.606Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://ty-chen.github.io/linux-kernel-mmap/</loc>
-    
-    <lastmod>2020-06-14T09:47:29.901Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://ty-chen.github.io/linux-kernel-mm-mgr/</loc>
-    
-    <lastmod>2020-06-14T08:58:41.370Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://ty-chen.github.io/linux-kernel-mmstruct/</loc>
-    
-    <lastmod>2020-06-07T16:02:42.154Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://ty-chen.github.io/linux-kernel-bootstrap/</loc>
     
     <lastmod>2020-06-04T15:42:15.302Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://ty-chen.github.io/linux-kernel-schedule/</loc>
-    
-    <lastmod>2020-06-02T14:53:39.595Z</lastmod>
     
   </url>
   

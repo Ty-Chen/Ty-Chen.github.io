@@ -87,7 +87,7 @@
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;前文分析到Linux内核正式启动，完成了实模式到保护模式的切换，并做好了各种准备工作。下来就要看开始内核初始化工作了，源码位置位于init&#x2F;main.c中的start_kernel()，源码如附录所示。这包括了一系列重要的初始化工作，本文会介绍其中一部分较为重要的，但是详细的介绍依然会留在后文各个模块的源码学习中单独进行。本文的目的在于承接上文给出一个从内核启动到">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/2b/42/2b53b470673cde8f9d8e2573f7d07242.jpg">
 <meta property="article:published_time" content="2020-05-05T14:46:22.000Z">
-<meta property="article:modified_time" content="2020-07-17T14:33:35.847Z">
+<meta property="article:modified_time" content="2020-07-18T05:56:57.581Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -310,8 +310,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-07-17T22:33:35+08:00" content="2020-07-17">
-                2020-07-17
+              <time itemprop="dateUpdated" datetime="2020-07-18T13:56:57+08:00" content="2020-07-18">
+                2020-07-18
               </time>
             </span>
           
@@ -453,12 +453,16 @@
 <p>&emsp;&emsp;此处不展开说明这些函数，留待后面内存管理部分详细分析各个部分。</p>
 <h2 id="五-调度器初始化"><a href="#五-调度器初始化" class="headerlink" title="五. 调度器初始化"></a>五. 调度器初始化</h2><p>&emsp;&emsp;调度器初始化通过<code>sched_init()</code>完成，其主要工作包括</p>
 <ul>
-<li>对相关数据结构分配内存：如初始化<code>waitqueues</code>数组，根据调度方式FAIR/RT设置<code>alloc_size</code>，调用<code>kzalloc</code>分配空间</li>
-<li>初始化<code>root_task_group</code>：根据FAIR/RT的不同，将<code>kzalloc</code>分配的空间用于其初始化，主要结构<code>task_group</code>包含以下几个重要组成部分：<code>se</code>, <code>rt_se</code>, <code>cfs_rq</code> 以及 <code>rt_rq</code>。其中<code>cfs_rq</code>和<code>rt_rq</code>表示<code>run queue</code>，即一种特殊的<code>per-cpu</code>结构体用于内核调度器存储激活的线程。</li>
-<li>调用<code>for_each_possible_cpu()</code>初始化每个<code>possible</code>CPU（存储于<code>cpu_possible_mask</code>为图中）的<code>runqueue</code>队列(包括其中的cfs队列和实时进程队列)，<a href="https://github.com/torvalds/linux/blob/16f73eb02d7e1765ccab3d2018e0bd98eb93d973/kernel/sched/sched.h#L625" target="_blank" rel="noopener">rq</a>结构体是调度进程的基本数据结构，调度器用rq决定下一个将要被调度的进程。详细介绍会在调度一节进行。</li>
-<li>调用<code>set_load_weight(&amp;init_task)</code>，将<code>init_task</code>进程转变为idle进程</li>
+<li><p>对相关数据结构分配内存：如初始化<code>waitqueues</code>数组，根据调度方式FAIR/RT设置<code>alloc_size</code>，调用<code>kzalloc</code>分配空间</p>
+</li>
+<li><p>初始化<code>root_task_group</code>：根据FAIR/RT的不同，将<code>kzalloc</code>分配的空间用于其初始化，主要结构<code>task_group</code>包含以下几个重要组成部分：<code>se</code>, <code>rt_se</code>, <code>cfs_rq</code> 以及 <code>rt_rq</code>。其中<code>cfs_rq</code>和<code>rt_rq</code>表示<code>run queue</code>，即一种特殊的<code>per-cpu</code>结构体用于内核调度器存储激活的线程。</p>
+</li>
+<li><p>调用<code>for_each_possible_cpu()</code>初始化每个<code>possible</code>CPU（存储于<code>cpu_possible_mask</code>为图中）的<code>runqueue</code>队列(包括其中的cfs队列和实时进程队列)，<a href="https://github.com/torvalds/linux/blob/16f73eb02d7e1765ccab3d2018e0bd98eb93d973/kernel/sched/sched.h#L625" target="_blank" rel="noopener">rq</a>结构体是调度进程的基本数据结构，调度器用rq决定下一个将要被调度的进程。详细介绍会在调度一节进行。</p>
+</li>
+<li><p>调用<code>set_load_weight(&amp;init_task)</code>，将<code>init_task</code>进程转变为idle进程</p>
+<p>需要说明的是<code>init_task</code>在这里会被转变为<code>idle</code>进程，但是它还会继续执行初始化工作，相当于这里只是给<code>init_task</code>挂个<code>idle</code>进程的名号，它其实还是<code>init_task</code>进程，只有到最后<code>init_task</code>进程开启了<code>kernel_init</code>和<code>kthreadd</code>进程之后，才转变为真正意义上的<code>idle</code>进程。</p>
+</li>
 </ul>
-<p>　　需要说明的是<code>init_task</code>在这里会被转变为<code>idle</code>进程，但是它还会继续执行初始化工作，相当于这里只是给<code>init_task</code>挂个<code>idle</code>进程的名号，它其实还是<code>init_task</code>进程，只有到最后<code>init_task</code>进程开启了<code>kernel_init</code>和<code>kthreadd</code>进程之后，才转变为真正意义上的<code>idle</code>进程。</p>
 <h2 id="六-剩余初始化"><a href="#六-剩余初始化" class="headerlink" title="六. 剩余初始化"></a>六. 剩余初始化</h2><p>&emsp;&emsp;<code>rest_init</code>是非常重要的一步，主要包括了区分内核态和用户态、初始化1号进程和初始化2号进程。</p>
 <h3 id="6-1-内核态和用户态"><a href="#6-1-内核态和用户态" class="headerlink" title="6.1 内核态和用户态"></a>6.1 内核态和用户态</h3><p>&emsp;&emsp;在运行用户进程之前，尚需要完成一件事：区分内核态和用户态。x86 提供了分层的权限机制，把区域分成了四个 Ring，越往里权限越高，越往外权限越低。操作系统很好地利用了这个机制，将能够访问关键资源的代码放在 Ring0，我们称为内核态（Kernel Mode）；将普通的程序代码放在 Ring3，我们称为用户态（User Mode）。</p>
 <img src="https://static001.geekbang.org/resource/image/2b/42/2b53b470673cde8f9d8e2573f7d07242.jpg" alt="img" style="zoom:25%;" />
