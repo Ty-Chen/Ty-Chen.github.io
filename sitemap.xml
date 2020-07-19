@@ -4,7 +4,21 @@
   <url>
     <loc>https://ty-chen.github.io/linux-kernel-shm-semaphore/</loc>
     
-    <lastmod>2020-07-19T03:49:23.892Z</lastmod>
+    <lastmod>2020-07-19T15:50:12.980Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://ty-chen.github.io/linux-kernel-block-device/</loc>
+    
+    <lastmod>2020-07-19T05:18:53.273Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://ty-chen.github.io/linux-kernel-interrupt/</loc>
+    
+    <lastmod>2020-07-19T05:18:19.263Z</lastmod>
     
   </url>
   
@@ -86,13 +100,6 @@
   </url>
   
   <url>
-    <loc>https://ty-chen.github.io/linux-kernel-interrupt/</loc>
-    
-    <lastmod>2020-07-18T05:54:18.556Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://ty-chen.github.io/linux-kernel-fs/</loc>
     
     <lastmod>2020-07-18T05:53:52.400Z</lastmod>
@@ -103,13 +110,6 @@
     <loc>https://ty-chen.github.io/linux-kernel-char-device/</loc>
     
     <lastmod>2020-07-18T05:53:40.719Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://ty-chen.github.io/linux-kernel-block-device/</loc>
-    
-    <lastmod>2020-07-18T05:50:53.725Z</lastmod>
     
   </url>
   
