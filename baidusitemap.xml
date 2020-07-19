@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://ty-chen.github.io/linux-kernel-shm-semaphore/</loc>
+    <lastmod>2020-07-19</lastmod>
+  </url>  <url>
     <loc>https://ty-chen.github.io/linux-kernel-zero-process/</loc>
     <lastmod>2020-07-18</lastmod>
   </url>  <url>
@@ -45,9 +48,6 @@
   </url>  <url>
     <loc>https://ty-chen.github.io/linux-kernel-block-device/</loc>
     <lastmod>2020-07-18</lastmod>
-  </url>  <url>
-    <loc>https://ty-chen.github.io/linux-kernel-shm-semaphore/</loc>
-    <lastmod>2020-07-16</lastmod>
   </url>  <url>
     <loc>https://ty-chen.github.io/linux-kernel-bootstrap/</loc>
     <lastmod>2020-06-04</lastmod>

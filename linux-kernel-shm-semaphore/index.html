@@ -79,14 +79,15 @@
 
 
 
-<meta name="description" content="一. 前言&amp;emsp;&amp;emsp;本文为进程间通信的最后一篇，介绍共享内存和信号量。之所以将二者一起叙述，是因为二者有着密不可分的关系。">
+<meta name="description" content="一. 前言&amp;emsp;&amp;emsp;本文为进程间通信的最后一篇，介绍共享内存和信号量。之所以将二者一起叙述，是因为二者有着密不可分的关系。共享内存会利用虚拟内存和物理内存的映射关系，让不同进程开辟一块虚拟空间映射到相同的物理内存上，从而实现了两个进程对相同区域的读写，即进程间通信。而信号量则实现了互斥锁，可以为共享内存提供数据一致性的保证，因此二者常结合使用。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux操作系统学习笔记（十八）进程间通信之共享内存和信号量">
 <meta property="og:url" content="https://ty-chen.github.io/linux-kernel-shm-semaphore/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
-<meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;本文为进程间通信的最后一篇，介绍共享内存和信号量。之所以将二者一起叙述，是因为二者有着密不可分的关系。">
+<meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;本文为进程间通信的最后一篇，介绍共享内存和信号量。之所以将二者一起叙述，是因为二者有着密不可分的关系。共享内存会利用虚拟内存和物理内存的映射关系，让不同进程开辟一块虚拟空间映射到相同的物理内存上，从而实现了两个进程对相同区域的读写，即进程间通信。而信号量则实现了互斥锁，可以为共享内存提供数据一致性的保证，因此二者常结合使用。">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/46/0b/469552bffe601d594c432d4fad97490b.png">
 <meta property="article:published_time" content="2020-07-16T17:06:04.000Z">
-<meta property="article:modified_time" content="2020-07-16T17:08:01.871Z">
+<meta property="article:modified_time" content="2020-07-19T03:49:23.892Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -94,6 +95,7 @@
 <meta property="article:tag" content="共享内存">
 <meta property="article:tag" content="信号量">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://static001.geekbang.org/resource/image/46/0b/469552bffe601d594c432d4fad97490b.png">
 
 
 
@@ -307,8 +309,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-07-17T01:08:01+08:00" content="2020-07-17">
-                2020-07-17
+              <time itemprop="dateUpdated" datetime="2020-07-19T11:49:23+08:00" content="2020-07-19">
+                2020-07-19
               </time>
             </span>
           
@@ -371,7 +373,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  52
+                  340
                 </span>
               
 
@@ -408,8 +410,25 @@
       
 
       
-        <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;本文为进程间通信的最后一篇，介绍共享内存和信号量。之所以将二者一起叙述，是因为二者有着密不可分的关系。</p>
+        <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;本文为进程间通信的最后一篇，介绍共享内存和信号量。之所以将二者一起叙述，是因为二者有着密不可分的关系。共享内存会利用虚拟内存和物理内存的映射关系，让不同进程开辟一块虚拟空间映射到相同的物理内存上，从而实现了两个进程对相同区域的读写，即进程间通信。而信号量则实现了互斥锁，可以为共享内存提供数据一致性的保证，因此二者常结合使用。</p>
 <a id="more"></a>
+
+<h2 id="二-基础知识"><a href="#二-基础知识" class="headerlink" title="二. 基础知识"></a>二. 基础知识</h2><p>&emsp;&emsp;共享内存的使用包括</p>
+<ul>
+<li>调用<code>shmget()</code>创建共享内存</li>
+<li>调用<code>shmat()</code>映射共享内存至进程虚拟空间</li>
+<li>调用<code>shmdt()</code>接触映射关系</li>
+</ul>
+<p>&emsp;&emsp;信号量有着类似的操作</p>
+<ul>
+<li>调用<code>semget()</code>创建信号量集合。</li>
+<li>调用<code>semctl()</code>，信号量往往代表某种资源的数量，如果用信号量做互斥，那往往将信号量设置为 1。</li>
+<li>调用<code>semop()</code>修改信号量数目，即加锁和解锁之用</li>
+</ul>
+<p>&emsp;&emsp;整体通信过程可用如下生产者消费者的模式图来理解。</p>
+<img src="https://static001.geekbang.org/resource/image/46/0b/469552bffe601d594c432d4fad97490b.png" alt="img" style="zoom:25%;" />
+
+<h2 id="三-统一封装的接口"><a href="#三-统一封装的接口" class="headerlink" title="三. 统一封装的接口"></a>三. 统一封装的接口</h2><h2 id="四-共享内存的创建和映射"><a href="#四-共享内存的创建和映射" class="headerlink" title="四. 共享内存的创建和映射"></a>四. 共享内存的创建和映射</h2><h2 id="五-信号量的创建和使用"><a href="#五-信号量的创建和使用" class="headerlink" title="五. 信号量的创建和使用"></a>五. 信号量的创建和使用</h2><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2>
       
     </div>
     
@@ -709,7 +728,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-基础知识"><span class="nav-text">二. 基础知识</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-统一封装的接口"><span class="nav-text">三. 统一封装的接口</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-共享内存的创建和映射"><span class="nav-text">四. 共享内存的创建和映射</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-信号量的创建和使用"><span class="nav-text">五. 信号量的创建和使用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li></ol></div>
             
 
           </div>
@@ -743,7 +762,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">90.9k</span>
+    <span title="Site words total count">91.1k</span>
   
 </div>
 
