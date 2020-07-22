@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/kulamati128.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/kulamati32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/kulamati16.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Linux,操作系统,进程间通信,网络通信,套接字," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="一. 前言&amp;emsp;&amp;emsp;在前面我们逐一分析了进程间通信的各种方法：信号，管道，共享内存和信号量，本文开始将分析更为复杂也是更为常用的另一套进程间通信：网络通信。网络通信和其他进程间通信最大的区别在于不局限于单机，因此成为了互联网时代的主流选择，无论是分布式、云计算、微服务、容器及自动化运营都离不开网络通信，其重要性可想而知。 &amp;emsp;&amp;emsp;经过30多年的发展，网络协议栈已经变得">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux操作系统学习笔记（十九）网络通信之套接字">
+<meta property="og:url" content="https://ty-chen.github.io/linux-kernel-socket/index.html">
+<meta property="og:site_name" content="Ty-Chen&#39;s Home">
+<meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;在前面我们逐一分析了进程间通信的各种方法：信号，管道，共享内存和信号量，本文开始将分析更为复杂也是更为常用的另一套进程间通信：网络通信。网络通信和其他进程间通信最大的区别在于不局限于单机，因此成为了互联网时代的主流选择，无论是分布式、云计算、微服务、容器及自动化运营都离不开网络通信，其重要性可想而知。 &amp;emsp;&amp;emsp;经过30多年的发展，网络协议栈已经变得">
+<meta property="article:published_time" content="2020-07-21T12:10:56.000Z">
+<meta property="article:modified_time" content="2020-07-22T15:59:18.879Z">
+<meta property="article:author" content="Ty Chen">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="操作系统">
+<meta property="article:tag" content="进程间通信">
+<meta property="article:tag" content="网络通信">
+<meta property="article:tag" content="套接字">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"hide","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://ty-chen.github.io/linux-kernel-socket/"/>
+
+
+
+
+
+  <title>Linux操作系统学习笔记（十九）网络通信之套接字 | Ty-Chen's Home</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Ty-Chen's Home</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Collecting, sharing and creating knowledge</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://ty-chen.github.io/linux-kernel-socket/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Ty Chen">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/me.JPG">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ty-Chen's Home">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Linux操作系统学习笔记（十九）网络通信之套接字</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-07-21T20:10:56+08:00">
+                2020-07-21
+              </time>
+            
+
+            
+
+            
+          </span>
+          
+            <span class="post-updated">
+              &nbsp; | &nbsp; 更新于
+              <time itemprop="dateUpdated" datetime="2020-07-22T23:59:18+08:00" content="2020-07-22">
+                2020-07-22
+              </time>
+            </span>
+          
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%86%85%E6%A0%B8%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index">
+                    <span itemprop="name">Linux操作系统内核学习</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/linux-kernel-socket/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/linux-kernel-socket/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">访问次数：
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>次
+            </span>
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  1.3k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  5
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;在前面我们逐一分析了进程间通信的各种方法：信号，管道，共享内存和信号量，本文开始将分析更为复杂也是更为常用的另一套进程间通信：网络通信。网络通信和其他进程间通信最大的区别在于不局限于单机，因此成为了互联网时代的主流选择，无论是分布式、云计算、微服务、容器及自动化运营都离不开网络通信，其重要性可想而知。</p>
+<p>&emsp;&emsp;经过30多年的发展，网络协议栈已经变得极为复杂，远远不是一两篇文章能够说清楚的东西，所以这里着重剖析我们更为关注的东西：网络编程涉及到的相关协议栈。从本文开始，将分别介绍套接字及其创建、网络包的发送、网络包的接收、<code>Netfilter</code>剖析、<code>select, poll 及 epoll</code>剖析。除此之外，介于之前有新同学请教TCP的一些基础问题，打算写一篇扩展篇从设计理念的角度出发好好分析TCP协议的方法面面。</p>
+<a id="more"></a>
+
+<h2 id="二-套接字"><a href="#二-套接字" class="headerlink" title="二. 套接字"></a>二. 套接字</h2><p>&emsp;&emsp;网络协议封装为多层，因此套接字结构体定义也有着多层结构。首先看传输层的<code>socket</code>结构体，这个结构体表征BSD套接字的通用特性。首先是状态<code>state</code>，用以表示连接情况。<code>type</code>是套接字类型，如<code>SOCK_STREAM</code>。<code>wq</code>是等待队列，在后续文章中会说明。<code>file</code>是套接字对应的文件指针，毕竟一切皆文件，所以需要统一的文件系统。<code>sock</code>结构体的<code>sk</code>变量则为网络层的套接字，<code>ops</code>是协议相关的一系列套接字操作。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">socket</span> &#123;</span></span><br><span class="line">    socket_state		state;</span><br><span class="line">    short			type;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span>		flags;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">socket_wq</span>	*<span class="title">wq</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">file</span>		*<span class="title">file</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sock</span>		*<span class="title">sk</span>;</span></span><br><span class="line">    <span class="keyword">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">proto_ops</span>	*<span class="title">ops</span>;</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;接着看看网络层，这一层即IP层，该结构体<code>sock</code>中包含了一个基本结构体<code>sock_common</code>，整体较为复杂，所以对于其重要变量进行了说明，以注释的形式在每个变量后进行分析。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sock</span> &#123;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sock_common</span>	__<span class="title">sk_common</span>;</span>	   <span class="comment">// 网络层套接字通用结构体</span></span><br><span class="line">......</span><br><span class="line">    <span class="keyword">socket_lock_t</span>		sk_lock;	       <span class="comment">// 套接字同步锁</span></span><br><span class="line">    <span class="keyword">atomic_t</span>		sk_drops;	           <span class="comment">// IP/UDP包丢包统计</span></span><br><span class="line">    <span class="keyword">int</span>			sk_rcvlowat;        	   <span class="comment">// SO_RCVLOWAT标记位</span></span><br><span class="line">......</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sk_buff_head</span>	<span class="title">sk_receive_queue</span>;</span>	<span class="comment">// 收到的数据包队列</span></span><br><span class="line">......</span><br><span class="line">    <span class="keyword">int</span>			sk_rcvbuf;				  <span class="comment">// 接收缓存大小</span></span><br><span class="line">......</span><br><span class="line">    <span class="keyword">union</span> &#123;</span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">socket_wq</span> __<span class="title">rcu</span>	*<span class="title">sk_wq</span>;</span>	    <span class="comment">// 等待队列</span></span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">socket_wq</span>	*<span class="title">sk_wq_raw</span>;</span></span><br><span class="line">    &#125;;</span><br><span class="line">......</span><br><span class="line">    <span class="keyword">int</span>			sk_sndbuf;			       <span class="comment">// 发送缓存大小</span></span><br><span class="line">    <span class="comment">/* ===== cache line for TX ===== */</span></span><br><span class="line">    <span class="keyword">int</span>			sk_wmem_queued;			   <span class="comment">// 传输队列大小</span></span><br><span class="line">    <span class="keyword">refcount_t</span>		sk_wmem_alloc;		    <span class="comment">// 已确认的传输字节数</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span>		sk_tsq_flags;	    <span class="comment">// TCP Small Queue标记位</span></span><br><span class="line">    <span class="keyword">union</span> &#123;</span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">sk_buff</span>	*<span class="title">sk_send_head</span>;</span>		<span class="comment">// 发送队列对首</span></span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">rb_root</span>	<span class="title">tcp_rtx_queue</span>;</span>		 </span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sk_buff_head</span>	<span class="title">sk_write_queue</span>;</span>		 <span class="comment">// 发送队列</span></span><br><span class="line">......</span><br><span class="line">    u32			sk_pacing_status; <span class="comment">/* see enum sk_pacing 发包速率控制状态*/</span> </span><br><span class="line">    <span class="keyword">long</span>			sk_sndtimeo;		    <span class="comment">// SO_SNDTIMEO 标记位</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">timer_list</span>	<span class="title">sk_timer</span>;</span>			<span class="comment">// 套接字清空计时器</span></span><br><span class="line">    __u32			sk_priority;		    <span class="comment">// SO_PRIORITY 标记位</span></span><br><span class="line">......</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span>		sk_pacing_rate; <span class="comment">/* bytes per second 发包速率*/</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span>		sk_max_pacing_rate;  <span class="comment">// 最大发包速率</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">page_frag</span>	<span class="title">sk_frag</span>;</span>		    <span class="comment">// 缓存页帧</span></span><br><span class="line">......</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span>	        sk_lingertime;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">proto</span>		*<span class="title">sk_prot_creator</span>;</span></span><br><span class="line">    <span class="keyword">rwlock_t</span>		sk_callback_lock;</span><br><span class="line">    <span class="keyword">int</span>			sk_err,</span><br><span class="line">                sk_err_soft;</span><br><span class="line">    u32			sk_ack_backlog;</span><br><span class="line">    u32			sk_max_ack_backlog;</span><br><span class="line">    <span class="keyword">kuid_t</span>			sk_uid;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">pid</span>		*<span class="title">sk_peer_pid</span>;</span></span><br><span class="line">    <span class="keyword">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">cred</span>	*<span class="title">sk_peer_cred</span>;</span></span><br><span class="line">    <span class="keyword">long</span>			sk_rcvtimeo;</span><br><span class="line">    <span class="keyword">ktime_t</span>			sk_stamp;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> BITS_PER_LONG==32</span></span><br><span class="line">    <span class="keyword">seqlock_t</span>		sk_stamp_seq;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">    u16			sk_tsflags;</span><br><span class="line">    u8			sk_shutdown;</span><br><span class="line">    u32			sk_tskey;</span><br><span class="line">    <span class="keyword">atomic_t</span>		sk_zckey;</span><br><span class="line">    u8			sk_clockid;</span><br><span class="line">    u8			sk_txtime_deadline_mode : <span class="number">1</span>,</span><br><span class="line">                sk_txtime_report_errors : <span class="number">1</span>,</span><br><span class="line">                sk_txtime_unused : <span class="number">6</span>;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">socket</span>		*<span class="title">sk_socket</span>;</span></span><br><span class="line">    <span class="keyword">void</span>			*sk_user_data;</span><br><span class="line">......</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sock_cgroup_data</span>	<span class="title">sk_cgrp_data</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">mem_cgroup</span>	*<span class="title">sk_memcg</span>;</span></span><br><span class="line">    <span class="keyword">void</span>			(*sk_state_change)(struct sock *sk);</span><br><span class="line">    <span class="keyword">void</span>			(*sk_data_ready)(struct sock *sk);</span><br><span class="line">    <span class="keyword">void</span>			(*sk_write_space)(struct sock *sk);</span><br><span class="line">    <span class="keyword">void</span>			(*sk_error_report)(struct sock *sk);</span><br><span class="line">    <span class="keyword">int</span>			(*sk_backlog_rcv)(struct sock *sk, struct sk_buff *skb);</span><br><span class="line">......</span><br><span class="line">    <span class="keyword">void</span>                    (*sk_destruct)(struct sock *sk);</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sock_reuseport</span> __<span class="title">rcu</span>	*<span class="title">sk_reuseport_cb</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">rcu_head</span>		<span class="title">sk_rcu</span>;</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>&emsp;&emsp;众所周知我们通过<code>socket()</code>生成套接字，其系统调用如下，主要调用<code>sock_create()</code>创建结构体<code>socket</code>，并通过<code>sock_map_fd()</code>将其和文件描述符进行绑定。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">SYSCALL_DEFINE3(socket, <span class="keyword">int</span>, family, <span class="keyword">int</span>, type, <span class="keyword">int</span>, protocol)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> __sys_socket(family, type, protocol);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> __sys_socket(<span class="keyword">int</span> family, <span class="keyword">int</span> type, <span class="keyword">int</span> protocol)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">int</span> retval;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">socket</span> *<span class="title">sock</span>;</span></span><br><span class="line">    <span class="keyword">int</span> flags;</span><br><span class="line">......</span><br><span class="line">    retval = sock_create(family, type, protocol, &amp;sock);</span><br><span class="line">......</span><br><span class="line">    <span class="keyword">return</span> sock_map_fd(sock, flags &amp; (O_CLOEXEC | O_NONBLOCK));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;应用层调用<code>socket()</code>函数会传入三个参数：</p>
+<ul>
+<li><p><code>family</code>：表示使用什么 <code>IP</code> 层协议。<code>AF_INET</code> 表示 <code>IPv4</code>，<code>AF_INET6</code> 表示 <code>IPv6</code>。</p>
+</li>
+<li><p><code>type</code>：表示 <code>socket</code> 类型。<code>SOCK_STREAM</code> 是面向数据流的，协议 <code>IPPROTO_TCP</code> 属于这种类型。<code>SOCK_DGRAM</code> 是面向数据报的，协议 <code>IPPROTO_UDP</code> 属于这种类型。如果在内核里面看的话，<code>IPPROTO_ICMP</code> 也属于这种类型。<code>SOCK_RAW</code> 是原始的 <code>IP</code> 包，<code>IPPROTO_IP</code> 属于这种类型。</p>
+</li>
+<li><p><code>protocol</code>： 表示的协议，包括 <code>IPPROTO_TCP</code>、<code>IPPTOTO_UDP</code>。</p>
+</li>
+</ul>
+<p>&emsp;&emsp;<code>sock_create()</code>实际调用<code>__sock_create()</code>。这里首先调用<code>sock_alloc()</code>分配套接字结构体<code>sock</code>并赋值类型为<code>type</code>，接着调用对应的<code>create()</code>函数按照<code>protocol</code>对<code>sock</code>进行填充。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">sock_create</span><span class="params">(<span class="keyword">int</span> family, <span class="keyword">int</span> type, <span class="keyword">int</span> protocol, struct socket **res)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> __sock_create(current-&gt;nsproxy-&gt;net_ns, family, type, protocol, res, <span class="number">0</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> __sock_create(struct net *net, <span class="keyword">int</span> family, <span class="keyword">int</span> type, <span class="keyword">int</span> protocol,</span><br><span class="line">             struct socket **res, <span class="keyword">int</span> kern)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">int</span> err;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">socket</span> *<span class="title">sock</span>;</span></span><br><span class="line">    <span class="keyword">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">net_proto_family</span> *<span class="title">pf</span>;</span></span><br><span class="line">......</span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">	 *	Allocate the socket and allow the family to set things up. if</span></span><br><span class="line"><span class="comment">	 *	the protocol is 0, the family is instructed to select an appropriate</span></span><br><span class="line"><span class="comment">	 *	default.</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">    sock = sock_alloc();</span><br><span class="line">......</span><br><span class="line">    sock-&gt;type = type;</span><br><span class="line">......</span><br><span class="line">    rcu_read_lock();</span><br><span class="line">    pf = rcu_dereference(net_families[family]);</span><br><span class="line">......</span><br><span class="line">    err = pf-&gt;create(net, sock, protocol, kern);</span><br><span class="line">......</span><br><span class="line">    *res = sock;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h2 id="源码资料"><a href="#源码资料" class="headerlink" title="源码资料"></a>源码资料</h2><p>[1] <a href="https://code.woboq.org/linux/linux/include/linux/net.h.html#socket" target="_blank" rel="noopener">socket</a></p>
+<p>[2] <a href="https://code.woboq.org/linux/linux/net/socket.c.html#__sys_socket" target="_blank" rel="noopener">socket()</a></p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1] wiki</p>
+<p>[2] <a href="https://elixir.bootlin.com/linux/v5.7-rc1/source" target="_blank" rel="noopener">elixir.bootlin.com/linux</a></p>
+<p>[3] <a href="https://code.woboq.org/" target="_blank" rel="noopener">woboq</a></p>
+<p>[4] Linux-insides</p>
+<p>[5] 深入理解Linux内核</p>
+<p>[6] Linux内核设计的艺术</p>
+<p>[7] 极客时间 趣谈Linux操作系统</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>坚持原创，坚持分享，谢谢鼓励和支持</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.png" alt="Ty Chen 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="Ty Chen 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    Ty Chen
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://ty-chen.github.io/linux-kernel-socket/" title="Linux操作系统学习笔记（十九）网络通信之套接字">https://ty-chen.github.io/linux-kernel-socket/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Linux/" rel="tag"># Linux</a>
+          
+            <a href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" rel="tag"># 操作系统</a>
+          
+            <a href="/tags/%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/" rel="tag"># 进程间通信</a>
+          
+            <a href="/tags/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1/" rel="tag"># 网络通信</a>
+          
+            <a href="/tags/%E5%A5%97%E6%8E%A5%E5%AD%97/" rel="tag"># 套接字</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/linux-kernel-shm-semaphore/" rel="next" title="Linux操作系统学习笔记（十八）进程间通信之共享内存和信号量">
+                <i class="fa fa-chevron-left"></i> Linux操作系统学习笔记（十八）进程间通信之共享内存和信号量
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/me.JPG"
+                alt="Ty Chen" />
+            
+              <p class="site-author-name" itemprop="name">Ty Chen</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">23</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">45</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/Ty-Chen" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:tianyuch@hotmail.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                Friends
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://stanleylsx.github.io/" title="Stanleylsx" target="_blank">Stanleylsx</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-套接字"><span class="nav-text">二. 套接字</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源码资料"><span class="nav-text">源码资料</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ty Chen</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">Site words total count&#58;</span>
+    
+    <span title="Site words total count">98.3k</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+<div class="busuanzi-count">
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+	</script>
+
+  
+    <span class="site-uv">
+      你是来访的第
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      位同学
+    </span>
+  
+
+  
+    <span class="site-pv">
+      访问次数：
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item=>{
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'aTqo2eFkO2Bn0AGX008uKDV7-gzGzoHsz',
+        appKey: 'uJ6nxqW7RHWpAILCtttkJfJu',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
