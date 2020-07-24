@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="编程范式," />
+  <meta name="keywords" content="Linux,操作系统,进程间通信,网络通信,套接字,TCP,三次握手," />
 
 
 
@@ -79,16 +79,22 @@
 
 
 
-<meta name="description" content="前言&amp;emsp;&amp;emsp;本文记录各种不同的编程范式及他们之间的联系和区别，由于经验尚浅可能无法写的十分入味，后续待资历渐长再慢慢修改润色。">
+<meta name="description" content="一. 前言&amp;emsp;&amp;emsp;TCP的三次握手是很多初学者面试都会被问到的问题，看起来简单实则包含很多东西，但是当深入源码之后就会再无秘密，耐心看完本文一定会让你对三次握手有更透彻的了解。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="编程范式学习记录">
-<meta property="og:url" content="https://ty-chen.github.io/paradigms/index.html">
+<meta property="og:title" content="Linux操作系统学习笔记（二十）网络通信之三次握手">
+<meta property="og:url" content="https://ty-chen.github.io/linux-kernel-handshake/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
-<meta property="og:description" content="前言&amp;emsp;&amp;emsp;本文记录各种不同的编程范式及他们之间的联系和区别，由于经验尚浅可能无法写的十分入味，后续待资历渐长再慢慢修改润色。">
-<meta property="article:published_time" content="2020-04-24T15:10:13.000Z">
-<meta property="article:modified_time" content="2020-04-25T04:42:08.681Z">
+<meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;TCP的三次握手是很多初学者面试都会被问到的问题，看起来简单实则包含很多东西，但是当深入源码之后就会再无秘密，耐心看完本文一定会让你对三次握手有更透彻的了解。">
+<meta property="article:published_time" content="2020-07-24T15:54:24.000Z">
+<meta property="article:modified_time" content="2020-07-24T16:06:01.141Z">
 <meta property="article:author" content="Ty Chen">
-<meta property="article:tag" content="编程范式">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="操作系统">
+<meta property="article:tag" content="进程间通信">
+<meta property="article:tag" content="网络通信">
+<meta property="article:tag" content="套接字">
+<meta property="article:tag" content="TCP">
+<meta property="article:tag" content="三次握手">
 <meta name="twitter:card" content="summary">
 
 
@@ -119,13 +125,13 @@
 
 
 
-  <link rel="canonical" href="https://ty-chen.github.io/paradigms/"/>
+  <link rel="canonical" href="https://ty-chen.github.io/linux-kernel-handshake/"/>
 
 
 
 
 
-  <title>编程范式学习记录 | Ty-Chen's Home</title>
+  <title>Linux操作系统学习笔记（二十）网络通信之三次握手 | Ty-Chen's Home</title>
   
 
 
@@ -262,7 +268,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://ty-chen.github.io/paradigms/">
+    <link itemprop="mainEntityOfPage" href="https://ty-chen.github.io/linux-kernel-handshake/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Ty Chen">
@@ -279,7 +285,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">编程范式学习记录</h1>
+          <h1 class="post-title" itemprop="name headline">Linux操作系统学习笔记（二十）网络通信之三次握手</h1>
         
 
         <div class="post-meta">
@@ -291,8 +297,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-04-24T23:10:13+08:00">
-                2020-04-24
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-07-24T23:54:24+08:00">
+                2020-07-24
               </time>
             
 
@@ -303,8 +309,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-04-25T12:42:08+08:00" content="2020-04-25">
-                2020-04-25
+              <time itemprop="dateUpdated" datetime="2020-07-25T00:06:01+08:00" content="2020-07-25">
+                2020-07-25
               </time>
             </span>
           
@@ -321,8 +327,8 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%BC%96%E7%A8%8B%E8%8C%83%E5%BC%8F/" itemprop="url" rel="index">
-                    <span itemprop="name">编程范式</span>
+                  <a href="/categories/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%86%85%E6%A0%B8%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index">
+                    <span itemprop="name">Linux操作系统内核学习</span>
                   </a>
                 </span>
 
@@ -339,8 +345,8 @@
                 <span class="post-meta-item-icon">
                   <i class="fa fa-comment-o"></i>
                 </span>
-                <a href="/paradigms/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count valine-comment-count" data-xid="/paradigms/" itemprop="commentCount"></span>
+                <a href="/linux-kernel-handshake/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/linux-kernel-handshake/" itemprop="commentCount"></span>
                 </a>
               </span>
             
@@ -367,7 +373,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  58
+                  113
                 </span>
               
 
@@ -404,8 +410,10 @@
       
 
       
-        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>&emsp;&emsp;本文记录各种不同的编程范式及他们之间的联系和区别，由于经验尚浅可能无法写的十分入味，后续待资历渐长再慢慢修改润色。</p>
+        <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;TCP的三次握手是很多初学者面试都会被问到的问题，看起来简单实则包含很多东西，但是当深入源码之后就会再无秘密，耐心看完本文一定会让你对三次握手有更透彻的了解。</p>
 <a id="more"></a>
+
+<h2 id="二-三次握手设计思想"><a href="#二-三次握手设计思想" class="headerlink" title="二. 三次握手设计思想"></a>二. 三次握手设计思想</h2><h2 id="三-三次握手源码剖析"><a href="#三-三次握手源码剖析" class="headerlink" title="三. 三次握手源码剖析"></a>三. 三次握手源码剖析</h2><h2 id="四-三次握手破绽分析及对应的产物"><a href="#四-三次握手破绽分析及对应的产物" class="headerlink" title="四. 三次握手破绽分析及对应的产物"></a>四. 三次握手破绽分析及对应的产物</h2><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2>
       
     </div>
     
@@ -454,7 +462,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="https://ty-chen.github.io/paradigms/" title="编程范式学习记录">https://ty-chen.github.io/paradigms/</a>
+    <a href="https://ty-chen.github.io/linux-kernel-handshake/" title="Linux操作系统学习笔记（二十）网络通信之三次握手">https://ty-chen.github.io/linux-kernel-handshake/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>
@@ -469,7 +477,19 @@
       
         <div class="post-tags">
           
-            <a href="/tags/%E7%BC%96%E7%A8%8B%E8%8C%83%E5%BC%8F/" rel="tag"># 编程范式</a>
+            <a href="/tags/Linux/" rel="tag"># Linux</a>
+          
+            <a href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" rel="tag"># 操作系统</a>
+          
+            <a href="/tags/%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/" rel="tag"># 进程间通信</a>
+          
+            <a href="/tags/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1/" rel="tag"># 网络通信</a>
+          
+            <a href="/tags/%E5%A5%97%E6%8E%A5%E5%AD%97/" rel="tag"># 套接字</a>
+          
+            <a href="/tags/TCP/" rel="tag"># TCP</a>
+          
+            <a href="/tags/%E4%B8%89%E6%AC%A1%E6%8F%A1%E6%89%8B/" rel="tag"># 三次握手</a>
           
         </div>
       
@@ -482,8 +502,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/%E5%85%B3%E4%BA%8EMMORPG%E5%A4%9A%E4%BA%BA%E5%AF%B9%E6%88%98%E4%B8%AD%E7%83%AD%E7%82%B9%E9%97%AE%E9%A2%98%E7%9A%84%E8%A7%A3%E5%86%B3%E6%80%9D%E8%B7%AF%E8%AE%A8%E8%AE%BA/" rel="next" title="关于MMORPG多人对战中热点问题的解决思路讨论">
-                <i class="fa fa-chevron-left"></i> 关于MMORPG多人对战中热点问题的解决思路讨论
+              <a href="/linux-kernel-socket/" rel="next" title="Linux操作系统学习笔记（十九）网络通信之套接字">
+                <i class="fa fa-chevron-left"></i> Linux操作系统学习笔记（十九）网络通信之套接字
               </a>
             
           </div>
@@ -491,10 +511,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/distributed-system-design/" rel="prev" title="分布式系统设计学习笔记">
-                分布式系统设计学习笔记 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -701,7 +717,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-text">前言</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-三次握手设计思想"><span class="nav-text">二. 三次握手设计思想</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-三次握手源码剖析"><span class="nav-text">三. 三次握手源码剖析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-三次握手破绽分析及对应的产物"><span class="nav-text">四. 三次握手破绽分析及对应的产物</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li></ol></div>
             
 
           </div>

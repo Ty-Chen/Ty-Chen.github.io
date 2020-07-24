@@ -2,9 +2,16 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://ty-chen.github.io/linux-kernel-handshake/</loc>
+    
+    <lastmod>2020-07-24T16:06:01.141Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://ty-chen.github.io/linux-kernel-socket/</loc>
     
-    <lastmod>2020-07-24T15:46:52.641Z</lastmod>
+    <lastmod>2020-07-24T15:53:32.945Z</lastmod>
     
   </url>
   
