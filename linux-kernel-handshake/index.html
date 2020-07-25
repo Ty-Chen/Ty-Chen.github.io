@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="Linux,操作系统,进程间通信,网络通信,套接字,TCP,三次握手," />
+  <meta name="keywords" content="Linux,操作系统,进程间通信,网络通信,TCP," />
 
 
 
@@ -79,23 +79,25 @@
 
 
 
-<meta name="description" content="一. 前言&amp;emsp;&amp;emsp;TCP的三次握手是很多初学者面试都会被问到的问题，看起来简单实则包含很多东西，但是当深入源码之后就会再无秘密，耐心看完本文一定会让你对三次握手有更透彻的了解。">
+<meta name="description" content="一. 前言&amp;emsp;&amp;emsp;自TCP诞生以来就改变了网络通信的格局，而TCP协议随着网络基础设施的发展也在一路演进，形成了如今庞大复杂的TCP协议簇。如何深入理解TCP的设计理念以及几十年以来TCP协议的演进，有利于更好地了解网络编程。很多人不懂TCP，少数人了解TCP但不知道其设计理念，但是这些才是网络编程的精粹所在。本文旨在从设计思路出发，更多的分析为什么要这么做而不是TCP是怎么做的，">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Linux操作系统学习笔记（二十）网络通信之三次握手">
+<meta property="og:title" content="Linux操作系统学习笔记（特别篇）网络通信之TCP协议">
 <meta property="og:url" content="https://ty-chen.github.io/linux-kernel-handshake/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
-<meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;TCP的三次握手是很多初学者面试都会被问到的问题，看起来简单实则包含很多东西，但是当深入源码之后就会再无秘密，耐心看完本文一定会让你对三次握手有更透彻的了解。">
+<meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;自TCP诞生以来就改变了网络通信的格局，而TCP协议随着网络基础设施的发展也在一路演进，形成了如今庞大复杂的TCP协议簇。如何深入理解TCP的设计理念以及几十年以来TCP协议的演进，有利于更好地了解网络编程。很多人不懂TCP，少数人了解TCP但不知道其设计理念，但是这些才是网络编程的精粹所在。本文旨在从设计思路出发，更多的分析为什么要这么做而不是TCP是怎么做的，">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/92/0e/92f8e85f7b9a9f764c71081b56286e0e.png">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/98/28/98a4496fff94eb02d1b1b8ae88f8dc28.jpeg">
+<meta property="og:image" content="http://www.cnitblog.com/images/cnitblog_com/wildon/544465b00200001s.png">
 <meta property="article:published_time" content="2020-07-24T15:54:24.000Z">
-<meta property="article:modified_time" content="2020-07-24T16:06:01.141Z">
+<meta property="article:modified_time" content="2020-07-25T15:59:41.225Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
 <meta property="article:tag" content="进程间通信">
 <meta property="article:tag" content="网络通信">
-<meta property="article:tag" content="套接字">
 <meta property="article:tag" content="TCP">
-<meta property="article:tag" content="三次握手">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://static001.geekbang.org/resource/image/92/0e/92f8e85f7b9a9f764c71081b56286e0e.png">
 
 
 
@@ -131,7 +133,7 @@
 
 
 
-  <title>Linux操作系统学习笔记（二十）网络通信之三次握手 | Ty-Chen's Home</title>
+  <title>Linux操作系统学习笔记（特别篇）网络通信之TCP协议 | Ty-Chen's Home</title>
   
 
 
@@ -285,7 +287,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">Linux操作系统学习笔记（二十）网络通信之三次握手</h1>
+          <h1 class="post-title" itemprop="name headline">Linux操作系统学习笔记（特别篇）网络通信之TCP协议</h1>
         
 
         <div class="post-meta">
@@ -309,7 +311,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-07-25T00:06:01+08:00" content="2020-07-25">
+              <time itemprop="dateUpdated" datetime="2020-07-25T23:59:41+08:00" content="2020-07-25">
                 2020-07-25
               </time>
             </span>
@@ -373,7 +375,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  113
+                  2.4k
                 </span>
               
 
@@ -389,7 +391,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  1
+                  8
                 </span>
               
             </div>
@@ -410,10 +412,62 @@
       
 
       
-        <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;TCP的三次握手是很多初学者面试都会被问到的问题，看起来简单实则包含很多东西，但是当深入源码之后就会再无秘密，耐心看完本文一定会让你对三次握手有更透彻的了解。</p>
+        <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;自TCP诞生以来就改变了网络通信的格局，而TCP协议随着网络基础设施的发展也在一路演进，形成了如今庞大复杂的TCP协议簇。如何深入理解TCP的设计理念以及几十年以来TCP协议的演进，有利于更好地了解网络编程。很多人不懂TCP，少数人了解TCP但不知道其设计理念，但是这些才是网络编程的精粹所在。本文旨在从设计思路出发，更多的分析为什么要这么做而不是TCP是怎么做的，但是碍于自身水平所限，可能视野较为狭隘，疏漏错误之处请不吝指正。本文阅读的前提要求至少学习过《计算机网络》，看过《TCP/IP详解》及相关的RFC文档更佳。</p>
 <a id="more"></a>
 
-<h2 id="二-三次握手设计思想"><a href="#二-三次握手设计思想" class="headerlink" title="二. 三次握手设计思想"></a>二. 三次握手设计思想</h2><h2 id="三-三次握手源码剖析"><a href="#三-三次握手源码剖析" class="headerlink" title="三. 三次握手源码剖析"></a>三. 三次握手源码剖析</h2><h2 id="四-三次握手破绽分析及对应的产物"><a href="#四-三次握手破绽分析及对应的产物" class="headerlink" title="四. 三次握手破绽分析及对应的产物"></a>四. 三次握手破绽分析及对应的产物</h2><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2>
+<h2 id="二-分层"><a href="#二-分层" class="headerlink" title="二. 分层"></a>二. 分层</h2><p>&emsp;&emsp;当两台电脑被一根线连接起来的时候，网络就诞生了。随着几十年间的发展，网络变得越来越复杂。如同管理国家，企业一样，对于复杂到无法单点直接控制的情况，采取模块化以及分层的策略才是解决复杂问题的合理方法，有趣的是这也是Linux的一大设计哲学：复杂的问题可以通过抽象出中间层的方法分解为几个简单的问题。因此，我们有了网络分层。</p>
+<p>&emsp;&emsp;常见的网络协议模型由两种：OSI标准七层模型，业界标准TCP/IP模型。二者其实表示的是一个意思，只不过对于我们开发者来说不需要特别细化的后三层，其结构如下图所示。</p>
+<img src="https://static001.geekbang.org/resource/image/92/0e/92f8e85f7b9a9f764c71081b56286e0e.png" alt="img" style="zoom:33%;" />
+
+<p>&emsp;&emsp;每层的核心作用可以概括如下：</p>
+<ul>
+<li>物理层负责物理设备的接入，如网卡，网线等，涉及设备驱动的注册及虚拟文件系统的挂载</li>
+<li>数据链路层负责单个网络内通过MAC地址通信，包括了常见的ARP协议以及CSMA/CD</li>
+<li>网络层负责通过路由算法和IP地址实现多个网络间的通信，如IP, ICMP</li>
+<li>传输层则在网络层的基础上更为细化的对其通信进行分解，将数据包分发给各个应该接收到的进程/线程，如TCP和UDP</li>
+<li>应用层则在传输层基础上进行了扩展，实现了更为丰富精彩的功能，如FTP, TELNET, SMTP, NFS, HTTP</li>
+</ul>
+<p>&emsp;&emsp;在实际使用中，我们也是采取层层封装/拆封的方式传递数据，如下图所示</p>
+<p><img src="https://static001.geekbang.org/resource/image/98/28/98a4496fff94eb02d1b1b8ae88f8dc28.jpeg" alt="img"></p>
+<p>&emsp;&emsp;由此一来，每层各司其职，也可以各自进行扩展、优化、重构，从而构成了如今庞大复杂而又不失美感的网络协议模型。网络协议模型从下往上功能增加，需要实现的设备减少的同时设备的复杂性却在增加，这样保证了成本的最小化，至于性能则可以通过逐层逐步优化的方式慢慢改进，这也符合架构设计和重构的基本哲学。TCP协议就是这样的典型代表，实际上最开始的时候TCP并不考虑性能、效率、公平性，正是考虑了这些，TCP协议才复杂了起来。</p>
+<h2 id="三-端对端"><a href="#三-端对端" class="headerlink" title="三. 端对端"></a>三. 端对端</h2><p>&emsp;&emsp;正如其名字所展示的那样，TCP的作用是传输控制，也就是控制端到端的传输，那为何这种控制不在IP协议中实现呢？答案很简单，那就是这会增加IP协议的复杂性，而IP协议需要的就是简单。网络层往下是繁多的链路层协议，这些链路提供了相互截然不同且相差很远的语义，为了互联这些异构的网络，我们需要一个网络层协议起码要提供一些适配的功能，这种思想其实和通过虚拟文件系统抽象各种字符设备和块设备一样，所以必须简单，因为简单所以稳定而强大。这也是KISS原则的体现。</p>
+<p>&emsp;&emsp;初级面试官常爱问TCP和UDP的区别，答案模板网上一搜一大把，往往问过答过也就过去了，但是你真的理解了其本质吗？</p>
+<ul>
+<li>所谓的连接，容易让人误以为使用 TCP 会使得两端之间的通路和使用 UDP 不一样，那我们会在沿途建立一条线表示这个连接吗？</li>
+<li>从中国访问美国网站，中间这么多环节，怎么保证连接不断呢？中间有个网络管理员拔了一根网线不就断了吗？我不能控制它，它也不会通知我，我一个个人电脑怎么能够保持连接呢？</li>
+<li>既管不了中间的链路，也管不了对端的服务器，TCP如何做流量控制和拥塞控制？</li>
+<li>按照网络分层，TCP 和 UDP 都是基于 IP 协议的，IP 都不能保证可靠，说丢就丢，TCP 怎么能够保证呢？</li>
+</ul>
+<p>&emsp;&emsp;以上问题实质上可以说是同一个问题：如何理解TCP是端到端的协议。首先，从上图数据包的传递我们可以得出一个结论：中间传递过程不关心四层及以上，仅仅通过下三层完成多条路由，无论是TCP还是UDP都是一样的。下面我们来看看TCP的端到端特性。</p>
+<ul>
+<li>TCP连接的建立本质上只是<strong>TCP状态机中的一个状态</strong>，即客户端和服务端维持连接的数据结构接收到特定的信息后将其标记位设置为已连接。</li>
+<li>当两边因为收到一些消息导致状态机状态对应不上，或者逻辑判断出现问题，则称之为连接断开</li>
+<li>流量控制和拥塞控制其实就是根据收到的对端的网络包，调整两端数据结构的状态。TCP 协议的设计理论上认为，这样调整了数据结构的状态，就能进行流量控制和拥塞控制了，<strong>其实在通路上是不是真的做到了，谁也管不着</strong>。</li>
+<li>所谓的可靠，也是两端的数据结构做的事情。不丢失其实是数据结构在“点名”，顺序到达其实是数据结构在“排序”，面向数据流其实是数据结构将零散的包，按照顺序捏成一个流发给应用层。总而言之，<strong>“连接”两个字让人误以为功夫在通路，其实功夫在两端</strong>。</li>
+</ul>
+<p>&emsp;&emsp;这就是TCP端到端协议的本质：通过两端的数据结构、状态机、复杂的逻辑判断流程图对不可靠的链路和下层协议做到了可靠的传输保证。由于IP协议不提供保证，<strong>TCP也不能提供依赖于IP下层链路的这种保证</strong>，比如带宽，比如时延，这些都是链路层决定的，既然IP协议无法修补，TCP也不能，然而它却能修正始于IP层的一些“不可保证性质”，这些性质包括IP层的不可靠，IP层的不按顺序，IP层的无方向/无连接。</p>
+<p>&emsp;&emsp;确切的说，TCP协议有两重身份</p>
+<ul>
+<li>作为网络协议，它弥补了IP协议尽力而为服务的不足，实现了有连接、可靠传输、报文按序到达。</li>
+<li>作为一个主机软件，它和UDP以及左右的传输层协议隔离了主机服务和网络，它们可以被看做是一个多路复用/解复用器，将诸多的主机进程数据复用/解复用到IP层。</li>
+</ul>
+<p>&emsp;&emsp;可以看出，不管从哪个角度，TCP都作为一个接口存在，作为网络协议，它和对端的TCP接口，实现TCP的控制逻辑，作为多路复用/解复用器，它和下层IP协议接口，实现协议栈的功能，而这正是分层网络协议模型的基本定义(两类接口，一类和下层接口，另一类和对等层接口)。</p>
+<h2 id="四-可靠性"><a href="#四-可靠性" class="headerlink" title="四. 可靠性"></a>四. 可靠性</h2><p>&emsp;&emsp;TCP被称之为可靠的传输协议，是因为其设计理念中强调了对可靠性的实现，我们可以归结为连接的可靠性以及数据报文传输的可靠性。</p>
+<h3 id="4-1-连接可靠性"><a href="#4-1-连接可靠性" class="headerlink" title="4.1 连接可靠性"></a>4.1 连接可靠性</h3><p>&emsp;&emsp;为了理解连接的可靠性，我们需要用到《TCP/IP详解》卷一中的经典TCP状态转移图。</p>
+<p><img src="http://www.cnitblog.com/images/cnitblog_com/wildon/544465b00200001s.png" alt="image"></p>
+<p>&emsp;&emsp;何为可靠连接？直白的说就是我们可以知道连接是否建立，是否断开，表现为图中即从<code>CLOSE</code>到<code>ESTABLISHED</code>则表明连接建立，从<code>ESTABLISHED</code>回到<code>CLOSE</code>则连接断开。表现在协议里，则是三次握手和四次挥手。</p>
+<p>&emsp;&emsp;这里又是初级面试官最爱问的问题之一，为什么是三次握手和四次挥手？</p>
+<h3 id="4-2-传输可靠性"><a href="#4-2-传输可靠性" class="headerlink" title="4.2 传输可靠性"></a>4.2 传输可靠性</h3><h2 id="五-拥塞控制"><a href="#五-拥塞控制" class="headerlink" title="五. 拥塞控制"></a>五. 拥塞控制</h2><h2 id="六-展望"><a href="#六-展望" class="headerlink" title="六. 展望"></a>六. 展望</h2><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="源码资料"><a href="#源码资料" class="headerlink" title="源码资料"></a>源码资料</h2><p>[1] </p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1] wiki</p>
+<p>[2] <a href="https://elixir.bootlin.com/linux/v5.7-rc1/source" target="_blank" rel="noopener">elixir.bootlin.com/linux</a></p>
+<p>[3] <a href="https://code.woboq.org/" target="_blank" rel="noopener">woboq</a></p>
+<p>[4] Linux-insides</p>
+<p>[5] 深入理解Linux内核</p>
+<p>[6] Linux内核设计的艺术</p>
+<p>[7] 极客时间 趣谈Linux操作系统</p>
+<p>[8] 深入理解Linux网络技术内幕</p>
+<p>[9] CSDN dog250多篇博文</p>
+
       
     </div>
     
@@ -462,7 +516,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="https://ty-chen.github.io/linux-kernel-handshake/" title="Linux操作系统学习笔记（二十）网络通信之三次握手">https://ty-chen.github.io/linux-kernel-handshake/</a>
+    <a href="https://ty-chen.github.io/linux-kernel-handshake/" title="Linux操作系统学习笔记（特别篇）网络通信之TCP协议">https://ty-chen.github.io/linux-kernel-handshake/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>
@@ -485,11 +539,7 @@
           
             <a href="/tags/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1/" rel="tag"># 网络通信</a>
           
-            <a href="/tags/%E5%A5%97%E6%8E%A5%E5%AD%97/" rel="tag"># 套接字</a>
-          
             <a href="/tags/TCP/" rel="tag"># TCP</a>
-          
-            <a href="/tags/%E4%B8%89%E6%AC%A1%E6%8F%A1%E6%89%8B/" rel="tag"># 三次握手</a>
           
         </div>
       
@@ -654,7 +704,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">47</span>
+                  <span class="site-state-item-count">46</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -717,7 +767,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-三次握手设计思想"><span class="nav-text">二. 三次握手设计思想</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-三次握手源码剖析"><span class="nav-text">三. 三次握手源码剖析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-三次握手破绽分析及对应的产物"><span class="nav-text">四. 三次握手破绽分析及对应的产物</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-分层"><span class="nav-text">二. 分层</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-端对端"><span class="nav-text">三. 端对端</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-可靠性"><span class="nav-text">四. 可靠性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-连接可靠性"><span class="nav-text">4.1 连接可靠性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-传输可靠性"><span class="nav-text">4.2 传输可靠性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-拥塞控制"><span class="nav-text">五. 拥塞控制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#六-展望"><span class="nav-text">六. 展望</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源码资料"><span class="nav-text">源码资料</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-text">参考资料</span></a></li></ol></div>
             
 
           </div>
@@ -751,7 +801,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">101k</span>
+    <span title="Site words total count">103.3k</span>
   
 </div>
 
