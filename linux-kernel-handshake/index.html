@@ -79,17 +79,17 @@
 
 
 
-<meta name="description" content="一. 前言&amp;emsp;&amp;emsp;自TCP诞生以来就改变了网络通信的格局，而TCP协议随着网络基础设施的发展也在一路演进，形成了如今庞大复杂的TCP协议簇。如何深入理解TCP的设计理念以及几十年以来TCP协议的演进，有利于更好地了解网络编程。很多人不懂TCP，少数人了解TCP但不知道其设计理念，但是这些才是网络编程的精粹所在。本文旨在从设计思路出发，更多的分析为什么要这么做而不是TCP是怎么做的，">
+<meta name="description" content="一. 前言&amp;emsp;&amp;emsp;自TCP诞生以来就改变了网络通信的格局，而TCP协议随着网络基础设施的发展也在一路演进，形成了如今庞大复杂的TCP协议簇。如何深入理解TCP的设计理念以及几十年以来TCP协议的演进，有利于更好地了解网络编程。很多人不懂TCP，很多人了解并会用TCP但不知道其设计理念，但是这些才是网络编程的精粹所在。本文旨在从设计思路出发，更多的分析为什么要这么做而不是TCP是怎么">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux操作系统学习笔记（特别篇）网络通信之TCP协议">
 <meta property="og:url" content="https://ty-chen.github.io/linux-kernel-handshake/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
-<meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;自TCP诞生以来就改变了网络通信的格局，而TCP协议随着网络基础设施的发展也在一路演进，形成了如今庞大复杂的TCP协议簇。如何深入理解TCP的设计理念以及几十年以来TCP协议的演进，有利于更好地了解网络编程。很多人不懂TCP，少数人了解TCP但不知道其设计理念，但是这些才是网络编程的精粹所在。本文旨在从设计思路出发，更多的分析为什么要这么做而不是TCP是怎么做的，">
+<meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;自TCP诞生以来就改变了网络通信的格局，而TCP协议随着网络基础设施的发展也在一路演进，形成了如今庞大复杂的TCP协议簇。如何深入理解TCP的设计理念以及几十年以来TCP协议的演进，有利于更好地了解网络编程。很多人不懂TCP，很多人了解并会用TCP但不知道其设计理念，但是这些才是网络编程的精粹所在。本文旨在从设计思路出发，更多的分析为什么要这么做而不是TCP是怎么">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/92/0e/92f8e85f7b9a9f764c71081b56286e0e.png">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/98/28/98a4496fff94eb02d1b1b8ae88f8dc28.jpeg">
 <meta property="og:image" content="http://www.cnitblog.com/images/cnitblog_com/wildon/544465b00200001s.png">
 <meta property="article:published_time" content="2020-07-24T15:54:24.000Z">
-<meta property="article:modified_time" content="2020-07-25T15:59:41.225Z">
+<meta property="article:modified_time" content="2020-07-26T16:11:14.360Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -311,8 +311,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-07-25T23:59:41+08:00" content="2020-07-25">
-                2020-07-25
+              <time itemprop="dateUpdated" datetime="2020-07-27T00:11:14+08:00" content="2020-07-27">
+                2020-07-27
               </time>
             </span>
           
@@ -375,7 +375,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  2.4k
+                  6k
                 </span>
               
 
@@ -391,7 +391,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  8
+                  21
                 </span>
               
             </div>
@@ -412,7 +412,7 @@
       
 
       
-        <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;自TCP诞生以来就改变了网络通信的格局，而TCP协议随着网络基础设施的发展也在一路演进，形成了如今庞大复杂的TCP协议簇。如何深入理解TCP的设计理念以及几十年以来TCP协议的演进，有利于更好地了解网络编程。很多人不懂TCP，少数人了解TCP但不知道其设计理念，但是这些才是网络编程的精粹所在。本文旨在从设计思路出发，更多的分析为什么要这么做而不是TCP是怎么做的，但是碍于自身水平所限，可能视野较为狭隘，疏漏错误之处请不吝指正。本文阅读的前提要求至少学习过《计算机网络》，看过《TCP/IP详解》及相关的RFC文档更佳。</p>
+        <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;自TCP诞生以来就改变了网络通信的格局，而TCP协议随着网络基础设施的发展也在一路演进，形成了如今庞大复杂的TCP协议簇。如何深入理解TCP的设计理念以及几十年以来TCP协议的演进，有利于更好地了解网络编程。很多人不懂TCP，很多人了解并会用TCP但不知道其设计理念，但是这些才是网络编程的精粹所在。本文旨在从设计思路出发，更多的分析为什么要这么做而不是TCP是怎么做的，但是碍于自身水平所限，可能视野较为狭隘，疏漏错误之处请不吝指正。本文阅读的前提要求至少学习过《计算机网络》，看过《TCP/IP详解》及相关的RFC文档更佳。</p>
 <a id="more"></a>
 
 <h2 id="二-分层"><a href="#二-分层" class="headerlink" title="二. 分层"></a>二. 分层</h2><p>&emsp;&emsp;当两台电脑被一根线连接起来的时候，网络就诞生了。随着几十年间的发展，网络变得越来越复杂。如同管理国家，企业一样，对于复杂到无法单点直接控制的情况，采取模块化以及分层的策略才是解决复杂问题的合理方法，有趣的是这也是Linux的一大设计哲学：复杂的问题可以通过抽象出中间层的方法分解为几个简单的问题。因此，我们有了网络分层。</p>
@@ -422,15 +422,15 @@
 <p>&emsp;&emsp;每层的核心作用可以概括如下：</p>
 <ul>
 <li>物理层负责物理设备的接入，如网卡，网线等，涉及设备驱动的注册及虚拟文件系统的挂载</li>
-<li>数据链路层负责单个网络内通过MAC地址通信，包括了常见的ARP协议以及CSMA/CD</li>
-<li>网络层负责通过路由算法和IP地址实现多个网络间的通信，如IP, ICMP</li>
+<li>数据链路层负责<strong>单个网络内</strong>通过MAC地址通信，包括了常见的ARP协议以及CSMA/CD</li>
+<li>网络层负责通过路由算法和IP地址实现<strong>多个网络间</strong>的通信，如IP, ICMP</li>
 <li>传输层则在网络层的基础上更为细化的对其通信进行分解，将数据包分发给各个应该接收到的进程/线程，如TCP和UDP</li>
 <li>应用层则在传输层基础上进行了扩展，实现了更为丰富精彩的功能，如FTP, TELNET, SMTP, NFS, HTTP</li>
 </ul>
 <p>&emsp;&emsp;在实际使用中，我们也是采取层层封装/拆封的方式传递数据，如下图所示</p>
 <p><img src="https://static001.geekbang.org/resource/image/98/28/98a4496fff94eb02d1b1b8ae88f8dc28.jpeg" alt="img"></p>
 <p>&emsp;&emsp;由此一来，每层各司其职，也可以各自进行扩展、优化、重构，从而构成了如今庞大复杂而又不失美感的网络协议模型。网络协议模型从下往上功能增加，需要实现的设备减少的同时设备的复杂性却在增加，这样保证了成本的最小化，至于性能则可以通过逐层逐步优化的方式慢慢改进，这也符合架构设计和重构的基本哲学。TCP协议就是这样的典型代表，实际上最开始的时候TCP并不考虑性能、效率、公平性，正是考虑了这些，TCP协议才复杂了起来。</p>
-<h2 id="三-端对端"><a href="#三-端对端" class="headerlink" title="三. 端对端"></a>三. 端对端</h2><p>&emsp;&emsp;正如其名字所展示的那样，TCP的作用是传输控制，也就是控制端到端的传输，那为何这种控制不在IP协议中实现呢？答案很简单，那就是这会增加IP协议的复杂性，而IP协议需要的就是简单。网络层往下是繁多的链路层协议，这些链路提供了相互截然不同且相差很远的语义，为了互联这些异构的网络，我们需要一个网络层协议起码要提供一些适配的功能，这种思想其实和通过虚拟文件系统抽象各种字符设备和块设备一样，所以必须简单，因为简单所以稳定而强大。这也是KISS原则的体现。</p>
+<h2 id="三-端对端"><a href="#三-端对端" class="headerlink" title="三. 端对端"></a>三. 端对端</h2><p>&emsp;&emsp;正如其名字所展示的那样，TCP的作用是传输控制，也就是控制端到端的传输，那为何这种控制不在IP协议中实现呢？答案很简单，那就是这会增加IP协议的复杂性，而IP协议需要的就是简单。网络层往下是繁多的链路层协议，这些链路提供了截然不同且相差很远的语义，为了互联这些异构的网络，我们需要一个网络层协议起码要提供一些适配的功能，这种思想其实和通过虚拟文件系统抽象各种字符设备和块设备一样，所以必须简单，因为简单所以稳定而强大。这也是KISS原则的体现。</p>
 <p>&emsp;&emsp;初级面试官常爱问TCP和UDP的区别，答案模板网上一搜一大把，往往问过答过也就过去了，但是你真的理解了其本质吗？</p>
 <ul>
 <li>所谓的连接，容易让人误以为使用 TCP 会使得两端之间的通路和使用 UDP 不一样，那我们会在沿途建立一条线表示这个连接吗？</li>
@@ -453,11 +453,64 @@
 </ul>
 <p>&emsp;&emsp;可以看出，不管从哪个角度，TCP都作为一个接口存在，作为网络协议，它和对端的TCP接口，实现TCP的控制逻辑，作为多路复用/解复用器，它和下层IP协议接口，实现协议栈的功能，而这正是分层网络协议模型的基本定义(两类接口，一类和下层接口，另一类和对等层接口)。</p>
 <h2 id="四-可靠性"><a href="#四-可靠性" class="headerlink" title="四. 可靠性"></a>四. 可靠性</h2><p>&emsp;&emsp;TCP被称之为可靠的传输协议，是因为其设计理念中强调了对可靠性的实现，我们可以归结为连接的可靠性以及数据报文传输的可靠性。</p>
-<h3 id="4-1-连接可靠性"><a href="#4-1-连接可靠性" class="headerlink" title="4.1 连接可靠性"></a>4.1 连接可靠性</h3><p>&emsp;&emsp;为了理解连接的可靠性，我们需要用到《TCP/IP详解》卷一中的经典TCP状态转移图。</p>
+<h3 id="4-1-连接可靠性"><a href="#4-1-连接可靠性" class="headerlink" title="4.1 连接可靠性"></a>4.1 连接可靠性</h3><h4 id="4-1-1-三次握手和四次挥手"><a href="#4-1-1-三次握手和四次挥手" class="headerlink" title="4.1.1 三次握手和四次挥手"></a>4.1.1 三次握手和四次挥手</h4><p>&emsp;&emsp;为了理解连接的可靠性，我们需要用到《TCP/IP详解》卷一中的经典TCP状态转移图。</p>
 <p><img src="http://www.cnitblog.com/images/cnitblog_com/wildon/544465b00200001s.png" alt="image"></p>
 <p>&emsp;&emsp;何为可靠连接？直白的说就是我们可以知道连接是否建立，是否断开，表现为图中即从<code>CLOSE</code>到<code>ESTABLISHED</code>则表明连接建立，从<code>ESTABLISHED</code>回到<code>CLOSE</code>则连接断开。表现在协议里，则是三次握手和四次挥手。</p>
-<p>&emsp;&emsp;这里又是初级面试官最爱问的问题之一，为什么是三次握手和四次挥手？</p>
-<h3 id="4-2-传输可靠性"><a href="#4-2-传输可靠性" class="headerlink" title="4.2 传输可靠性"></a>4.2 传输可靠性</h3><h2 id="五-拥塞控制"><a href="#五-拥塞控制" class="headerlink" title="五. 拥塞控制"></a>五. 拥塞控制</h2><h2 id="六-展望"><a href="#六-展望" class="headerlink" title="六. 展望"></a>六. 展望</h2><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="源码资料"><a href="#源码资料" class="headerlink" title="源码资料"></a>源码资料</h2><p>[1] </p>
+<p>&emsp;&emsp;这里又是初级面试官最爱问的问题之一，为什么是三次握手和四次挥手？答案其实很简单，所谓的握手挥手无非是通过一个<code>SYN</code>和一个<code>ACK</code>的来回分配资源并初始化序列号，而之所以建立之始可以只用三次，是因为初始并没有传递数据，所以可以将服务端发回客户端的<code>ACK</code>和<code>SYN</code>合并在一起发送。而连接断开的时候，如果当前还有数据传输，则该单向通道不可以立即关闭，因此只发送<code>ACK</code>而没有<code>FIN</code>，这才变成了三次握手和四次挥手。</p>
+<h4 id="4-1-2-TIME-WAIT"><a href="#4-1-2-TIME-WAIT" class="headerlink" title="4.1.2 TIME_WAIT"></a>4.1.2 TIME_WAIT</h4><p>&emsp;&emsp;上面说了三次握手和四次挥手，这里我们再来考虑一个情景：终止连接时的被动方发送了一个<code>FIN</code>，主动方回复了的<code>ACK</code>丢失，这会造成被动方重发<code>FIN</code>，这个FIN可能会在互联网上存活<code>MSL</code>时间（<a href="https://en.wikipedia.org/wiki/Maximum_segment_lifetime" target="_blank" rel="noopener">MSL</a>，即报文最大存活时间，根据光速以及TTL等综合计算得到，详细算法可见维基和RFC文档）。如果没有<code>TIME_WAIT</code>的话，假设连接1已经断开，然而其被动方最后重发的那个<code>FIN</code>(或者FIN之前发送的任何TCP分段)还在网络上，然而连接2重用了连接1的5元组(源IP，目的IP，TCP，源端口，目的端口)，连接1迟到的FIN到达了，这个<code>FIN</code>将以比较低但是确实可能的概率终止掉连接2。</p>
+<p>&emsp;&emsp;为何说是概率比较低呢？这涉及到一个匹配问题，迟到的<code>FIN</code>分段的序列号必须落在连接2的一方的期望序列号范围之内。虽然这种巧合很少发生，但确实会发生，毕竟初始序列号是随机产生了。因此终止连接的<strong>主动方</strong>必须在接受了被动方<code>FIN</code>且回复了<code>ACK</code>之后，等待<code>2*MSL</code>时间才能进入<code>CLOSE</code>状态，之所以乘以2是因为最坏情况下，回复给被动方的<code>ACK</code>在以最长路线(经历一个<code>MSL</code>)丢包，再次收到被动方重发的<code>FIN</code>也需要一个<code>MSL</code>，合起来就是2倍<code>MSL</code>时间。如果超过<code>2MSL</code>也没有回复，则判断为被动方收到了该<code>ACK</code>，如果是<code>FIN</code>没有收到，那也不用担心上述的问题了，因为已经超过了一个数据包的存活时间了。</p>
+<p>&emsp;&emsp;综上，TIME_WAIT状态的出现是因为</p>
+<ul>
+<li>每次建立连接的时候序列号都是随机产生的，并且这个序列号是32位的，会回绕</li>
+<li>被动关闭方可能因为收不到<code>ACK</code>而重发<code>FIN</code></li>
+<li>主动关闭方无法知晓被动方是否收到了最后的<code>ACK</code></li>
+</ul>
+<h3 id="4-2-传输可靠性"><a href="#4-2-传输可靠性" class="headerlink" title="4.2 传输可靠性"></a>4.2 传输可靠性</h3><p>&emsp;&emsp;传输可靠性主要表现为解决了IP层数据包的乱序和丢包问题，其实现简单的说就是给每个包加上序号，按照序号进行排序，如果有缺失则要求重发。但是由于端对端的协议我们只能控制两端而不能控制链路，因此存在以下问题</p>
+<ul>
+<li>如何判断是否超时，即丢包：超时机制</li>
+<li>如果丢包如何重发：停等，GBN，选择性重传</li>
+<li>如果频繁丢包如何进行流量控制：通过窗口解决效率问题</li>
+</ul>
+<h4 id="4-2-1-超时机制"><a href="#4-2-1-超时机制" class="headerlink" title="4.2.1 超时机制"></a>4.2.1 超时机制</h4><p>&emsp;&emsp;为了确保每个包都收到并有序，TCP设计了序列号。为了确保该序列号收到，TCP设计了<code>ACK</code>机制。但是如果<code>ACK</code>没有收到呢？为此TCP设计了超时机制。超时机制最大的问题在于如何判断对端是否收到了消息，即对端是否发送了ACK。为此我们需要想办法测算出正常情况下TCP发送一个数据包并收到ACK回复的时间，如果超过该时间还未收到ACK，则可认为是超时了。这就是<a href="https://en.wikipedia.org/wiki/Round-trip_delay" target="_blank" rel="noopener">RTT（Round Trip Time)</a>，也叫RTD（Round Trip Delay）。RTT的计算根据实际的协议会有着不同的定义方式，但是大致均采用滑动平均的方式过滤掉偶尔剧烈的波动，具体可以参考不同的RFC协议文档。</p>
+<p>&emsp;&emsp;很显然，对每一个TCP分段都生成一个计时器是最直接的方式：每个计时器在RTT时间后到期，如果没有收到确认则重传。然而这只是理论上的合理，对于大多数操作系统而言，这将带来巨大的内存开销和调度开销，因此采取每一个TCP连接单一计时器的设计则成了一个默认的选择。可是单一的计时器怎么管理如此多的发出去的TCP分段呢？又该如何来设计单一的计时器呢。</p>
+<p>&emsp;&emsp;设计单一计时器有两个原则：1.每一个报文在长期收不到确认都必须可以超时；2.原则1中定义的长期不能和测量的RTT相隔太远。RFC2988定义的逻辑如下：</p>
+<ul>
+<li>发送TCP分段时，如果还没有重传定时器开启，那么开启它。</li>
+<li>发送TCP分段时，如果已经有重传定时器开启，不再开启它。</li>
+<li>收到一个非冗余<code>ACK</code>时，如果有数据在传输中，重新开启重传定时器。</li>
+<li>收到一个非冗余<code>ACK</code>时，如果没有数据在传输中，则关闭重传定时器。</li>
+</ul>
+<p>&emsp;&emsp;其中包含一条设计哲学：一个<code>ACK</code>到来了，说明后续的<code>ACK</code>很可能会依次到来，也就是说丢失的可能性并不大，另外，即使真的有后发的TCP分段丢失现象发生，也会在最多2倍定时器超时时间的范围内被重传(假设该报文是第一个报文发出启动定时器之后马上发出的，丢失了，第一个报文的<code>ACK</code>到来后又重启了定时器，又经过了一个超时时间才会被重传)。网络拥塞会引起丢包，丢包会引起重传，过度重传反过来加重网络拥塞，这样设计可以缓解过多的重传，毕竟将启动定时器之后发送的数据的重传超时时间拉长了最多一倍左右。</p>
+<h4 id="4-2-2-ARQ"><a href="#4-2-2-ARQ" class="headerlink" title="4.2.2 ARQ"></a>4.2.2 ARQ</h4><p>&emsp;&emsp;当超时真的发生的时候，我们就需要重传了，重传的依据就是序列号。发送端会给每个报文加上一个序列号，而接收端会保存当前<strong>连续收到的最后一个序列号</strong>，并以此发送ACK。发送端若长期未收到ACK，即超时发生，则出发该序列号的包重传。另外，发送端重发了一个TCP报文并且接收到该TCP分段的确认号，并不能说明这个重发的报文被接收了，也可能是数据早就被接收了，只是由于其ACK丢失或者其ACK延迟到达导致了超时。值得说明的是<strong>，接收端会丢弃任何重复的数据</strong>，但是即使丢弃了重复的数据其<strong>ACK还是会照发不误的</strong>。</p>
+<p>&emsp;&emsp;重传算法通常称之为<a href="https://en.wikipedia.org/wiki/Automatic_repeat_request" target="_blank" rel="noopener">ARQ（Auto Repeated Request）</a>，主要包括</p>
+<ul>
+<li>停等重传：最早期的ARQ协议，收到一个ACK才会继续发送新的包，效率极低，在发明了流水线发送之后就很少使用，仅在某些特定场景适用</li>
+<li>GBN协议：GBN(Go Back N)是继停等式ARQ之后的一种常用重传协议，在早期TCP中有使用，发送方持续的发送多个数据报文，假如发现已发送的报文中某个序列号未收到，则从该序列号开始后面所有的包均重发。该方法其实存在很大的问题：很多乱序的数据属于冗余发送，容易引起网络拥塞的加重。</li>
+<li>基于SACK的选择性重传：在GBN的基础上增加对乱序报文的缓存，仅仅令发送端发送缺少的报文。优点在于数据冗余量小，缺点在于复杂度高。</li>
+</ul>
+<h4 id="4-2-3-流控"><a href="#4-2-3-流控" class="headerlink" title="4.2.3 流控"></a>4.2.3 流控</h4><p>&emsp;&emsp;端到端的流量控制使用滑动窗口来实现，滑动窗口本质上其实就是一个生产者消费者队列模型。滑动窗口会根据当前ACK的速率设置大小，尽量匹配收发两端的速率。仅从速率来看，该设计思路无可厚非，可以保证一个收发相对稳定可靠的队列模型。但是随着网络的发展，流量的爆炸式增加，除了速率以外我们会越来越重视效率。这引发了三个不同的问题：</p>
+<ul>
+<li>接收端处理慢导致接收窗口被填满：收发端的速率不匹配导致了接收方发送的ACK可能很久才只有1个，这导致了发送方的窗口一直在0到1之间变化，即<strong>糊涂窗口综合征</strong>。这个问题极大的浪费了网络带宽，降低了网络利用率。</li>
+<li>接收端处理很快，但是发送端持续发送小包：这种现象来自于发送端，其实也很常见，比如有些人打字就喜欢一句话拆成N个单词分开发送，太多的小包也会和上一个问题一样导致了网络利用率的降低。</li>
+<li><code>ACK</code>的单独回复本身也会占用大量的带宽</li>
+</ul>
+<p>&emsp;&emsp;为此，TCP设计了几种不同的方案解决以上问题。</p>
+<ul>
+<li>对于糊涂窗口综合征，TCP的解决思路是当窗口达到一定程度再继续发送报文，其具体实现可以通过<strong>坚持计时器（persistent timer）</strong>进行探测，也可以控制接收发的<code>ACK</code>发送时机。</li>
+<li>针对发送端的大量小包，TCP的解决思路是对其进行合并，这就是经典的<strong>Nagle</strong>算法。</li>
+<li>针对<code>ACK</code>的流量浪费，我们将<code>ACK</code>和发回的数据包试图合并，如果等了一段可以接受的时间还是没有数据要发往发送端，此时就需要单独发送一个<code>ACK</code>了，然而即使如此，这个延迟的<code>ACK</code>也可能等到了后续到来的TCP分段，这样它们就可以取最大者一起返回了，要知道，TCP的确认号是收到的按序报文的最后一个字节的后一个字节。这就是<strong>延时ACK</strong>。RFC建议，延迟的<code>ACK</code>最多等待两个分段的积累确认。</li>
+</ul>
+<p>&emsp;&emsp;这三个问题的解决方案是几乎同一时期提出的，各自为了解决不同的问题，但是其混杂在一起却造成了一些别的影响。</p>
+<p>&emsp;&emsp;首先，我们可以分析出来Nagle算法和延时ACK对糊涂窗口综合征显然都是有利的：二者可以尽量拖延时间使得接收方尽可能多的处理数据从而增大窗口。但是延时<code>ACK</code>和Nagle结合的时候就会出现一些不利因素：Nagle算法仅允许一个小包在路上，如果后续有多个小包而未积攒至足够大则不会发送。若此时延时<code>ACK</code>也在工作并且接收端并无消息发送，则该<code>ACK</code>只能等待超时后再传回。在这种场景下，Nagle和延时<code>ACK</code>的叠加会导致性能的下降而无任何收益。对Nagle来说，其<code>ACK</code>收到的时间延长了，对于延时<code>ACK</code>来说，其期望的网络效率提高未实现。</p>
+<p>&emsp;&emsp;因此，我们需要根据业务需要开启合适的流控算法，甚至对其进行修改优化，从而满足业务需求，提高网络传输的速率和效率。</p>
+<h2 id="五-拥塞控制"><a href="#五-拥塞控制" class="headerlink" title="五. 拥塞控制"></a>五. 拥塞控制</h2><p>&emsp;&emsp;端到端的TCP只能看到两个节点，那就是自己和对方，它们是看不到任何中间的路径的。可是IP网络却是一跳一跳的，它们的矛盾之处在于TCP的端到端流量控制必然会导致网络拥堵：每条TCP连接的一端只知道它对端还有多少空间用于接收数据，它们并不管到达对端的路径上是否还有这么大的容量。在早期网络数据较少的时候还未有这种烦恼，但是随着近30年网络的飞速发展，拥塞控制成了TCP的研究热点和痛点所在。<br>&emsp;&emsp;拥塞控制的本质依然是一种流控，但是和传统流控着眼于解决可靠性、网络速率、网络利用率不同，拥塞会直接导致整个网络的瘫痪。早期的TCP设计并无拥塞控制，遇到丢包则采用重传机制，而重传机制则在一定程度上加剧了网络的拥塞，导致了网络更加的不可用。由此，TCP拥塞控制应运而生。为了解决拥塞问题，拥塞控制必须设计成满足以下需求：</p>
+<ul>
+<li>公平性</li>
+<li>拥塞后退让出流量</li>
+</ul>
+<p>&emsp;&emsp;这两点也正是各种拥塞控制算法的出发点，其算法本身均是这两个需求的体现。最早期的经典拥塞控制算法为Reno和New Reno，即大名鼎鼎的慢开始、拥塞控制、快重传和快恢复。后续针对Reno的缺点，诞生出了Bic和更为高级的Cubic算法。除此之外，还有未解决特定场景而定制的一系列算法。如数据中心中的Vegas和New Vegas，无线网络的West Wood。这些算法均是延续着最早的设计需求和理念而发明，在前人的肩膀上拓展，Cubic至今也是Linux中的主流拥塞控制算法。但是值得一提的是，<strong>谷歌公司提出的BBR和BBR2.0则在一定程度上打破了常规拥塞控制算法的设计理念，真正的实现了拥塞控制的需求，让人们看到了拥塞控制未来的发展之路</strong>。后续会专门写一篇文章分析BBR源码及其思想。</p>
+<p>&emsp;&emsp;下面我们来好好分析一下Reno的设计哲学。首先慢开始、拥塞控制、快重传、快恢复是什么我就不赘述了，直接进入主题。</p>
+<h2 id="六-性能瓶颈"><a href="#六-性能瓶颈" class="headerlink" title="六. 性能瓶颈"></a>六. 性能瓶颈</h2><h2 id="七-展望"><a href="#七-展望" class="headerlink" title="七. 展望"></a>七. 展望</h2><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="源码资料"><a href="#源码资料" class="headerlink" title="源码资料"></a>源码资料</h2><p>[1] </p>
 <h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1] wiki</p>
 <p>[2] <a href="https://elixir.bootlin.com/linux/v5.7-rc1/source" target="_blank" rel="noopener">elixir.bootlin.com/linux</a></p>
 <p>[3] <a href="https://code.woboq.org/" target="_blank" rel="noopener">woboq</a></p>
@@ -767,7 +820,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-分层"><span class="nav-text">二. 分层</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-端对端"><span class="nav-text">三. 端对端</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-可靠性"><span class="nav-text">四. 可靠性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-连接可靠性"><span class="nav-text">4.1 连接可靠性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-传输可靠性"><span class="nav-text">4.2 传输可靠性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-拥塞控制"><span class="nav-text">五. 拥塞控制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#六-展望"><span class="nav-text">六. 展望</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源码资料"><span class="nav-text">源码资料</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-text">参考资料</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-分层"><span class="nav-text">二. 分层</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-端对端"><span class="nav-text">三. 端对端</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-可靠性"><span class="nav-text">四. 可靠性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-连接可靠性"><span class="nav-text">4.1 连接可靠性</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4-1-1-三次握手和四次挥手"><span class="nav-text">4.1.1 三次握手和四次挥手</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-1-2-TIME-WAIT"><span class="nav-text">4.1.2 TIME_WAIT</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-传输可靠性"><span class="nav-text">4.2 传输可靠性</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4-2-1-超时机制"><span class="nav-text">4.2.1 超时机制</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-2-2-ARQ"><span class="nav-text">4.2.2 ARQ</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-2-3-流控"><span class="nav-text">4.2.3 流控</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-拥塞控制"><span class="nav-text">五. 拥塞控制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#六-性能瓶颈"><span class="nav-text">六. 性能瓶颈</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#七-展望"><span class="nav-text">七. 展望</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源码资料"><span class="nav-text">源码资料</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-text">参考资料</span></a></li></ol></div>
             
 
           </div>
@@ -801,7 +854,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">103.3k</span>
+    <span title="Site words total count">106.9k</span>
   
 </div>
 
