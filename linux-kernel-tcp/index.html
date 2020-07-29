@@ -88,15 +88,15 @@
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/92/0e/92f8e85f7b9a9f764c71081b56286e0e.png">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/98/28/98a4496fff94eb02d1b1b8ae88f8dc28.jpeg">
 <meta property="og:image" content="http://www.cnitblog.com/images/cnitblog_com/wildon/544465b00200001s.png">
-<meta property="og:image" content="e:%5Cdoc%5Chomepage%5Cthemes%5Cnext%5Csource%5Cimages%5Cimage-20200729225319698.png">
-<meta property="og:image" content="e:/doc/homepage/themes/next/source/images/image-20200729230936248.png">
-<meta property="og:image" content="e:/doc/homepage/themes/next/source/images/image-20200729230957683.png">
+<meta property="og:image" content="https://github.com/Ty-Chen/Ty-Chen.github.io/blob/master/images/image-20200729225319698.png?raw=true">
+<meta property="og:image" content="https://github.com/Ty-Chen/Ty-Chen.github.io/blob/master/images/image-20200729230936248.png?raw=true">
+<meta property="og:image" content="https://github.com/Ty-Chen/Ty-Chen.github.io/blob/master/images/image-20200729230957683.png?raw=true">
 <meta property="og:image" content="https://lh3.googleusercontent.com/proxy/6ScUlQ4TCKIquZ0Ht64Q9iTT5TP0bYOTOu6k7M55e4cl1jDWHka34M2Ly4_1879IkTMggbOQoioLknoQCmBeZ9stV5K5L2wAMxI_sJ-tlFUwHYrz2bZWMyPg56O-Jc1Wy_GyLBFZl9U-q7JeF1_i1w">
 <meta property="og:image" content="https://www.researchgate.net/profile/Romain_Delpoux/publication/267783414/figure/fig5/AS:669531638861835@1536640190532/Slow-start-fast-retransmit-and-fast-recovery-illustration.pbm">
 <meta property="og:image" content="https://d2vlcm61l7u1fs.cloudfront.net/media%2F324%2F3243fbba-a6c5-4601-946e-308502a7e634%2FphpO3SyiW.png">
-<meta property="og:image" content="e:/doc/homepage/themes/next/source/images/20160517220017254.png">
+<meta property="og:image" content="https://github.com/Ty-Chen/Ty-Chen.github.io/blob/master/images/20160517220017254.png?raw=true">
 <meta property="article:published_time" content="2020-07-24T15:54:24.000Z">
-<meta property="article:modified_time" content="2020-07-29T16:06:35.448Z">
+<meta property="article:modified_time" content="2020-07-29T16:10:03.046Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -318,7 +318,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-07-30T00:06:35+08:00" content="2020-07-30">
+              <time itemprop="dateUpdated" datetime="2020-07-30T00:10:03+08:00" content="2020-07-30">
                 2020-07-30
               </time>
             </span>
@@ -525,11 +525,10 @@
 </ul>
 <p>&emsp;&emsp;为了回答这些问题，我们先要理解网络连接的容量。如下图所示为一个经典的发送、接收双方的链路抽象图。其中两端肥肥的部分代表的是发送、接收方的缓冲区，而中间细长管道则是网络链路。</p>
 <p>&emsp;&emsp;先单看发送方，管道的容量取决于什么呢？有人肯定会说，这个问题太白痴了，管道的容量当然是取决于该管道实际的大小，即带宽时延乘积（BDP），但是实际不是这样的。<strong>一个管道或者说队列的容量，取决于其出口的速度大小，当发出速度和接受速度相等并填满管道时，则该管道满载</strong>。这其实是一道小学数学题：游泳池一边放水一边装水会空掉还是装满溢出？同样的，对于端到端的TCP连接来说，接收端处理的速度决定了该连接的最大容量。如果接收端处理无限快，我们可以认为该连接容量无穷大，可以以任意速度发包。</p>
-<p><img src="E:%5Cdoc%5Chomepage%5Cthemes%5Cnext%5Csource%5Cimages%5Cimage-20200729225319698.png" alt="image-20200729225319698"></p>
+<p><img src="https://github.com/Ty-Chen/Ty-Chen.github.io/blob/master/images/image-20200729225319698.png?raw=true" alt="image-20200729225319698.png"></p>
 <p>&emsp;&emsp;接着看看收发双端，相信大家都知道CPU指令流水线的原理，下图则是一个典型的慢开始阶段的收发段示意图（图片来源于《TCP/IP详解》，由于PDF质量差因此图片较为模糊）。由图可见，因为接收端速率和发送端相同，因此在一个RTT时间里，实际最多能发送管道容量N的两倍，即2 * N个数据包。</p>
-<img src="E:\doc\homepage\themes\next\source\images\image-20200729230936248.png" alt="image-20200729230936248"  />
-
-<img src="E:\doc\homepage\themes\next\source\images\image-20200729230957683.png" alt="image-20200729230957683" style="zoom:90%;" />
+<p><img src="https://github.com/Ty-Chen/Ty-Chen.github.io/blob/master/images/image-20200729230936248.png?raw=true" alt="image-20200729230936248.png"></p>
+<img src="https://github.com/Ty-Chen/Ty-Chen.github.io/blob/master/images/image-20200729230957683.png?raw=true" alt="image-20200729230957683.png" style="zoom:90%;" />
 
 <p>&emsp;&emsp;这2 * N个数据段发送的开始时间点是第1个数据段发送的时间，结束时间点是第一个数据段的ACK回到发送端的时间，正好是一个RTT，设发送速率为r，那么以下的等式显而易见：<br>$$<br>2<em>N = r</em>RTT<br>$$<br>&emsp;&emsp;下面我们再来分析一下上述流水线发包的一些关键点</p>
 <ul>
@@ -554,7 +553,7 @@
 <h3 id="5-3-AIMD和公平性"><a href="#5-3-AIMD和公平性" class="headerlink" title="5.3 AIMD和公平性"></a>5.3 AIMD和公平性</h3><p>&emsp;&emsp;理解了上述设计思路，大家就不难理解何为加性增乘性减（AIMD)了，其指的就是拥塞避免阶段加法形式的窗口增加和拥塞时的乘法性窗口递减过程。而为什么说这带来了TCP的公平性呢？下图是一副经典的说明图片。对于两个TCP连接R1和R2，假设网络总带宽为R，则二者必然会在某一个位置触发拥塞。拥塞之后，由于都是乘性减，因此对于占用窗口较大的一方会减少的更多，而之后窗口增加过程中由于系数相同，因此会同比增加，之后再次拥塞，再次减少，如图所示则为红线，随着不断地拥塞和窗口重置，该震荡曲线最终会收敛至y = x的曲线，即二者窗口相等。这就是TCP拥塞控制算法带来的公平性的体现。</p>
 <p><img src="https://d2vlcm61l7u1fs.cloudfront.net/media%2F324%2F3243fbba-a6c5-4601-946e-308502a7e634%2FphpO3SyiW.png" alt="img"></p>
 <p>&emsp;&emsp;如果降窗比例不相等，或者RTT时间不同，或者增加速度不同，则无法达到该效果，可见下图所示</p>
-<img src="E:\doc\homepage\themes\next\source\images\20160517220017254.png" alt="img" style="zoom: 72%;" />
+<img src="https://github.com/Ty-Chen/Ty-Chen.github.io/blob/master/images/20160517220017254.png?raw=true" alt="20160517220017254.png" style="zoom: 73%;" />
 
 <h3 id="5-4-拥塞控制的发展和走向"><a href="#5-4-拥塞控制的发展和走向" class="headerlink" title="5.4 拥塞控制的发展和走向"></a>5.4 拥塞控制的发展和走向</h3><h2 id="六-性能瓶颈"><a href="#六-性能瓶颈" class="headerlink" title="六. 性能瓶颈"></a>六. 性能瓶颈</h2><h2 id="七-展望"><a href="#七-展望" class="headerlink" title="七. 展望"></a>七. 展望</h2><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="源码资料"><a href="#源码资料" class="headerlink" title="源码资料"></a>源码资料</h2><p>[1] </p>
 <h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1] wiki</p>
