@@ -92,11 +92,16 @@
 <meta property="og:image" content="https://github.com/Ty-Chen/Ty-Chen.github.io/blob/master/images/image-20200729230936248.png?raw=true">
 <meta property="og:image" content="https://github.com/Ty-Chen/Ty-Chen.github.io/blob/master/images/image-20200729230957683.png?raw=true">
 <meta property="og:image" content="https://lh3.googleusercontent.com/proxy/6ScUlQ4TCKIquZ0Ht64Q9iTT5TP0bYOTOu6k7M55e4cl1jDWHka34M2Ly4_1879IkTMggbOQoioLknoQCmBeZ9stV5K5L2wAMxI_sJ-tlFUwHYrz2bZWMyPg56O-Jc1Wy_GyLBFZl9U-q7JeF1_i1w">
+<meta property="og:image" content="e:%5Cdoc%5Chomepage%5Cthemes%5Cnext%5Csource%5Cimages%5C640px-TCP_Slow-Start_and_Congestion_Avoidance.svg.png">
 <meta property="og:image" content="https://www.researchgate.net/profile/Romain_Delpoux/publication/267783414/figure/fig5/AS:669531638861835@1536640190532/Slow-start-fast-retransmit-and-fast-recovery-illustration.pbm">
-<meta property="og:image" content="https://d2vlcm61l7u1fs.cloudfront.net/media%2F324%2F3243fbba-a6c5-4601-946e-308502a7e634%2FphpO3SyiW.png">
+<meta property="og:image" content="e:%5Cdoc%5Chomepage%5Cthemes%5Cnext%5Csource%5Cimages%5CAIMD.png">
 <meta property="og:image" content="https://github.com/Ty-Chen/Ty-Chen.github.io/blob/master/images/20160517220017254.png?raw=true">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/45/7e/451a24fb8f096729ed6822b1615b097e.png">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/90/bd/90df0945f6ce5c910ae361bf2b135bbd.png">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/99/3a/998fd2f52f0a48a910517ada9f2bb23a.png">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/06/be/067ef9df4212cd4ede3cffcdac7001be.png">
 <meta property="article:published_time" content="2020-07-24T15:54:24.000Z">
-<meta property="article:modified_time" content="2020-07-29T16:10:03.046Z">
+<meta property="article:modified_time" content="2020-07-30T16:28:59.979Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -318,8 +323,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-07-30T00:10:03+08:00" content="2020-07-30">
-                2020-07-30
+              <time itemprop="dateUpdated" datetime="2020-07-31T00:28:59+08:00" content="2020-07-31">
+                2020-07-31
               </time>
             </span>
           
@@ -382,7 +387,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  7.6k
+                  11.1k
                 </span>
               
 
@@ -398,7 +403,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  26
+                  38
                 </span>
               
             </div>
@@ -515,7 +520,7 @@
 <li>公平性</li>
 <li>拥塞后退让出流量</li>
 </ul>
-<p>&emsp;&emsp;这两点也正是各种拥塞控制算法的出发点，其算法本身均是这两个需求的体现。最早期的经典拥塞控制算法为Reno和New Reno，即大名鼎鼎的慢开始、拥塞控制、快重传和快恢复。后续针对Reno的缺点，诞生出了Bic和更为高级的Cubic算法。除此之外，还有未解决特定场景而定制的一系列算法。如数据中心中的Vegas和New Vegas，无线网络的West Wood。这些算法均是延续着最早的设计需求和理念而发明，在前人的肩膀上拓展，Cubic至今也是Linux中的主流拥塞控制算法。但是值得一提的是，<strong>谷歌公司提出的BBR和BBR2.0则在一定程度上打破了常规拥塞控制算法的设计理念，真正的实现了拥塞控制的需求，让人们看到了拥塞控制未来的发展之路</strong>。后续会专门写一篇文章分析BBR源码及其思想。</p>
+<p>&emsp;&emsp;这两点也正是各种拥塞控制算法的出发点，其算法本身均是这两个需求的体现。最早期的经典拥塞控制算法为Tahoe, Reno和New Reno，即大名鼎鼎的慢开始、拥塞控制、快重传和快恢复。后续针对Reno的缺点，诞生出了Bic和更为高级的Cubic算法。除此之外，还有未解决特定场景而定制的一系列算法。如数据中心中的Vegas和New Vegas，无线网络的West Wood。这些算法均是延续着最早的设计需求和理念而发明，在前人的肩膀上拓展，Cubic至今也是Linux中的主流拥塞控制算法。但是值得一提的是，<strong>谷歌公司提出的BBR和BBR2.0则在一定程度上打破了常规拥塞控制算法的设计理念，真正的实现了拥塞控制的需求，让人们看到了拥塞控制未来的发展之路</strong>。后续会专门写一篇文章分析BBR源码及其思想。</p>
 <h3 id="5-1-慢开始和拥塞避免"><a href="#5-1-慢开始和拥塞避免" class="headerlink" title="5. 1 慢开始和拥塞避免"></a>5. 1 慢开始和拥塞避免</h3><p>&emsp;&emsp;下面我们来好好分析一下慢开始和拥塞避免的设计哲学。首先提出几个问题，如果知道的可以跳过该部分了。</p>
 <ul>
 <li>对于一个网络连接来说，何种情况算是满载？</li>
@@ -530,7 +535,8 @@
 <p><img src="https://github.com/Ty-Chen/Ty-Chen.github.io/blob/master/images/image-20200729230936248.png?raw=true" alt="image-20200729230936248.png"></p>
 <img src="https://github.com/Ty-Chen/Ty-Chen.github.io/blob/master/images/image-20200729230957683.png?raw=true" alt="image-20200729230957683.png" style="zoom:90%;" />
 
-<p>&emsp;&emsp;这2 * N个数据段发送的开始时间点是第1个数据段发送的时间，结束时间点是第一个数据段的ACK回到发送端的时间，正好是一个RTT，设发送速率为r，那么以下的等式显而易见：<br>$$<br>2<em>N = r</em>RTT<br>$$<br>&emsp;&emsp;下面我们再来分析一下上述流水线发包的一些关键点</p>
+<p>&emsp;&emsp;这2 * N个数据段发送的开始时间点是第1个数据段发送的时间，结束时间点是第一个数据段的ACK回到发送端的时间，正好是一个RTT，设发送速率为r，那么以下的等式显而易见：2 * N = r * RTT</p>
+<p>&emsp;&emsp;下面我们再来分析一下上述流水线发包的一些关键点</p>
 <ul>
 <li>当包少于N个（图中为4个）时，因为管道未满，我们甚至不需要考虑接收方的处理速度，直接发包即可</li>
 <li>当包数量在N到2 * N个之间时，因为未达到管道满载，我们可以继续增加。但是这时候需要考虑接收方的发送速度，即按照接收方的速度来调整发包的速度增加的幅度。</li>
@@ -543,19 +549,80 @@
 <li>当出现拥塞时，说明当前探测的管道容量即窗口大小C大于等于2 * N，所以新的<code>ssthresh</code>就应该等于当前窗口大小C的一半，又因为<code>ssthresh</code>本身等于C（逐渐递增），因此<code>ssthresh</code>取自身一半即为当前管道的实际N值（并不准）。</li>
 </ul>
 <p><img src="https://lh3.googleusercontent.com/proxy/6ScUlQ4TCKIquZ0Ht64Q9iTT5TP0bYOTOu6k7M55e4cl1jDWHka34M2Ly4_1879IkTMggbOQoioLknoQCmBeZ9stV5K5L2wAMxI_sJ-tlFUwHYrz2bZWMyPg56O-Jc1Wy_GyLBFZl9U-q7JeF1_i1w" alt="projects"></p>
-<h3 id="5-2-快重传和快恢复"><a href="#5-2-快重传和快恢复" class="headerlink" title="5. 2 快重传和快恢复"></a>5. 2 快重传和快恢复</h3><p>&emsp;&emsp;只有慢开始和拥塞避免的拥塞控制算法是不完美的，因为它太过于严苛了：</p>
+<h3 id="5-2-慢开始的优化"><a href="#5-2-慢开始的优化" class="headerlink" title="5.2 慢开始的优化"></a>5.2 慢开始的优化</h3><p>&emsp;&emsp;我们知道，<code>ssthresh</code>的设置是以丢包作为反馈信号的，现在问题是，连接刚刚建立的时候，没有丢包作为反馈信号的时候，如何来设置<code>ssthresh</code>？<br>一般而言，默认的实现都是将其设置为一个巨大的值如65536，然后最快的速度历经一次丢包，然后设置<code>ssthresh</code>为丢包时窗口的一半，然后像<code>ssthresh</code>的2倍缓慢逼近。但是这会带来问题，由于没有<code>ssthresh</code>作为阈值限制，用丢包作为代价，太高昂。因此在慢启动过程中如果可以探测到<code>ssthresh</code>的值，那就可以随时退出慢启动状态了。</p>
+<p>&emsp;&emsp;根据上述公式  2 * N = r * RTT， 其中速率 r 为单位时间内发出的数据包数，假设在T时间内发出M个包，则公式可变为 T = (M / N) * (RTT / 2)。当 T 等于 RTT的一半时，则刚好可有M等于N，即达到了<code>ssthresh</code>。由于我们无法单独探测M个数据段到达接收端并计时，我们可以变相等价使用ACK来计算，以一个窗口的第一个数据段作为计时开始<code>Tstart</code>，每收到一个ACK即更新以下数值：</p>
+<ul>
+<li><code>RTTmin</code>：采样周期内最小的RTT，以最大限度地表示A和B之间的理想往返时延。</li>
+<li><code>Tcurr</code>：当前时间</li>
+</ul>
+<p>&emsp;&emsp;如果下列条件成立，则可以退出慢启动了：<strong><code>Tcurr - Tstart &gt;= RTTmin / 2</code></strong></p>
+<p>&emsp;&emsp;然而现实并不是理想的，大多数情况下，以上的算法并没有带来比较好的效果，为什么呢？因为整个带宽不是一个TCP连接独享的，而是全世界的所有TCP连接甚至包括UDP共享的，因此以上的公式基本上无法表示任何真实的情况，所以实际当中，更倾向于使用RTT来预估网络已经被塞满。使用RTT来估算网络容量<code>ssthresh</code>更加实际一些，因为它充分考虑了拥塞时的排队延时，因此在该方法下，退出慢启动的条件便成了：<strong><code>Tcurr_rtt &gt; RTTmin + fixed_value</code></strong></p>
+<p>&emsp;&emsp;以上旨在解决首次慢启动在还没有<code>ssthresh</code>值的时候预测<code>ssthresh</code>的方式，其实在此后的任何时候，只要是慢启动，都可以用以上的算法来预测当前的<code>ssthresh</code>，而不是说必须要用拥塞算法给出的<code>ssthresh</code>或者说仅仅是1/2丢包窗口。</p>
+<p><img src="E:%5Cdoc%5Chomepage%5Cthemes%5Cnext%5Csource%5Cimages%5C640px-TCP_Slow-Start_and_Congestion_Avoidance.svg.png" alt="640px-TCP_Slow-Start_and_Congestion_Avoidance.svg"></p>
+<h3 id="5-3-快重传和快恢复"><a href="#5-3-快重传和快恢复" class="headerlink" title="5. 3 快重传和快恢复"></a>5. 3 快重传和快恢复</h3><p>&emsp;&emsp;只有慢开始和拥塞避免的拥塞控制算法是不完美的，因为它太过于严苛了：</p>
 <ul>
 <li>任意丢包均视为拥塞发生</li>
 <li>每次拥塞发生窗口降至1重新开始</li>
 </ul>
-<p>&emsp;&emsp;对于第一点，快重传进行了尝试解决。对于第二点，则是快恢复。</p>
+<p>&emsp;&emsp;对于第一点，快重传进行了尝试解决。对于第二点，则是快恢复。慢开始、拥塞避免、快重传和快恢复结合起来，就是我们所舒适的Reno算法代表的经典拥塞控制算法。</p>
 <p><img src="https://www.researchgate.net/profile/Romain_Delpoux/publication/267783414/figure/fig5/AS:669531638861835@1536640190532/Slow-start-fast-retransmit-and-fast-recovery-illustration.pbm" alt="7: Slow-start, fast retransmit and fast recovery illustration ..."></p>
-<h3 id="5-3-AIMD和公平性"><a href="#5-3-AIMD和公平性" class="headerlink" title="5.3 AIMD和公平性"></a>5.3 AIMD和公平性</h3><p>&emsp;&emsp;理解了上述设计思路，大家就不难理解何为加性增乘性减（AIMD)了，其指的就是拥塞避免阶段加法形式的窗口增加和拥塞时的乘法性窗口递减过程。而为什么说这带来了TCP的公平性呢？下图是一副经典的说明图片。对于两个TCP连接R1和R2，假设网络总带宽为R，则二者必然会在某一个位置触发拥塞。拥塞之后，由于都是乘性减，因此对于占用窗口较大的一方会减少的更多，而之后窗口增加过程中由于系数相同，因此会同比增加，之后再次拥塞，再次减少，如图所示则为红线，随着不断地拥塞和窗口重置，该震荡曲线最终会收敛至y = x的曲线，即二者窗口相等。这就是TCP拥塞控制算法带来的公平性的体现。</p>
-<p><img src="https://d2vlcm61l7u1fs.cloudfront.net/media%2F324%2F3243fbba-a6c5-4601-946e-308502a7e634%2FphpO3SyiW.png" alt="img"></p>
+<h3 id="5-4-AIMD和公平性"><a href="#5-4-AIMD和公平性" class="headerlink" title="5.4 AIMD和公平性"></a>5.4 AIMD和公平性</h3><p>&emsp;&emsp;理解了上述设计思路，大家就不难理解何为加性增乘性减（AIMD)了，其指的就是拥塞避免阶段加法形式的窗口增加和拥塞时的乘法性窗口递减过程。而为什么说这带来了TCP的公平性呢？下图是一副经典的说明图片。对于两个TCP连接R1和R2，假设网络总带宽为R，则二者必然会在某一个位置触发拥塞。拥塞之后，由于都是乘性减，因此对于占用窗口较大的一方会减少的更多，而之后窗口增加过程中由于系数相同，因此会同比增加，之后再次拥塞，再次减少，如图所示则为红线，随着不断地拥塞和窗口重置，该震荡曲线最终会收敛至y = x的曲线，即二者窗口相等。这就是TCP拥塞控制算法带来的公平性的体现。</p>
+<p><img src="E:%5Cdoc%5Chomepage%5Cthemes%5Cnext%5Csource%5Cimages%5CAIMD.png" alt="img"></p>
 <p>&emsp;&emsp;如果降窗比例不相等，或者RTT时间不同，或者增加速度不同，则无法达到该效果，可见下图所示</p>
 <img src="https://github.com/Ty-Chen/Ty-Chen.github.io/blob/master/images/20160517220017254.png?raw=true" alt="20160517220017254.png" style="zoom: 73%;" />
 
-<h3 id="5-4-拥塞控制的发展和走向"><a href="#5-4-拥塞控制的发展和走向" class="headerlink" title="5.4 拥塞控制的发展和走向"></a>5.4 拥塞控制的发展和走向</h3><h2 id="六-性能瓶颈"><a href="#六-性能瓶颈" class="headerlink" title="六. 性能瓶颈"></a>六. 性能瓶颈</h2><h2 id="七-展望"><a href="#七-展望" class="headerlink" title="七. 展望"></a>七. 展望</h2><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="源码资料"><a href="#源码资料" class="headerlink" title="源码资料"></a>源码资料</h2><p>[1] </p>
+<h3 id="5-5-拥塞控制的发展和走向"><a href="#5-5-拥塞控制的发展和走向" class="headerlink" title="5.5 拥塞控制的发展和走向"></a>5.5 拥塞控制的发展和走向</h3><p>&emsp;&emsp;该部分其实在前面已经有提到，而且也不打算在此展开讲，因为展开讲内容太多太多了，每一个算法都是几十页的论文加上几千上万行的源码，真有兴趣的同学可以先看《TCP/IP详解卷1》大致了解，再想深究可以就RFC文档、论文和源码进行深入研究。在这里之所以赘述，是为了更清晰的说明拥塞控制算法的分类和其特点。</p>
+<ol>
+<li>丢包驱动类型</li>
+</ol>
+<p>&emsp;&emsp;早期的Tahoe，完善版的Reno，以及更完善的New Reno基本上奠定了以丢包驱动的拥塞控制算法类型，而后提出的BIC和CUBIC更是将该种拥塞控制算法发展到了巅峰（数学模型上的优化、进步以及多年经验积累）。至今，CUBIC依旧是TCP的默认拥塞控制算法。</p>
+<ol start="2">
+<li>特殊类型</li>
+</ol>
+<p>&emsp;&emsp;从很早开始人们就对TCP拥塞控制算法进行了各种各样的优化，其中对于特殊使用场景的优化更是十分重要。这里面不得不提的就是数据中心等为代表的高速专用链路的通信。这些通道其特点不适用于丢包驱动，而是以时延驱动更为妥当（详细判断介绍可参考相应论文）。由此，Vegas和Fast成为了数据中心的主流拥塞控制算法。而Westwood和Westwood+则成了无线通信中的常用拥塞控制算法（更为常用的则是QUIC或者自定义的可靠UDP，性能更为出色）。</p>
+<ol start="3">
+<li>BDP驱动</li>
+</ol>
+<p>&emsp;&emsp;这里的主角就是BBR算法了，BBR全称<code>Bottleneck Bandwidth and Round-trip propagation time</code>，简单的说就是带宽和时延乘积驱动的拥塞控制算法，即BDP驱动的拥塞控制算法。为什么该算法一经发出即引起广大轰动，不是因为它是谷歌提出来的（的确也是一部分原因），而是因为它的思想打破了长久以来的思维定式：管道填满和丢包是密切相关的。该算法提出：在现今的网络中，由于大量的缓冲区的存在，丢包发生的时候实际已经远远超过了实际的网络带宽，因此我们不应该等到丢包再进行拥塞控制，而是<strong>通过计算BDP来控制发送速率和窗口大小</strong>，从而使得网络一直处于将满未满的状态，即最完美的状态。BBR算法1.0尚显稚嫩，发展至2.0已经显现出了其无与伦比的潜力和作用，相信这是未来TCP拥塞控制算法的大势所趋。更为可怕的是，从谷歌的一些行动、博客和论文可以推测出，谷歌的野心在于通过可靠UDP的QUIC和BBR的结合，完美的取代已有的TCP/UDP，将网络传输层的API彻底收归己友，而事实上的确也是有着极强的竞争力。建议同学们有空一定要多多了解BBR和QUIC。</p>
+<h2 id="六-性能瓶颈"><a href="#六-性能瓶颈" class="headerlink" title="六. 性能瓶颈"></a>六. 性能瓶颈</h2><h3 id="6-1-理论上的连接性能瓶颈"><a href="#6-1-理论上的连接性能瓶颈" class="headerlink" title="6.1 理论上的连接性能瓶颈"></a>6.1 理论上的连接性能瓶颈</h3><p>&emsp;&emsp;性能瓶颈的思考来源于之前被大佬问过的一道题：不考虑硬件性能的情况下，单机客户端、服务端最多能支持多少个连接？</p>
+<p>&emsp;&emsp;这道题的答案主要考察了对连接五元组的理解，即源地址，源端口，目的地址，目的端口和协议类型。</p>
+<ul>
+<li>对于客户端，其限制因素在于源地址固定、源端口上限为65535，协议类型可以是UDP/TCP，因此极限为2的17次方，但是实际上由于很多端口为系统使用端口，因此不可能达到该限制。</li>
+<li>对于服务端来说，本地地址和端口固定，因此其上限在于客户端的源地址，源端口和协议类型的组合，理论为2的49次方。</li>
+</ul>
+<h3 id="6-2-C10K问题"><a href="#6-2-C10K问题" class="headerlink" title="6.2 C10K问题"></a>6.2 C10K问题</h3><p>&emsp;&emsp;C10K问题来源于Dan Kegel的个人博文<a href="http://www.kegel.com/c10k.html" target="_blank" rel="noopener">《The C10K problem》</a>，该文章建议深读。该作者在1999年提出了此问题，那时的服务器还只是 32 位系统，运行着 Linux 2.2 版本（后来又升级到了 2.4 和 2.6，而 2.6 才支持 x86_64），只配置了很少的内存（2GB）和千兆网卡。怎么在这样的系统中支持并发 1 万的请求呢？从资源上来说，对 2GB 内存和千兆网卡的服务器来说，同时处理 10000 个请求，只要每个请求处理占用不到 200KB（2GB/10000）的内存和 100Kbit （1000Mbit/10000）的网络带宽就可以。所以，物理资源是足够的，接下来自然是软件的问题，特别是网络的 I/O 模型问题。</p>
+<p>&emsp;&emsp;在 C10K 以前，Linux 中网络处理都用同步阻塞的方式，也就是每个请求都分配一个进程或者线程。请求数只有 100 个时，这种方式自然没问题，但增加到 10000 个请求时，10000 个进程或线程的调度、上下文切换乃至它们占用的内存，都会成为瓶颈。既然每个请求分配一个线程的方式不合适，那么，为了支持 10000 个并发请求，这里就有两个问题需要解决。</p>
+<ul>
+<li>第一，怎样在一个线程内处理多个请求，也就是要在一个线程内响应多个网络 I/O。以前的同步阻塞方式下，一个线程只能处理一个请求，到这里不再适用，是不是可以用非阻塞 I/O 或者异步 I/O 来处理多个网络请求呢？</li>
+<li>第二，怎么更节省资源地处理客户请求，也就是要用更少的线程来服务这些请求。是不是可以继续用原来的 100 个或者更少的线程，来服务现在的 10000 个请求呢？</li>
+</ul>
+<p>&emsp;&emsp;解决方案主要来源于I/O模型的优化和工作模型的优化。</p>
+<ul>
+<li><p>I/O模型从传统的阻塞请求方式改变为非阻塞</p>
+<ul>
+<li>同步非阻塞I/O：早期有水平触发的<code>select</code>和<code>poll</code>，后期有边缘触发的<code>epoll</code>，设计理念为<a href="https://blog.csdn.net/u013354486/article/details/81843664" target="_blank" rel="noopener">reactor</a>模式。</li>
+<li>异步非阻塞I/O：<code>IOCP</code>，其设计理念为<a href="https://blog.csdn.net/u013354486/article/details/82086084" target="_blank" rel="noopener">proactor</a>模式。</li>
+</ul>
+</li>
+<li><p>工作模型优化主要包括两种</p>
+<ul>
+<li><p>主进程加多个worker子进程。主进程执行 <code>bind() + listen()</code> 后，创建多个子进程；然后，在每个子进程中，都通过 <code>accept()</code> 或 <code>epoll_wait()</code> ，来处理套接字。比如，最常用的反向代理服务器 Nginx 就是这么工作的。它也是由主进程和多个 worker 进程组成。主进程主要用来初始化套接字，并管理子进程的生命周期；而 worker 进程，则负责实际的请求处理。这里要注意，<code>accept()</code> 和 <code>epoll_wait()</code> 调用，还存在一个惊群的问题。换句话说，当网络 I/O 事件发生时，多个进程被同时唤醒，但实际上只有一个进程来响应这个事件，其他被唤醒的进程都会重新休眠。其中，<code>accept()</code> 的惊群问题，已经在 Linux 2.6 中解决了；而 <code>epoll</code> 的问题到了 <code>Linux 4.5</code> ，才通过 <code>EPOLLEXCLUSIVE</code> 解决。</p>
+<p><img src="https://static001.geekbang.org/resource/image/45/7e/451a24fb8f096729ed6822b1615b097e.png" alt="img"></p>
+</li>
+<li><p>监听到相同端口的多进程模型。在这种方式下，所有的进程都监听相同的接口，并且开启 SO_REUSEPORT 选项，由内核负责将请求负载均衡到这些监听进程中去。这一过程如下图所示。由于内核确保了只有一个进程被唤醒，就不会出现惊群问题了。比如，Nginx 在 1.9.1 中就已经支持了这种模式。</p>
+<p><img src="https://static001.geekbang.org/resource/image/90/bd/90df0945f6ce5c910ae361bf2b135bbd.png" alt="img"></p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="6-3-C10M问题"><a href="#6-3-C10M问题" class="headerlink" title="6.3 C10M问题"></a>6.3 C10M问题</h3><p>&emsp;&emsp;随着摩尔定律带来的服务器性能提升以及互联网的普及，C10K已经被远远的甩开，而C10M问题迎面而来。当各种软件、硬件的优化很可能都已经做到头了，特别是当升级完硬件（比如足够多的内存、带宽足够大的网卡、更多的网络功能卸载等）后，你可能会发现，无论你怎么优化应用程序和内核中的各种网络参数，想实现 1000 万请求的并发，都是极其困难的，这就是C10M问题。</p>
+<p>&emsp;&emsp;究其根本，还是 Linux 内核协议栈做了太多太繁重的工作。从网卡中断带来的硬中断处理程序开始，到软中断中的各层网络协议处理，最后再到应用程序，这个路径实在是太长了，就会导致网络包的处理优化，到了一定程度后，就无法更进一步了。要解决这个问题，最重要就是跳过内核协议栈的冗长路径，把网络包直接送到要处理的应用程序那里去。这里有两种常见的机制，<a href="https://www.dpdk.org/" target="_blank" rel="noopener">DPDK</a> 和 <a href="https://en.wikipedia.org/wiki/Express_Data_Path" target="_blank" rel="noopener">XDP</a>。</p>
+<p>&emsp;&emsp;DPDK是用户态网络的标准。它跳过内核协议栈，直接由用户态进程通过轮询的方式，来处理网络接收。说起轮询，你肯定会下意识认为它是低效的象征，但是进一步反问下自己，它的低效主要体现在哪里呢？是查询时间明显多于实际工作时间的情况下吧！那么，换个角度来想，如果每时每刻都有新的网络包需要处理，轮询的优势就很明显了。比如：在 PPS 非常高的场景中，查询时间比实际工作时间少了很多，绝大部分时间都在处理网络包。而跳过内核协议栈后，就省去了繁杂的硬中断、软中断再到 Linux 网络协议栈逐层处理的过程，应用程序可以针对应用的实际场景，有针对性地优化网络包的处理逻辑，而不需要关注所有的细节。此外，DPDK 还通过大页、CPU 绑定、内存对齐、流水线并发等多种机制，优化网络包的处理效率。</p>
+<img src="https://static001.geekbang.org/resource/image/99/3a/998fd2f52f0a48a910517ada9f2bb23a.png" alt="img" style="zoom:50%;" />
+
+<p>&emsp;&emsp;XDP（eXpress Data Path）则是 Linux 内核提供的一种高性能网络数据路径。它允许网络包在进入内核协议栈之前就进行处理，也可以带来更高的性能。XDP 底层和 bcc-tools 一样都是基于 Linux 内核的 <code>eBPF</code> 机制实现的。</p>
+<p><img src="https://static001.geekbang.org/resource/image/06/be/067ef9df4212cd4ede3cffcdac7001be.png" alt="img"></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>&emsp;&emsp;短短一篇文章（其实很长）想弄懂TCP的全部内容显然是不现实的，本文希望能给同学们提供一个全新的思路去学习、掌握TCP，并通过理解其设计理念去进行优化、改进甚至自己创造更好的通信协议。如果真的能起到那么一点点帮助，那这篇文章就有其价值了，希望大家都能有所收获。</p>
 <h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1] wiki</p>
 <p>[2] <a href="https://elixir.bootlin.com/linux/v5.7-rc1/source" target="_blank" rel="noopener">elixir.bootlin.com/linux</a></p>
 <p>[3] <a href="https://code.woboq.org/" target="_blank" rel="noopener">woboq</a></p>
@@ -565,6 +632,7 @@
 <p>[7] 极客时间 趣谈Linux操作系统</p>
 <p>[8] 深入理解Linux网络技术内幕</p>
 <p>[9] CSDN dog250多篇博文</p>
+<p>[10] TCP/IP详解</p>
 
       
     </div>
@@ -865,7 +933,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-分层"><span class="nav-text">二. 分层</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-端对端"><span class="nav-text">三. 端对端</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-可靠性"><span class="nav-text">四. 可靠性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-连接可靠性"><span class="nav-text">4.1 连接可靠性</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4-1-1-三次握手和四次挥手"><span class="nav-text">4.1.1 三次握手和四次挥手</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-1-2-TIME-WAIT"><span class="nav-text">4.1.2 TIME_WAIT</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-传输可靠性"><span class="nav-text">4.2 传输可靠性</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4-2-1-超时机制"><span class="nav-text">4.2.1 超时机制</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-2-2-ARQ"><span class="nav-text">4.2.2 ARQ</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-2-3-流控"><span class="nav-text">4.2.3 流控</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-拥塞控制"><span class="nav-text">五. 拥塞控制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-慢开始和拥塞避免"><span class="nav-text">5. 1 慢开始和拥塞避免</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-快重传和快恢复"><span class="nav-text">5. 2 快重传和快恢复</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-AIMD和公平性"><span class="nav-text">5.3 AIMD和公平性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-4-拥塞控制的发展和走向"><span class="nav-text">5.4 拥塞控制的发展和走向</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#六-性能瓶颈"><span class="nav-text">六. 性能瓶颈</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#七-展望"><span class="nav-text">七. 展望</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源码资料"><span class="nav-text">源码资料</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-text">参考资料</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-分层"><span class="nav-text">二. 分层</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-端对端"><span class="nav-text">三. 端对端</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-可靠性"><span class="nav-text">四. 可靠性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-连接可靠性"><span class="nav-text">4.1 连接可靠性</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4-1-1-三次握手和四次挥手"><span class="nav-text">4.1.1 三次握手和四次挥手</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-1-2-TIME-WAIT"><span class="nav-text">4.1.2 TIME_WAIT</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-传输可靠性"><span class="nav-text">4.2 传输可靠性</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4-2-1-超时机制"><span class="nav-text">4.2.1 超时机制</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-2-2-ARQ"><span class="nav-text">4.2.2 ARQ</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-2-3-流控"><span class="nav-text">4.2.3 流控</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-拥塞控制"><span class="nav-text">五. 拥塞控制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-慢开始和拥塞避免"><span class="nav-text">5. 1 慢开始和拥塞避免</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-慢开始的优化"><span class="nav-text">5.2 慢开始的优化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-快重传和快恢复"><span class="nav-text">5. 3 快重传和快恢复</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-4-AIMD和公平性"><span class="nav-text">5.4 AIMD和公平性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-5-拥塞控制的发展和走向"><span class="nav-text">5.5 拥塞控制的发展和走向</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#六-性能瓶颈"><span class="nav-text">六. 性能瓶颈</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#6-1-理论上的连接性能瓶颈"><span class="nav-text">6.1 理论上的连接性能瓶颈</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-2-C10K问题"><span class="nav-text">6.2 C10K问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-3-C10M问题"><span class="nav-text">6.3 C10M问题</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-text">参考资料</span></a></li></ol></div>
             
 
           </div>
@@ -899,7 +967,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">108.5k</span>
+    <span title="Site words total count">112k</span>
   
 </div>
 
