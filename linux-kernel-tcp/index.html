@@ -88,20 +88,20 @@
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/92/0e/92f8e85f7b9a9f764c71081b56286e0e.png">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/98/28/98a4496fff94eb02d1b1b8ae88f8dc28.jpeg">
 <meta property="og:image" content="http://www.cnitblog.com/images/cnitblog_com/wildon/544465b00200001s.png">
-<meta property="og:image" content="https://github.com/Ty-Chen/Ty-Chen.github.io/blob/master/images/image-20200729225319698.png?raw=true">
-<meta property="og:image" content="https://github.com/Ty-Chen/Ty-Chen.github.io/blob/master/images/image-20200729230936248.png?raw=true">
-<meta property="og:image" content="https://github.com/Ty-Chen/Ty-Chen.github.io/blob/master/images/image-20200729230957683.png?raw=true">
-<meta property="og:image" content="https://lh3.googleusercontent.com/proxy/6ScUlQ4TCKIquZ0Ht64Q9iTT5TP0bYOTOu6k7M55e4cl1jDWHka34M2Ly4_1879IkTMggbOQoioLknoQCmBeZ9stV5K5L2wAMxI_sJ-tlFUwHYrz2bZWMyPg56O-Jc1Wy_GyLBFZl9U-q7JeF1_i1w">
-<meta property="og:image" content="e:%5Cdoc%5Chomepage%5Cthemes%5Cnext%5Csource%5Cimages%5C640px-TCP_Slow-Start_and_Congestion_Avoidance.svg.png">
-<meta property="og:image" content="https://www.researchgate.net/profile/Romain_Delpoux/publication/267783414/figure/fig5/AS:669531638861835@1536640190532/Slow-start-fast-retransmit-and-fast-recovery-illustration.pbm">
-<meta property="og:image" content="e:%5Cdoc%5Chomepage%5Cthemes%5Cnext%5Csource%5Cimages%5CAIMD.png">
-<meta property="og:image" content="https://github.com/Ty-Chen/Ty-Chen.github.io/blob/master/images/20160517220017254.png?raw=true">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200730222734529.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200730222805129.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200730222831708.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200730223754651.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200730223928946.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200730223904939.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200730223034608.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200730223045350.png">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/45/7e/451a24fb8f096729ed6822b1615b097e.png">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/90/bd/90df0945f6ce5c910ae361bf2b135bbd.png">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/99/3a/998fd2f52f0a48a910517ada9f2bb23a.png">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/06/be/067ef9df4212cd4ede3cffcdac7001be.png">
 <meta property="article:published_time" content="2020-07-24T15:54:24.000Z">
-<meta property="article:modified_time" content="2020-07-30T16:28:59.979Z">
+<meta property="article:modified_time" content="2020-07-31T04:50:09.236Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -323,7 +323,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-07-31T00:28:59+08:00" content="2020-07-31">
+              <time itemprop="dateUpdated" datetime="2020-07-31T12:50:09+08:00" content="2020-07-31">
                 2020-07-31
               </time>
             </span>
@@ -530,11 +530,10 @@
 </ul>
 <p>&emsp;&emsp;为了回答这些问题，我们先要理解网络连接的容量。如下图所示为一个经典的发送、接收双方的链路抽象图。其中两端肥肥的部分代表的是发送、接收方的缓冲区，而中间细长管道则是网络链路。</p>
 <p>&emsp;&emsp;先单看发送方，管道的容量取决于什么呢？有人肯定会说，这个问题太白痴了，管道的容量当然是取决于该管道实际的大小，即带宽时延乘积（BDP），但是实际不是这样的。<strong>一个管道或者说队列的容量，取决于其出口的速度大小，当发出速度和接受速度相等并填满管道时，则该管道满载</strong>。这其实是一道小学数学题：游泳池一边放水一边装水会空掉还是装满溢出？同样的，对于端到端的TCP连接来说，接收端处理的速度决定了该连接的最大容量。如果接收端处理无限快，我们可以认为该连接容量无穷大，可以以任意速度发包。</p>
-<p><img src="https://github.com/Ty-Chen/Ty-Chen.github.io/blob/master/images/image-20200729225319698.png?raw=true" alt="image-20200729225319698.png"></p>
+<p><img src="https://img-blog.csdnimg.cn/20200730222734529.png?" alt="在这里插入图片描述"></p>
 <p>&emsp;&emsp;接着看看收发双端，相信大家都知道CPU指令流水线的原理，下图则是一个典型的慢开始阶段的收发段示意图（图片来源于《TCP/IP详解》，由于PDF质量差因此图片较为模糊）。由图可见，因为接收端速率和发送端相同，因此在一个RTT时间里，实际最多能发送管道容量N的两倍，即2 * N个数据包。</p>
-<p><img src="https://github.com/Ty-Chen/Ty-Chen.github.io/blob/master/images/image-20200729230936248.png?raw=true" alt="image-20200729230936248.png"></p>
-<img src="https://github.com/Ty-Chen/Ty-Chen.github.io/blob/master/images/image-20200729230957683.png?raw=true" alt="image-20200729230957683.png" style="zoom:90%;" />
-
+<p><img src="https://img-blog.csdnimg.cn/20200730222805129.png?" alt="在这里插入图片描述"></p>
+<p><img src="https://img-blog.csdnimg.cn/20200730222831708.png?" alt="在这里插入图片描述"></p>
 <p>&emsp;&emsp;这2 * N个数据段发送的开始时间点是第1个数据段发送的时间，结束时间点是第一个数据段的ACK回到发送端的时间，正好是一个RTT，设发送速率为r，那么以下的等式显而易见：2 * N = r * RTT</p>
 <p>&emsp;&emsp;下面我们再来分析一下上述流水线发包的一些关键点</p>
 <ul>
@@ -548,7 +547,7 @@
 <li>达到<code>ssthresh</code>后，需要按照接收方的处理速度慢慢递增以免出现拥塞，因此该阶段称之为拥塞避免</li>
 <li>当出现拥塞时，说明当前探测的管道容量即窗口大小C大于等于2 * N，所以新的<code>ssthresh</code>就应该等于当前窗口大小C的一半，又因为<code>ssthresh</code>本身等于C（逐渐递增），因此<code>ssthresh</code>取自身一半即为当前管道的实际N值（并不准）。</li>
 </ul>
-<p><img src="https://lh3.googleusercontent.com/proxy/6ScUlQ4TCKIquZ0Ht64Q9iTT5TP0bYOTOu6k7M55e4cl1jDWHka34M2Ly4_1879IkTMggbOQoioLknoQCmBeZ9stV5K5L2wAMxI_sJ-tlFUwHYrz2bZWMyPg56O-Jc1Wy_GyLBFZl9U-q7JeF1_i1w" alt="projects"></p>
+<p><img src="https://img-blog.csdnimg.cn/20200730223754651.png?" alt="在这里插入图片描述"></p>
 <h3 id="5-2-慢开始的优化"><a href="#5-2-慢开始的优化" class="headerlink" title="5.2 慢开始的优化"></a>5.2 慢开始的优化</h3><p>&emsp;&emsp;我们知道，<code>ssthresh</code>的设置是以丢包作为反馈信号的，现在问题是，连接刚刚建立的时候，没有丢包作为反馈信号的时候，如何来设置<code>ssthresh</code>？<br>一般而言，默认的实现都是将其设置为一个巨大的值如65536，然后最快的速度历经一次丢包，然后设置<code>ssthresh</code>为丢包时窗口的一半，然后像<code>ssthresh</code>的2倍缓慢逼近。但是这会带来问题，由于没有<code>ssthresh</code>作为阈值限制，用丢包作为代价，太高昂。因此在慢启动过程中如果可以探测到<code>ssthresh</code>的值，那就可以随时退出慢启动状态了。</p>
 <p>&emsp;&emsp;根据上述公式  2 * N = r * RTT， 其中速率 r 为单位时间内发出的数据包数，假设在T时间内发出M个包，则公式可变为 T = (M / N) * (RTT / 2)。当 T 等于 RTT的一半时，则刚好可有M等于N，即达到了<code>ssthresh</code>。由于我们无法单独探测M个数据段到达接收端并计时，我们可以变相等价使用ACK来计算，以一个窗口的第一个数据段作为计时开始<code>Tstart</code>，每收到一个ACK即更新以下数值：</p>
 <ul>
@@ -558,19 +557,18 @@
 <p>&emsp;&emsp;如果下列条件成立，则可以退出慢启动了：<strong><code>Tcurr - Tstart &gt;= RTTmin / 2</code></strong></p>
 <p>&emsp;&emsp;然而现实并不是理想的，大多数情况下，以上的算法并没有带来比较好的效果，为什么呢？因为整个带宽不是一个TCP连接独享的，而是全世界的所有TCP连接甚至包括UDP共享的，因此以上的公式基本上无法表示任何真实的情况，所以实际当中，更倾向于使用RTT来预估网络已经被塞满。使用RTT来估算网络容量<code>ssthresh</code>更加实际一些，因为它充分考虑了拥塞时的排队延时，因此在该方法下，退出慢启动的条件便成了：<strong><code>Tcurr_rtt &gt; RTTmin + fixed_value</code></strong></p>
 <p>&emsp;&emsp;以上旨在解决首次慢启动在还没有<code>ssthresh</code>值的时候预测<code>ssthresh</code>的方式，其实在此后的任何时候，只要是慢启动，都可以用以上的算法来预测当前的<code>ssthresh</code>，而不是说必须要用拥塞算法给出的<code>ssthresh</code>或者说仅仅是1/2丢包窗口。</p>
-<p><img src="E:%5Cdoc%5Chomepage%5Cthemes%5Cnext%5Csource%5Cimages%5C640px-TCP_Slow-Start_and_Congestion_Avoidance.svg.png" alt="640px-TCP_Slow-Start_and_Congestion_Avoidance.svg"></p>
+<p><img src="https://img-blog.csdnimg.cn/20200730223928946.png?" alt="在这里插入图片描述"></p>
 <h3 id="5-3-快重传和快恢复"><a href="#5-3-快重传和快恢复" class="headerlink" title="5. 3 快重传和快恢复"></a>5. 3 快重传和快恢复</h3><p>&emsp;&emsp;只有慢开始和拥塞避免的拥塞控制算法是不完美的，因为它太过于严苛了：</p>
 <ul>
 <li>任意丢包均视为拥塞发生</li>
 <li>每次拥塞发生窗口降至1重新开始</li>
 </ul>
 <p>&emsp;&emsp;对于第一点，快重传进行了尝试解决。对于第二点，则是快恢复。慢开始、拥塞避免、快重传和快恢复结合起来，就是我们所舒适的Reno算法代表的经典拥塞控制算法。</p>
-<p><img src="https://www.researchgate.net/profile/Romain_Delpoux/publication/267783414/figure/fig5/AS:669531638861835@1536640190532/Slow-start-fast-retransmit-and-fast-recovery-illustration.pbm" alt="7: Slow-start, fast retransmit and fast recovery illustration ..."></p>
+<p><img src="https://img-blog.csdnimg.cn/20200730223904939.png?" alt="在这里插入图片描述"></p>
 <h3 id="5-4-AIMD和公平性"><a href="#5-4-AIMD和公平性" class="headerlink" title="5.4 AIMD和公平性"></a>5.4 AIMD和公平性</h3><p>&emsp;&emsp;理解了上述设计思路，大家就不难理解何为加性增乘性减（AIMD)了，其指的就是拥塞避免阶段加法形式的窗口增加和拥塞时的乘法性窗口递减过程。而为什么说这带来了TCP的公平性呢？下图是一副经典的说明图片。对于两个TCP连接R1和R2，假设网络总带宽为R，则二者必然会在某一个位置触发拥塞。拥塞之后，由于都是乘性减，因此对于占用窗口较大的一方会减少的更多，而之后窗口增加过程中由于系数相同，因此会同比增加，之后再次拥塞，再次减少，如图所示则为红线，随着不断地拥塞和窗口重置，该震荡曲线最终会收敛至y = x的曲线，即二者窗口相等。这就是TCP拥塞控制算法带来的公平性的体现。</p>
-<p><img src="E:%5Cdoc%5Chomepage%5Cthemes%5Cnext%5Csource%5Cimages%5CAIMD.png" alt="img"></p>
+<p><img src="https://img-blog.csdnimg.cn/20200730223034608.png?" alt="在这里插入图片描述"></p>
 <p>&emsp;&emsp;如果降窗比例不相等，或者RTT时间不同，或者增加速度不同，则无法达到该效果，可见下图所示</p>
-<img src="https://github.com/Ty-Chen/Ty-Chen.github.io/blob/master/images/20160517220017254.png?raw=true" alt="20160517220017254.png" style="zoom: 73%;" />
-
+<p><img src="https://img-blog.csdnimg.cn/20200730223045350.png?" alt="在这里插入图片描述"></p>
 <h3 id="5-5-拥塞控制的发展和走向"><a href="#5-5-拥塞控制的发展和走向" class="headerlink" title="5.5 拥塞控制的发展和走向"></a>5.5 拥塞控制的发展和走向</h3><p>&emsp;&emsp;该部分其实在前面已经有提到，而且也不打算在此展开讲，因为展开讲内容太多太多了，每一个算法都是几十页的论文加上几千上万行的源码，真有兴趣的同学可以先看《TCP/IP详解卷1》大致了解，再想深究可以就RFC文档、论文和源码进行深入研究。在这里之所以赘述，是为了更清晰的说明拥塞控制算法的分类和其特点。</p>
 <ol>
 <li>丢包驱动类型</li>
