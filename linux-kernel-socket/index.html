@@ -92,9 +92,9 @@
 <meta property="og:image" content="http://www.embeddedlinux.org.cn/linux_net/0596002556/images/understandlni_0205.jpg">
 <meta property="og:image" content="http://www.embeddedlinux.org.cn/linux_net/0596002556/images/understandlni_0206.jpg">
 <meta property="og:image" content="http://www.embeddedlinux.org.cn/linux_net/0596002556/images/understandlni_0208.jpg">
-<meta property="og:image" content="https://segmentfault.com/img/remote/1460000020103414?w=586&h=417">
+<meta property="og:image" content="e:%5Cdoc%5Chomepage%5Cthemes%5Cnext%5Csource%5Cimages%5CAF.png">
 <meta property="article:published_time" content="2020-07-21T12:10:56.000Z">
-<meta property="article:modified_time" content="2020-07-24T15:53:32.945Z">
+<meta property="article:modified_time" content="2020-07-31T16:39:44.774Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -316,8 +316,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-07-24T23:53:32+08:00" content="2020-07-24">
-                2020-07-24
+              <time itemprop="dateUpdated" datetime="2020-08-01T00:39:44+08:00" content="2020-08-01">
+                2020-08-01
               </time>
             </span>
           
@@ -467,7 +467,7 @@
 <li><code>type</code>：表示 <code>socket</code> 类型。<code>SOCK_STREAM</code> 是面向数据流的，协议 <code>IPPROTO_TCP</code> 属于这种类型。<code>SOCK_DGRAM</code> 是面向数据报的，协议 <code>IPPROTO_UDP</code> 属于这种类型。如果在内核里面看的话，<code>IPPROTO_ICMP</code> 也属于这种类型。<code>SOCK_RAW</code> 是原始的 <code>IP</code> 包，<code>IPPROTO_IP</code> 属于这种类型。</li>
 <li><code>protocol</code>： 表示的协议，包括 <code>IPPROTO_TCP</code>、<code>IPPTOTO_UDP</code>。</li>
 </ul>
-<p><img src="https://segmentfault.com/img/remote/1460000020103414?w=586&h=417" alt="packet_class"></p>
+<p><img src="E:%5Cdoc%5Chomepage%5Cthemes%5Cnext%5Csource%5Cimages%5CAF.png" alt="packet_class"></p>
 <p>&emsp;&emsp;<code>sock_create()</code>实际调用<code>__sock_create()</code>。这里首先调用<code>sock_alloc()</code>分配套接字结构体<code>sock</code>并赋值类型为<code>type</code>，接着调用对应的<code>create()</code>函数按照<code>protocol</code>对<code>sock</code>进行填充。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">sock_create</span><span class="params">(<span class="keyword">int</span> family, <span class="keyword">int</span> type, <span class="keyword">int</span> protocol, struct socket **res)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> __sock_create(current-&gt;nsproxy-&gt;net_ns, family, type, protocol, res, <span class="number">0</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> __sock_create(struct net *net, <span class="keyword">int</span> family, <span class="keyword">int</span> type, <span class="keyword">int</span> protocol,</span><br><span class="line">             struct socket **res, <span class="keyword">int</span> kern)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">int</span> err;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">socket</span> *<span class="title">sock</span>;</span></span><br><span class="line">    <span class="keyword">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">net_proto_family</span> *<span class="title">pf</span>;</span></span><br><span class="line">......</span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     *	Allocate the socket and allow the family to set things up. if</span></span><br><span class="line"><span class="comment">     *	the protocol is 0, the family is instructed to select an appropriate</span></span><br><span class="line"><span class="comment">     *	default.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    sock = sock_alloc();</span><br><span class="line">......</span><br><span class="line">    sock-&gt;type = type;</span><br><span class="line">......</span><br><span class="line">    rcu_read_lock();</span><br><span class="line">    pf = rcu_dereference(net_families[family]);</span><br><span class="line">......</span><br><span class="line">    err = pf-&gt;create(net, sock, protocol, kern);</span><br><span class="line">......</span><br><span class="line">    *res = sock;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">......</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//net/ipv4/af_inet.cstatic </span></span><br><span class="line"><span class="keyword">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">net_proto_family</span> <span class="title">inet_family_ops</span> = &#123;</span> </span><br><span class="line">    .family = PF_INET, </span><br><span class="line">    .create = inet_create,<span class="comment">//这个用于socket系统调用创建</span></span><br><span class="line">    ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
@@ -719,7 +719,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">24</span>
+                  <span class="site-state-item-count">25</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -741,7 +741,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">46</span>
+                  <span class="site-state-item-count">47</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -838,7 +838,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">112k</span>
+    <span title="Site words total count">112.1k</span>
   
 </div>
 
