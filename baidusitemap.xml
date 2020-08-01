@@ -5,9 +5,18 @@
     <lastmod>2020-08-01</lastmod>
   </url>  <url>
     <loc>https://ty-chen.github.io/linux-kernel-socket/</loc>
-    <lastmod>2020-07-31</lastmod>
+    <lastmod>2020-08-01</lastmod>
   </url>  <url>
     <loc>https://ty-chen.github.io/linux-kernel-tcp/</loc>
+    <lastmod>2020-08-01</lastmod>
+  </url>  <url>
+    <loc>https://ty-chen.github.io/linux-kernel-signal/</loc>
+    <lastmod>2020-07-31</lastmod>
+  </url>  <url>
+    <loc>https://ty-chen.github.io/linux-kernel-vfs/</loc>
+    <lastmod>2020-07-31</lastmod>
+  </url>  <url>
+    <loc>https://ty-chen.github.io/linux-kernel-task-struct/</loc>
     <lastmod>2020-07-31</lastmod>
   </url>  <url>
     <loc>https://ty-chen.github.io/linux-kernel-shm-semaphore/</loc>
@@ -22,19 +31,13 @@
     <loc>https://ty-chen.github.io/linux-kernel-zero-process/</loc>
     <lastmod>2020-07-18</lastmod>
   </url>  <url>
-    <loc>https://ty-chen.github.io/linux-kernel-vfs/</loc>
-    <lastmod>2020-07-18</lastmod>
-  </url>  <url>
-    <loc>https://ty-chen.github.io/linux-kernel-task-struct/</loc>
-    <lastmod>2020-07-18</lastmod>
-  </url>  <url>
     <loc>https://ty-chen.github.io/linux-kernel-system-call/</loc>
     <lastmod>2020-07-18</lastmod>
   </url>  <url>
-    <loc>https://ty-chen.github.io/linux-kernel-signal/</loc>
+    <loc>https://ty-chen.github.io/linux-kernel-schedule/</loc>
     <lastmod>2020-07-18</lastmod>
   </url>  <url>
-    <loc>https://ty-chen.github.io/linux-kernel-schedule/</loc>
+    <loc>https://ty-chen.github.io/linux-kernel-protecd-mode/</loc>
     <lastmod>2020-07-18</lastmod>
   </url>  <url>
     <loc>https://ty-chen.github.io/linux-kernel-process-create/</loc>
@@ -59,10 +62,7 @@
     <lastmod>2020-07-18</lastmod>
   </url>  <url>
     <loc>https://ty-chen.github.io/linux-kernel-bootstrap/</loc>
-    <lastmod>2020-06-04</lastmod>
-  </url>  <url>
-    <loc>https://ty-chen.github.io/linux-kernel-protecd-mode/</loc>
-    <lastmod>2020-05-30</lastmod>
+    <lastmod>2020-07-18</lastmod>
   </url>  <url>
     <loc>https://ty-chen.github.io/%E5%85%B3%E4%BA%8EMMORPG%E5%A4%9A%E4%BA%BA%E5%AF%B9%E6%88%98%E4%B8%AD%E7%83%AD%E7%82%B9%E9%97%AE%E9%A2%98%E7%9A%84%E8%A7%A3%E5%86%B3%E6%80%9D%E8%B7%AF%E8%AE%A8%E8%AE%BA/</loc>
     <lastmod>2020-05-26</lastmod>

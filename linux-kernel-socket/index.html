@@ -94,7 +94,7 @@
 <meta property="og:image" content="http://www.embeddedlinux.org.cn/linux_net/0596002556/images/understandlni_0208.jpg">
 <meta property="og:image" content="e:%5Cdoc%5Chomepage%5Cthemes%5Cnext%5Csource%5Cimages%5CAF.png">
 <meta property="article:published_time" content="2020-07-21T12:10:56.000Z">
-<meta property="article:modified_time" content="2020-07-31T16:39:44.774Z">
+<meta property="article:modified_time" content="2020-08-01T13:38:56.337Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -316,7 +316,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-08-01T00:39:44+08:00" content="2020-08-01">
+              <time itemprop="dateUpdated" datetime="2020-08-01T21:38:56+08:00" content="2020-08-01">
                 2020-08-01
               </time>
             </span>
@@ -380,7 +380,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  3.8k
+                  3.9k
                 </span>
               
 
@@ -486,7 +486,7 @@
 <p>&emsp;&emsp;<code>inetsw</code>数组里面的内容是 <code>struct inet_protosw</code>，对于每个类型的协议均有一项，这一项里面是属于这个类型的协议。<code>inetsw</code> 数组是在系统初始化的时候初始化的，一个循环会将 <code>inetsw</code> 数组的每一项都初始化为一个链表。接下来一个循环将 <code>inetsw_array</code> 注册到 <code>inetsw</code> 数组里面去。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">struct</span> <span class="title">list_head</span> <span class="title">inetsw</span>[<span class="title">SOCK_MAX</span>];</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> __init <span class="title">inet_init</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">......</span><br><span class="line">    <span class="comment">/* Register the socket-side information for inet_create. */</span></span><br><span class="line">    <span class="keyword">for</span> (r = &amp;inetsw[<span class="number">0</span>]; r &lt; &amp;inetsw[SOCK_MAX]; ++r)</span><br><span class="line">        INIT_LIST_HEAD(r);</span><br><span class="line">    <span class="keyword">for</span> (q = inetsw_array; q &lt; &amp;inetsw_array[INETSW_ARRAY_LEN]; ++q)</span><br><span class="line">        inet_register_protosw(q);</span><br><span class="line">......</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">struct</span> <span class="title">inet_protosw</span> <span class="title">inetsw_array</span>[] =</span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    &#123;</span><br><span class="line">        .type =       SOCK_STREAM,</span><br><span class="line">        .protocol =   IPPROTO_TCP,</span><br><span class="line">        .prot =       &amp;tcp_prot,</span><br><span class="line">        .ops =        &amp;inet_stream_ops,</span><br><span class="line">        .flags =      INET_PROTOSW_PERMANENT | INET_PROTOSW_ICSK,</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">        .type =       SOCK_DGRAM,</span><br><span class="line">        .protocol =   IPPROTO_UDP,</span><br><span class="line">        .prot =       &amp;udp_prot,</span><br><span class="line">        .ops =        &amp;inet_dgram_ops,</span><br><span class="line">        .flags =      INET_PROTOSW_PERMANENT,</span><br><span class="line">     &#125;,</span><br><span class="line">     &#123;</span><br><span class="line">        .type =       SOCK_DGRAM,</span><br><span class="line">        .protocol =   IPPROTO_ICMP,</span><br><span class="line">        .prot =       &amp;ping_prot,</span><br><span class="line">        .ops =        &amp;inet_sockraw_ops,</span><br><span class="line">        .flags =      INET_PROTOSW_REUSE,</span><br><span class="line">     &#125;,</span><br><span class="line">     &#123;</span><br><span class="line">        .type =       SOCK_RAW,</span><br><span class="line">        .protocol =   IPPROTO_IP,  <span class="comment">/* wild card */</span></span><br><span class="line">        .prot =       &amp;raw_prot,</span><br><span class="line">        .ops =        &amp;inet_sockraw_ops,</span><br><span class="line">        .flags =      INET_PROTOSW_REUSE,</span><br><span class="line">     &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>&emsp;&emsp;至此，套接字的创建就算完成了。</p>
+<p>&emsp;&emsp;至此，套接字的创建就算完成了。对应于虚拟文件系统，描述符<code>fd</code>保存于进程<code>file</code>变量的<code>fdtable</code>中，<code>fd</code>和该套接字的<code>file</code>对应，套接字<code>socket sock</code>和<code>file</code>通过指针可以互相访问，<code>sock_mnt</code>为虚拟文件系统<code>sockfs</code>的挂载点可以通过<code>file</code>访问。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>&emsp;&emsp;本文重点分析了套接字这一网络编程中的重要结构体以及其创建函数背后的逻辑，为后文网络编程的源码解析打下基础。</p>
 <h2 id="源码资料"><a href="#源码资料" class="headerlink" title="源码资料"></a>源码资料</h2><p>[1] <a href="https://code.woboq.org/linux/linux/include/linux/net.h.html#socket" target="_blank" rel="noopener">socket</a></p>
 <p>[2] <a href="https://code.woboq.org/linux/linux/include/linux/skbuff.h.html#sk_buff" target="_blank" rel="noopener">sk_buff</a></p>
@@ -838,7 +838,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">112.1k</span>
+    <span title="Site words total count">112.6k</span>
   
 </div>
 
