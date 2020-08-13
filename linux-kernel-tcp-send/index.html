@@ -88,7 +88,7 @@
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/75/4d/75c8257049eed99499e802fcc2eacf4d.png">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/76/da/765e5431fe4b17f62b1b5712cc82abda.png">
 <meta property="article:published_time" content="2020-08-06T14:59:55.000Z">
-<meta property="article:modified_time" content="2020-08-12T16:37:54.521Z">
+<meta property="article:modified_time" content="2020-08-13T16:03:40.802Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -311,8 +311,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-08-13T00:37:54+08:00" content="2020-08-13">
-                2020-08-13
+              <time itemprop="dateUpdated" datetime="2020-08-14T00:03:40+08:00" content="2020-08-14">
+                2020-08-14
               </time>
             </span>
           
@@ -375,7 +375,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  3.1k
+                  3.5k
                 </span>
               
 
@@ -391,7 +391,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  14
+                  16
                 </span>
               
             </div>
@@ -480,10 +480,24 @@
 <li>POSTROUTING 链：在数据包离开时改变数据包的源地址</li>
 </ul>
 <p>&emsp;&emsp;在这里，网络包马上就要发出去了，因而是 <code>NF_INET_LOCAL_OUT</code>，也即 <code>ouput</code> 链，如果用户曾经在 <code>iptables</code> 里面写过某些规则，就会在 <code>nf_hook</code> 这个函数里面起作用。</p>
-<h2 id="五-MAC层"><a href="#五-MAC层" class="headerlink" title="五. MAC层"></a>五. MAC层</h2><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="源码资料"><a href="#源码资料" class="headerlink" title="源码资料"></a>源码资料</h2><p>[1] <a href="https://code.woboq.org/linux/linux/net/socket.c.html#sock_write_iter" target="_blank" rel="noopener">socket_file_ops</a></p>
+<p>&emsp;&emsp;<code>dst_output()</code>实际调用的就是 <code>struct rtable</code> 成员 <code>dst</code> 的 <code>ouput()</code> 函数。在 <code>rt_dst_alloc()</code> 中，我们可以看到，<code>output()</code> 函数指向的是 <code>ip_output()</code>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* Output packet to network from transport.  */</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">int</span> <span class="title">dst_output</span><span class="params">(struct net *net, struct sock *sk, struct sk_buff *skb)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> skb_dst(skb)-&gt;output(net, sk, skb);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">ip_output</span><span class="params">(struct net *net, struct sock *sk, struct sk_buff *skb)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">net_device</span> *<span class="title">dev</span> = <span class="title">skb_dst</span>(<span class="title">skb</span>)-&gt;<span class="title">dev</span>;</span></span><br><span class="line">    skb-&gt;dev = dev;</span><br><span class="line">    skb-&gt;protocol = htons(ETH_P_IP);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> NF_HOOK_COND(NFPROTO_IPV4, NF_INET_POST_ROUTING,</span><br><span class="line">          net, sk, skb, <span class="literal">NULL</span>, dev,</span><br><span class="line">          ip_finish_output,</span><br><span class="line">          !(IPCB(skb)-&gt;flags &amp; IPSKB_REROUTED));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;在 <code>ip_output</code> 里面我们又看到了熟悉的 <code>NF_HOOK</code>。这一次是 <code>NF_INET_POST_ROUTING</code>，也即 <code>POSTROUTING</code> 链，处理完之后调用 <code>ip_finish_output()</code>进入MAC层。</p>
+<h2 id="五-MAC层"><a href="#五-MAC层" class="headerlink" title="五. MAC层"></a>五. MAC层</h2><p>&emsp;&emsp;<code>ip_finish_output()</code>实际调用<code>ip_finish_output2()</code>，其主要逻辑为：</p>
+<ul>
+<li>找到 <code>struct rtable</code> 路由表里面的下一跳，下一跳一定和本机在同一个局域网中，可以通过二层进行通信，因而通过 <code>__ipv4_neigh_lookup_noref()</code>，查找如何通过二层访问下一跳。</li>
+<li>如果没有找到，则调用<code>__neigh_create()</code>进行创建</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">ip_finish_output</span><span class="params">(struct net *net, struct sock *sk, struct sk_buff *skb)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">......</span><br><span class="line">    <span class="keyword">return</span> ip_finish_output2(net, sk, skb);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">ip_finish_output2</span><span class="params">(struct net *net, struct sock *sk, struct sk_buff *skb)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">dst_entry</span> *<span class="title">dst</span> = <span class="title">skb_dst</span>(<span class="title">skb</span>);</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">rtable</span> *<span class="title">rt</span> = (<span class="title">struct</span> <span class="title">rtable</span> *)<span class="title">dst</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">net_device</span> *<span class="title">dev</span> = <span class="title">dst</span>-&gt;<span class="title">dev</span>;</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> hh_len = LL_RESERVED_SPACE(dev);</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">neighbour</span> *<span class="title">neigh</span>;</span></span><br><span class="line">    u32 nexthop;</span><br><span class="line">......</span><br><span class="line">    nexthop = (__force u32) rt_nexthop(rt, ip_hdr(skb)-&gt;daddr);</span><br><span class="line">    neigh = __ipv4_neigh_lookup_noref(dev, nexthop);</span><br><span class="line">    <span class="keyword">if</span> (unlikely(!neigh))</span><br><span class="line">        neigh = __neigh_create(&amp;arp_tbl, &amp;nexthop, dev, <span class="literal">false</span>);</span><br><span class="line">    <span class="keyword">if</span> (!IS_ERR(neigh)) &#123;</span><br><span class="line">        <span class="keyword">int</span> res;</span><br><span class="line">        sock_confirm_neigh(skb, neigh);</span><br><span class="line">        res = neigh_output(neigh, skb);</span><br><span class="line">        rcu_read_unlock_bh();</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">    rcu_read_unlock_bh();</span><br><span class="line">    net_dbg_ratelimited(<span class="string">"%s: No header cache and no neighbour!\n"</span>,</span><br><span class="line">                __func__);</span><br><span class="line">    kfree_skb(skb);</span><br><span class="line">    <span class="keyword">return</span> -EINVAL;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="源码资料"><a href="#源码资料" class="headerlink" title="源码资料"></a>源码资料</h2><p>[1] <a href="https://code.woboq.org/linux/linux/net/socket.c.html#sock_write_iter" target="_blank" rel="noopener">socket_file_ops</a></p>
 <p>[2] <a href="https://code.woboq.org/linux/linux/net/ipv4/tcp.c.html#tcp_sendmsg" target="_blank" rel="noopener">tcp_sendmsg()</a></p>
 <p>[3] <a href="https://code.woboq.org/linux/linux/net/ipv4/tcp_output.c.html#tcp_write_xmit" target="_blank" rel="noopener">tcp_write_xmit()</a></p>
 <p>[4] <a href="https://code.woboq.org/linux/linux/net/ipv4/ip_output.c.html#__ip_queue_xmit" target="_blank" rel="noopener">ip_queue_xmit()</a></p>
+<p>[5] <a href="https://code.woboq.org/linux/linux/net/ipv4/ip_output.c.html#292" target="_blank" rel="noopener">ip_finish_output()</a></p>
 <h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1] wiki</p>
 <p>[2] <a href="https://elixir.bootlin.com/linux/v5.7-rc1/source" target="_blank" rel="noopener">elixir.bootlin.com/linux</a></p>
 <p>[3] <a href="https://code.woboq.org/" target="_blank" rel="noopener">woboq</a></p>
@@ -828,7 +842,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">119k</span>
+    <span title="Site words total count">119.3k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
