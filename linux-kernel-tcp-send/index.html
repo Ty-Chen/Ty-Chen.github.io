@@ -89,7 +89,7 @@
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/76/da/765e5431fe4b17f62b1b5712cc82abda.png">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/79/6f/79cc42f3163d159a66e163c006d9f36f.png">
 <meta property="article:published_time" content="2020-08-06T14:59:55.000Z">
-<meta property="article:modified_time" content="2020-08-14T16:05:53.979Z">
+<meta property="article:modified_time" content="2020-08-15T09:17:55.284Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -312,7 +312,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-08-15T00:05:53+08:00" content="2020-08-15">
+              <time itemprop="dateUpdated" datetime="2020-08-15T17:17:55+08:00" content="2020-08-15">
                 2020-08-15
               </time>
             </span>
@@ -376,7 +376,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  5.9k
+                  6k
                 </span>
               
 
@@ -392,7 +392,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  28
+                  29
                 </span>
               
             </div>
@@ -545,7 +545,7 @@
 <p>&emsp;&emsp; <code>dev_hard_start_xmit()</code> 通过一个 while 循环每次在队列中取出一个 <code>sk_buff</code>，调用 <code>xmit_one()</code> 发送。接下来的调用链为：<code>xmit_one()-&gt;netdev_start_xmit()-&gt;__netdev_start_xmit()</code>。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">struct sk_buff *<span class="title">dev_hard_start_xmit</span><span class="params">(struct sk_buff *first, struct net_device *dev, </span></span></span><br><span class="line"><span class="function"><span class="params">                                    struct netdev_queue *txq, <span class="keyword">int</span> *ret)</span> </span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sk_buff</span> *<span class="title">skb</span> = <span class="title">first</span>;</span></span><br><span class="line">    <span class="keyword">int</span> rc = NETDEV_TX_OK;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (skb) &#123;</span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">sk_buff</span> *<span class="title">next</span> = <span class="title">skb</span>-&gt;<span class="title">next</span>;</span></span><br><span class="line">        rc = xmit_one(skb, dev, txq, next != <span class="literal">NULL</span>);</span><br><span class="line">        skb = next; </span><br><span class="line">        <span class="keyword">if</span> (netif_xmit_stopped(txq) &amp;&amp; skb) &#123;</span><br><span class="line">            rc = NETDEV_TX_BUSY;</span><br><span class="line">            <span class="keyword">break</span>;      </span><br><span class="line">        &#125;       </span><br><span class="line">    &#125;   </span><br><span class="line">......</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">netdev_tx_t</span> __netdev_start_xmit(<span class="keyword">const</span> struct net_device_ops *ops, </span><br><span class="line">               struct sk_buff *skb, struct net_device *dev, <span class="keyword">bool</span> more)          </span><br><span class="line">&#123;</span><br><span class="line">    skb-&gt;xmit_more = more ? <span class="number">1</span> : <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">return</span> ops-&gt;ndo_start_xmit(skb, dev);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>&emsp;&emsp;这个时候，已经到了设备驱动层了。我们能看到，<a href="drivers/net/ethernet/intel/ixgbe/ixgbe_main.c">drivers/net/ethernet/intel/ixgbe/ixgbe_main.c</a>里面有对于这个网卡的操作的定义。在这里面，我们可以找到对于 <code>ndo_start_xmit</code> 的定义，调用 <code>ixgb_xmit_frame()</code>。在 <code>ixgb_xmit_frame()</code> 中，我们会得到这个网卡对应的适配器，然后将其放入硬件网卡的队列中。至此，整个发送才算结束。</p>
+<p>&emsp;&emsp;这个时候，已经到了设备驱动层了。我们能看到，<a href="drivers/net/ethernet/intel/ixgbe/ixgbe_main.c">drivers/net/ethernet/intel/ixgbe/ixgbe_main.c</a>里面有对于这个网卡的操作的定义（英特尔网卡有多种不同的型号，对应于intel目录下不同的驱动，这里我们仅挑选其中的一种来做分析）。在这里面，我们可以找到对于 <code>ndo_start_xmit()</code> 的定义，实际会调用 <code>ixgb_xmit_frame()</code>。在 <code>ixgb_xmit_frame()</code> 中，我们会得到这个网卡对应的适配器，然后将其放入硬件网卡的队列中。至此，整个发送才算结束。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">net_device_ops</span> <span class="title">ixgbe_netdev_ops</span> = &#123;</span></span><br><span class="line">        .ndo_open               = ixgbe_open,</span><br><span class="line">        .ndo_stop               = ixgbe_close,</span><br><span class="line">        .ndo_start_xmit         = ixgbe_xmit_frame,</span><br><span class="line">......</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">netdev_tx_t</span> <span class="title">ixgbe_xmit_frame</span><span class="params">(struct sk_buff *skb,</span></span></span><br><span class="line"><span class="function"><span class="params">				    struct net_device *netdev)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> __ixgbe_xmit_frame(skb, netdev, <span class="literal">NULL</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">netdev_tx_t</span></span><br><span class="line">ixgbe_xmit_frame(struct sk_buff *skb, struct net_device *netdev)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">ixgbe_adapter</span> *<span class="title">adapter</span> = <span class="title">netdev_priv</span>(<span class="title">netdev</span>);</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">ixgbe_ring</span> *<span class="title">tx_ring</span>;</span></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">	 * The minimum packet size for olinfo paylen is 17 so pad the skb</span></span><br><span class="line"><span class="comment">	 * in order to meet this minimum size requirement.</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">    <span class="keyword">if</span> (skb_put_padto(skb, <span class="number">17</span>))</span><br><span class="line">        <span class="keyword">return</span> NETDEV_TX_OK;</span><br><span class="line">    tx_ring = ring ? ring : adapter-&gt;tx_ring[skb-&gt;queue_mapping];</span><br><span class="line">    <span class="keyword">if</span> (unlikely(test_bit(__IXGBE_TX_DISABLED, &amp;tx_ring-&gt;state)))</span><br><span class="line">        <span class="keyword">return</span> NETDEV_TX_BUSY;</span><br><span class="line">    <span class="keyword">return</span> ixgbe_xmit_frame_ring(skb, adapter, tx_ring);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>&emsp;&emsp;整个网络协议栈的发送流程很长，中间也有不少关键步骤值得注意，值得仔细研究。</p>
@@ -660,6 +660,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/linux-kernel-tcp-receive/" rel="prev" title="Linux操作系统学习笔记（二十一）网络通信之收包">
+                Linux操作系统学习笔记（二十一）网络通信之收包 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -781,7 +785,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">26</span>
+                  <span class="site-state-item-count">27</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -900,7 +904,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">121.8k</span>
+    <span title="Site words total count">125.6k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>

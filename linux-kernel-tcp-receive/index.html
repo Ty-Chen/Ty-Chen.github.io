@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/kulamati128.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/kulamati32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/kulamati16.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Linux,操作系统,进程间通信,网络通信,TCP,网络协议栈," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="一. 简介&amp;emsp;&amp;emsp;本文将分析网络协议栈收包的整个流程，收包和发包是刚好相反的过程。根据顺序我们将依次介绍硬件设备驱动层、数据链路层、网络层、传输层、套接字文件系统的相关发包处理流程，内容较多较复杂，主要掌握整个流程即可。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux操作系统学习笔记（二十一）网络通信之收包">
+<meta property="og:url" content="https://ty-chen.github.io/linux-kernel-tcp-receive/index.html">
+<meta property="og:site_name" content="Ty-Chen&#39;s Home">
+<meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;本文将分析网络协议栈收包的整个流程，收包和发包是刚好相反的过程。根据顺序我们将依次介绍硬件设备驱动层、数据链路层、网络层、传输层、套接字文件系统的相关发包处理流程，内容较多较复杂，主要掌握整个流程即可。">
+<meta property="article:published_time" content="2020-08-14T16:08:45.000Z">
+<meta property="article:modified_time" content="2020-08-15T16:00:35.074Z">
+<meta property="article:author" content="Ty Chen">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="操作系统">
+<meta property="article:tag" content="进程间通信">
+<meta property="article:tag" content="网络通信">
+<meta property="article:tag" content="TCP">
+<meta property="article:tag" content="网络协议栈">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"hide","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://ty-chen.github.io/linux-kernel-tcp-receive/"/>
+
+
+
+
+
+  <title>Linux操作系统学习笔记（二十一）网络通信之收包 | Ty-Chen's Home</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Ty-Chen's Home</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Collecting, sharing and creating knowledge</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://ty-chen.github.io/linux-kernel-tcp-receive/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Ty Chen">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/me.JPG">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ty-Chen's Home">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Linux操作系统学习笔记（二十一）网络通信之收包</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-08-15T00:08:45+08:00">
+                2020-08-15
+              </time>
+            
+
+            
+
+            
+          </span>
+          
+            <span class="post-updated">
+              &nbsp; | &nbsp; 更新于
+              <time itemprop="dateUpdated" datetime="2020-08-16T00:00:35+08:00" content="2020-08-16">
+                2020-08-16
+              </time>
+            </span>
+          
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%86%85%E6%A0%B8%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index">
+                    <span itemprop="name">Linux操作系统内核学习</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/linux-kernel-tcp-receive/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/linux-kernel-tcp-receive/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">访问次数：
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>次
+            </span>
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  3.7k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  17
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="一-简介"><a href="#一-简介" class="headerlink" title="一. 简介"></a>一. 简介</h2><p>&emsp;&emsp;本文将分析网络协议栈收包的整个流程，收包和发包是刚好相反的过程。根据顺序我们将依次介绍硬件设备驱动层、数据链路层、网络层、传输层、套接字文件系统的相关发包处理流程，内容较多较复杂，主要掌握整个流程即可。</p>
+<a id="more"></a>
+
+<h2 id="二-网卡驱动层"><a href="#二-网卡驱动层" class="headerlink" title="二. 网卡驱动层"></a>二. 网卡驱动层</h2><p>&emsp;&emsp;网卡作为一个硬件，接收到网络包后靠中断来通知操作系统。但是这里有个问题：网络包的到来往往是很难预期的。网络吞吐量比较大的时候，网络包的到达会十分频繁。这个时候，如果非常频繁地去触发中断，会造成频繁的上下文切换，带来极大的开销。因此硬件处理厂商设计了一种机制，就是当一些网络包到来触发了中断，内核处理完这些网络包之后，我们可以先进入主动轮询 <code>poll</code> 网卡的方式主动去接收到来的网络包。如果一直有，就一直处理，等处理告一段落，就返回干其他的事情。当再有下一批网络包到来的时候，再中断，再轮询 <code>poll</code>。这样就会大大减少中断的数量，提升网络处理的效率，这种处理方式我们称为 <a href="https://en.wikipedia.org/wiki/New_API" target="_blank" rel="noopener">NAPI</a>。</p>
+<p>&emsp;&emsp;本文以 Intel(R) PRO/10GbE 网卡驱动为例，在网卡驱动程序初始化的时候，我们会调用 <code>ixgb_init_module()</code>注册一个驱动 <code>ixgb_driver</code>，并且调用它的 <code>probe</code> 函数 <code>ixgb_probe()</code>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">struct</span> <span class="title">pci_driver</span> <span class="title">ixgb_driver</span> = &#123;</span></span><br><span class="line">    .name     = ixgb_driver_name,</span><br><span class="line">    .id_table = ixgb_pci_tbl,</span><br><span class="line">    .probe    = ixgb_probe,</span><br><span class="line">    .<span class="built_in">remove</span>   = ixgb_remove,</span><br><span class="line">    .err_handler = &amp;ixgb_err_handler</span><br><span class="line">&#125;;</span><br><span class="line">MODULE_AUTHOR(<span class="string">"Intel Corporation, &lt;linux.nics@intel.com&gt;"</span>);</span><br><span class="line">MODULE_DESCRIPTION(<span class="string">"Intel(R) PRO/10GbE Network Driver"</span>);</span><br><span class="line">MODULE_LICENSE(<span class="string">"GPL v2"</span>);</span><br><span class="line">MODULE_VERSION(DRV_VERSION);</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">int</span> __init</span><br><span class="line">ixgb_init_module(<span class="keyword">void</span>)</span><br><span class="line">&#123;</span><br><span class="line">    pr_info(<span class="string">"%s - version %s\n"</span>, ixgb_driver_string, ixgb_driver_version);</span><br><span class="line">    pr_info(<span class="string">"%s\n"</span>, ixgb_copyright);</span><br><span class="line">    <span class="keyword">return</span> pci_register_driver(&amp;ixgb_driver);</span><br><span class="line">&#125;</span><br><span class="line">module_init(ixgb_init_module);</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp; <code>ixgb_probe()</code> 会创建一个 <code>struct net_device</code> 表示这个网络设备，并且调用 <code>netif_napi_add()</code> 函数为这个网络设备注册一个轮询 <code>poll</code> 函数 <code>ixgb_clean()</code>，将来一旦出现网络包的时候，就通过该函数来轮询。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">int</span></span><br><span class="line">ixgb_probe(struct pci_dev *pdev, <span class="keyword">const</span> struct pci_device_id *ent)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">net_device</span> *<span class="title">netdev</span> = <span class="title">NULL</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">ixgb_adapter</span> *<span class="title">adapter</span>;</span></span><br><span class="line">......</span><br><span class="line">    netdev = alloc_etherdev(<span class="keyword">sizeof</span>(struct ixgb_adapter));</span><br><span class="line">    SET_NETDEV_DEV(netdev, &amp;pdev-&gt;dev);</span><br><span class="line"></span><br><span class="line">    pci_set_drvdata(pdev, netdev);</span><br><span class="line">    adapter = netdev_priv(netdev);</span><br><span class="line">    adapter-&gt;netdev = netdev;</span><br><span class="line">    adapter-&gt;pdev = pdev;</span><br><span class="line">    adapter-&gt;hw.back = adapter;</span><br><span class="line">    adapter-&gt;msg_enable = netif_msg_init(debug, DEFAULT_MSG_ENABLE);</span><br><span class="line">    adapter-&gt;hw.hw_addr = pci_ioremap_bar(pdev, BAR_0);</span><br><span class="line">......</span><br><span class="line">    netdev-&gt;netdev_ops = &amp;ixgb_netdev_ops;</span><br><span class="line">    ixgb_set_ethtool_ops(netdev);</span><br><span class="line">    netdev-&gt;watchdog_timeo = <span class="number">5</span> * HZ;</span><br><span class="line">    netif_napi_add(netdev, &amp;adapter-&gt;napi, ixgb_clean, <span class="number">64</span>);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">strncpy</span>(netdev-&gt;name, pci_name(pdev), <span class="keyword">sizeof</span>(netdev-&gt;name) - <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">    adapter-&gt;bd_number = cards_found;</span><br><span class="line">    adapter-&gt;link_speed = <span class="number">0</span>;</span><br><span class="line">    adapter-&gt;link_duplex = <span class="number">0</span>;</span><br><span class="line">......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;网卡被激活的时候会调用函数 <code>ixgb_open()-&gt;ixgb_up()</code>，在这里面注册一个硬件的中断处理函数。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">intixgb_up(struct ixgb_adapter *adapter)</span><br><span class="line">&#123; </span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">net_device</span> *<span class="title">netdev</span> = <span class="title">adapter</span>-&gt;<span class="title">netdev</span>;</span></span><br><span class="line">...... </span><br><span class="line">    err = request_irq(adapter-&gt;pdev-&gt;irq, ixgb_intr, irq_flags, netdev-&gt;name, netdev);</span><br><span class="line">......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;如果一个网络包到来，触发了硬件中断，就会调用 <code>ixgb_intr()</code>，这里面会调用 <code>__napi_schedule()</code>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">irqreturn_t</span> <span class="title">ixgb_intr</span><span class="params">(<span class="keyword">int</span> irq, <span class="keyword">void</span> *data)</span></span></span><br><span class="line"><span class="function"></span>&#123; </span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">net_device</span> *<span class="title">netdev</span> = <span class="title">data</span>;</span> </span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">ixgb_adapter</span> *<span class="title">adapter</span> = <span class="title">netdev_priv</span>(<span class="title">netdev</span>);</span> </span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">ixgb_hw</span> *<span class="title">hw</span> = &amp;<span class="title">adapter</span>-&gt;<span class="title">hw</span>;</span></span><br><span class="line">...... </span><br><span class="line">    <span class="keyword">if</span> (napi_schedule_prep(&amp;adapter-&gt;napi)) </span><br><span class="line">    &#123; </span><br><span class="line">        IXGB_WRITE_REG(&amp;adapter-&gt;hw, IMC, ~<span class="number">0</span>); </span><br><span class="line">        __napi_schedule(&amp;adapter-&gt;napi); </span><br><span class="line">    &#125; </span><br><span class="line">    <span class="keyword">return</span> IRQ_HANDLED;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;<code>__napi_schedule()</code> 处于中断处理的关键部分，在被调用的时候，中断是暂时关闭的。处理网络包是个复杂的过程，需要到中断处理的延迟处理部分执行，所以 <code>____napi_schedule()</code> 将当前设备放到 <code>struct softnet_data</code> 结构的 <code>poll_list</code> 里面，说明在延迟处理部分可以接着处理这个 <code>poll_list</code> 里面的网络设备。然后 <code>____napi_schedule()</code> 触发一个软中断 <code>NET_RX_SOFTIRQ</code>，通过软中断触发中断处理的延迟处理部分，也是常用的手段。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * __napi_schedule - schedule for receive</span></span><br><span class="line"><span class="comment"> * @n: entry to schedule</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * The entry's receive function will be scheduled to run.</span></span><br><span class="line"><span class="comment"> * Consider using __napi_schedule_irqoff() if hard irqs are masked.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">void</span> __napi_schedule(struct napi_struct *n)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> flags;</span><br><span class="line">    local_irq_save(flags);</span><br><span class="line">    ____napi_schedule(this_cpu_ptr(&amp;softnet_data), n);</span><br><span class="line">    local_irq_restore(flags);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">void</span> ____napi_schedule(struct softnet_data *sd,</span><br><span class="line">             struct napi_struct *napi)</span><br><span class="line">&#123;</span><br><span class="line">    list_add_tail(&amp;napi-&gt;poll_list, &amp;sd-&gt;poll_list);</span><br><span class="line">    __raise_softirq_irqoff(NET_RX_SOFTIRQ);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>软中断 <code>NET_RX_SOFTIRQ</code> 对应的中断处理函数是 <code>net_rx_action()</code>，其逻辑为</p>
+<ul>
+<li>调用<code>this_cpu_ptr()</code>，得到 <code>struct softnet_data</code> 结构，这个结构在发送的时候我们也遇到过。当时它的 <code>output_queue</code> 用于网络包的发送，这里的 <code>poll_list</code> 用于网络包的接收。</li>
+<li>进入循环，从 <code>poll_list</code> 里面取出有网络包到达的设备，然后调用 <code>napi_poll()</code> 来轮询这些设备，<code>napi_poll()</code> 会调用最初设备初始化的时候注册的 <code>poll</code> 函数，对于 <code>ixgb_driver</code>对应的函数是 <code>ixgb_clean()</code>。</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> __latent_entropy <span class="keyword">void</span> <span class="title">net_rx_action</span><span class="params">(struct softirq_action *h)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">softnet_data</span> *<span class="title">sd</span> = <span class="title">this_cpu_ptr</span>(&amp;<span class="title">softnet_data</span>);</span></span><br><span class="line">......</span><br><span class="line">    <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">napi_struct</span> *<span class="title">n</span>;</span></span><br><span class="line">......</span><br><span class="line">        n = list_first_entry(&amp;<span class="built_in">list</span>, struct napi_struct, poll_list);</span><br><span class="line">        budget -= napi_poll(n, &amp;repoll);</span><br><span class="line">......</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">softnet_data</span> </span></span><br><span class="line"><span class="class">&#123;</span> </span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">list_head</span> <span class="title">poll_list</span>;</span></span><br><span class="line">...... </span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">Qdisc</span> *<span class="title">output_queue</span>;</span> </span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">Qdisc</span> **<span class="title">output_queue_tailp</span>;</span></span><br><span class="line">......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;<code>ixgb_clean()</code> 实际调用<code>ixgb_clean_rx_irq()</code>。在网络设备的驱动层，有一个用于接收网络包的 <code>rx_ring</code>。它是一个环，从网卡硬件接收的包会放在这个环里面。这个环里面的 <code>buffer_info[]</code>是一个数组，存放的是网络包的内容。<code>i</code> 和 <code>j</code> 是这个数组的下标，在 <code>ixgb_clean_rx_irq()</code> 里面的 <code>while</code> 循环中，依次处理环里面的数据。在这里面，我们看到了 <code>i</code> 和 <code>j</code> 加一之后，如果超过了数组的大小，就跳回下标 0，就说明这是一个环。<code>ixgb_check_copybreak()</code> 函数将 <code>buffer_info</code> 里面的内容拷贝到 <code>struct sk_buff *skb</code>，从而可以作为一个网络包进行后续的处理，然后调用 <code>netif_receive_skb()</code>进入MAC层继续进行收包的解析处理。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">ixgb_clean</span><span class="params">(struct napi_struct *napi, <span class="keyword">int</span> budget)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">ixgb_adapter</span> *<span class="title">adapter</span> = <span class="title">container_of</span>(<span class="title">napi</span>, <span class="title">struct</span> <span class="title">ixgb_adapter</span>, <span class="title">napi</span>);</span></span><br><span class="line">    <span class="keyword">int</span> work_done = <span class="number">0</span>;</span><br><span class="line">    ixgb_clean_tx_irq(adapter);</span><br><span class="line">    ixgb_clean_rx_irq(adapter, &amp;work_done, budget);</span><br><span class="line">......</span><br><span class="line">    <span class="keyword">return</span> work_done;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">bool</span></span><br><span class="line">ixgb_clean_rx_irq(struct ixgb_adapter *adapter, <span class="keyword">int</span> *work_done, <span class="keyword">int</span> work_to_do)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">ixgb_desc_ring</span> *<span class="title">rx_ring</span> = &amp;<span class="title">adapter</span>-&gt;<span class="title">rx_ring</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">net_device</span> *<span class="title">netdev</span> = <span class="title">adapter</span>-&gt;<span class="title">netdev</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">pci_dev</span> *<span class="title">pdev</span> = <span class="title">adapter</span>-&gt;<span class="title">pdev</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">ixgb_rx_desc</span> *<span class="title">rx_desc</span>, *<span class="title">next_rxd</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">ixgb_buffer</span> *<span class="title">buffer_info</span>, *<span class="title">next_buffer</span>, *<span class="title">next2_buffer</span>;</span></span><br><span class="line">    u32 length;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> i, j;</span><br><span class="line">    <span class="keyword">int</span> cleaned_count = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">bool</span> cleaned = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">    i = rx_ring-&gt;next_to_clean;</span><br><span class="line">    rx_desc = IXGB_RX_DESC(*rx_ring, i);</span><br><span class="line">    buffer_info = &amp;rx_ring-&gt;buffer_info[i];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (rx_desc-&gt;status &amp; IXGB_RX_DESC_STATUS_DD) &#123;</span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">sk_buff</span> *<span class="title">skb</span>;</span></span><br><span class="line">        u8 status;</span><br><span class="line"></span><br><span class="line">    	status = rx_desc-&gt;status;</span><br><span class="line">    	skb = buffer_info-&gt;skb;</span><br><span class="line">    	buffer_info-&gt;skb = <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line">    	prefetch(skb-&gt;data - NET_IP_ALIGN);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (++i == rx_ring-&gt;count)</span><br><span class="line">        	i = <span class="number">0</span>;</span><br><span class="line">    	next_rxd = IXGB_RX_DESC(*rx_ring, i);</span><br><span class="line">    	prefetch(next_rxd);</span><br><span class="line"></span><br><span class="line">    	j = i + <span class="number">1</span>;</span><br><span class="line">    	<span class="keyword">if</span> (j == rx_ring-&gt;count)</span><br><span class="line">      		j = <span class="number">0</span>;</span><br><span class="line">    	next2_buffer = &amp;rx_ring-&gt;buffer_info[j];</span><br><span class="line">    	prefetch(next2_buffer);</span><br><span class="line"></span><br><span class="line">    	next_buffer = &amp;rx_ring-&gt;buffer_info[i];</span><br><span class="line">......</span><br><span class="line">    	length = le16_to_cpu(rx_desc-&gt;length);</span><br><span class="line">    	rx_desc-&gt;length = <span class="number">0</span>;</span><br><span class="line">......</span><br><span class="line">    	ixgb_check_copybreak(&amp;adapter-&gt;napi, buffer_info, length, &amp;skb);</span><br><span class="line"></span><br><span class="line">   	 	<span class="comment">/* Good Receive */</span></span><br><span class="line">    	skb_put(skb, length);</span><br><span class="line"></span><br><span class="line">    	<span class="comment">/* Receive Checksum Offload */</span></span><br><span class="line">    	ixgb_rx_checksum(adapter, rx_desc, skb);</span><br><span class="line"></span><br><span class="line">    	skb-&gt;protocol = eth_type_trans(skb, netdev);</span><br><span class="line"></span><br><span class="line">    	netif_receive_skb(skb);</span><br><span class="line">......</span><br><span class="line">    	<span class="comment">/* use prefetched values */</span></span><br><span class="line">    	rx_desc = next_rxd;</span><br><span class="line">    	buffer_info = next_buffer;</span><br><span class="line">  	&#125;</span><br><span class="line"></span><br><span class="line">  	rx_ring-&gt;next_to_clean = i;</span><br><span class="line">......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="三-MAC层"><a href="#三-MAC层" class="headerlink" title="三. MAC层"></a>三. MAC层</h2><p>&emsp;&emsp;从 <code>netif_receive_skb()</code> 函数开始，我们就进入了内核的网络协议栈。接下来的调用链为：<code>netif_receive_skb()-&gt;netif_receive_skb_internal()-&gt;__netif_receive_skb()-&gt;__netif_receive_skb_core()</code>。在 <code>__netif_receive_skb_core()</code> 中，我们先是处理了二层的一些逻辑，如对于 VLAN 的处理，如果不是则调用<code>deliver_ptype_list_skb()</code> 在一个协议列表中逐个匹配在网络包 struct sk_buff 里面定义的 <code>skb-&gt;protocol</code>，该变量表示三层使用的协议类型。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">int</span> __netif_receive_skb_core(struct sk_buff *skb, <span class="keyword">bool</span> pfmemalloc)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">packet_type</span> *<span class="title">ptype</span>, *<span class="title">pt_prev</span>;</span></span><br><span class="line">......</span><br><span class="line">    <span class="keyword">if</span> (skb_vlan_tag_present(skb)) &#123;</span><br><span class="line">        <span class="keyword">if</span> (pt_prev) &#123;</span><br><span class="line">            ret = deliver_skb(skb, pt_prev, orig_dev);</span><br><span class="line">            pt_prev = <span class="literal">NULL</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (vlan_do_receive(&amp;skb))</span><br><span class="line">            <span class="keyword">goto</span> another_round;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (unlikely(!skb))</span><br><span class="line">            <span class="keyword">goto</span> out;</span><br><span class="line">    &#125;</span><br><span class="line">......</span><br><span class="line">    type = skb-&gt;protocol;</span><br><span class="line">......</span><br><span class="line">    deliver_ptype_list_skb(skb, &amp;pt_prev, orig_dev, type,</span><br><span class="line">             &amp;orig_dev-&gt;ptype_specific);</span><br><span class="line">......</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">void</span> <span class="title">deliver_ptype_list_skb</span><span class="params">(struct sk_buff *skb,</span></span></span><br><span class="line"><span class="function"><span class="params">            struct packet_type **pt,</span></span></span><br><span class="line"><span class="function"><span class="params">            struct net_device *orig_dev,</span></span></span><br><span class="line"><span class="function"><span class="params">            __be16 type,</span></span></span><br><span class="line"><span class="function"><span class="params">            struct list_head *ptype_list)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">packet_type</span> *<span class="title">ptype</span>, *<span class="title">pt_prev</span> = *<span class="title">pt</span>;</span></span><br><span class="line"></span><br><span class="line">    list_for_each_entry_rcu(ptype, ptype_list, <span class="built_in">list</span>) &#123;</span><br><span class="line">    	<span class="keyword">if</span> (ptype-&gt;type != type)</span><br><span class="line">        	<span class="keyword">continue</span>;</span><br><span class="line">    	<span class="keyword">if</span> (pt_prev)</span><br><span class="line">        	deliver_skb(skb, pt_prev, orig_dev);</span><br><span class="line">    	pt_prev = ptype;</span><br><span class="line">    &#125;</span><br><span class="line">    *pt = pt_prev;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>无论是VLAN还是普通的包，最后的发送均会调用<code>deliver_skb()</code>，该函数会调用协议定义好的函数进行网络层解析。对于IP协议即为<code>ip_rcv()</code>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">int</span> <span class="title">deliver_skb</span><span class="params">(struct sk_buff *skb,</span></span></span><br><span class="line"><span class="function"><span class="params">			      struct packet_type *pt_prev,</span></span></span><br><span class="line"><span class="function"><span class="params">			      struct net_device *orig_dev)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (unlikely(skb_orphan_frags_rx(skb, GFP_ATOMIC)))</span><br><span class="line">        <span class="keyword">return</span> -ENOMEM;</span><br><span class="line">    refcount_inc(&amp;skb-&gt;users);</span><br><span class="line">    <span class="keyword">return</span> pt_prev-&gt;func(skb, skb-&gt;dev, pt_prev, orig_dev);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">struct</span> <span class="title">packet_type</span> <span class="title">ip_packet_type</span> __<span class="title">read_mostly</span> = &#123;</span></span><br><span class="line">    .type = cpu_to_be16(ETH_P_IP),</span><br><span class="line">    .func = ip_rcv,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h2 id="四-网络层"><a href="#四-网络层" class="headerlink" title="四. 网络层"></a>四. 网络层</h2><p>&emsp;&emsp;在<code>ip_rcv()</code>中，我们又看到了熟悉的Netfilter，这次对应的是<code>PREROUTING</code>状态，执行完定义的钩子函数后，会继续执行<code>ip_rcv_finish()</code>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">ip_rcv</span><span class="params">(struct sk_buff *skb, struct net_device *dev, struct packet_type *pt,</span></span></span><br><span class="line"><span class="function"><span class="params">	   struct net_device *orig_dev)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">net</span> *<span class="title">net</span> = <span class="title">dev_net</span>(<span class="title">dev</span>);</span></span><br><span class="line">    skb = ip_rcv_core(skb, net);</span><br><span class="line">    <span class="keyword">if</span> (skb == <span class="literal">NULL</span>)</span><br><span class="line">        <span class="keyword">return</span> NET_RX_DROP;</span><br><span class="line">    <span class="keyword">return</span> NF_HOOK(NFPROTO_IPV4, NF_INET_PRE_ROUTING,</span><br><span class="line">               net, <span class="literal">NULL</span>, skb, dev, <span class="literal">NULL</span>,</span><br><span class="line">               ip_rcv_finish);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;<code>ip_rcv_finish()</code> 首先调用<code>ip_rcv_finish_core()</code>，该函数会先检测是否为广播、组播，如果不是则得到网络包对应的路由表，然后调用 <code>dst_input()</code>，在 <code>dst_input()</code> 中，调用的是 <code>struct rtable</code> 的成员的 <code>dst</code> 的 <code>input()</code> 函数。在 <code>rt_dst_alloc()</code> 中，我们可以看到<code>input</code> 函数指向的是 <code>ip_local_deliver()</code>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">ip_rcv_finish</span><span class="params">(struct net *net, struct sock *sk, struct sk_buff *skb)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">net_device</span> *<span class="title">dev</span> = <span class="title">skb</span>-&gt;<span class="title">dev</span>;</span></span><br><span class="line">    <span class="keyword">int</span> ret;</span><br><span class="line">    <span class="comment">/* if ingress device is enslaved to an L3 master device pass the</span></span><br><span class="line"><span class="comment">	 * skb to its handler for processing</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">    skb = l3mdev_ip_rcv(skb);</span><br><span class="line">    <span class="keyword">if</span> (!skb)</span><br><span class="line">        <span class="keyword">return</span> NET_RX_SUCCESS;</span><br><span class="line">    ret = ip_rcv_finish_core(net, sk, skb, dev);</span><br><span class="line">    <span class="keyword">if</span> (ret != NET_RX_DROP)</span><br><span class="line">        ret = dst_input(skb);</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">int</span> <span class="title">dst_input</span><span class="params">(struct sk_buff *skb)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> skb_dst(skb)-&gt;input(skb);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;进入<code>ip_local_deliver()</code>意味着从<code>PREROUTING</code>确认进入本机处理，所以进入了状态<code>INPUT</code>，如果 IP 层进行了分段，则进行重新的组合。接下来就是我们熟悉的 <code>NF_HOOK</code>。在经过 <code>iptables</code> 规则处理完毕后，会调用 <code>ip_local_deliver_finish()</code>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">ip_local_deliver</span><span class="params">(struct sk_buff *skb)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">	 *	Reassemble IP fragments.</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">net</span> *<span class="title">net</span> = <span class="title">dev_net</span>(<span class="title">skb</span>-&gt;<span class="title">dev</span>);</span></span><br><span class="line">    <span class="keyword">if</span> (ip_is_fragment(ip_hdr(skb))) &#123;</span><br><span class="line">        <span class="keyword">if</span> (ip_defrag(net, skb, IP_DEFRAG_LOCAL_DELIVER))</span><br><span class="line">            <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> NF_HOOK(NFPROTO_IPV4, NF_INET_LOCAL_IN,</span><br><span class="line">               net, <span class="literal">NULL</span>, skb, skb-&gt;dev, <span class="literal">NULL</span>,</span><br><span class="line">               ip_local_deliver_finish);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;<code>ip_local_deliver_finish()</code>首先调用<code>__skb_pull()</code>从<code>sk_buff</code>中取下一个，接着调用<code>ip_protocol_deliver_rcu()</code>，该函数会从<code>inet_protos[protocol]</code>中找寻对应的处理函数进一步对收到的数据包进行解析。对应TCP的是<code>tcp_v4_rcv()</code>，UDP则是<code>udp_rcv()</code>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">ip_local_deliver_finish</span><span class="params">(struct net *net, struct sock *sk, struct sk_buff *skb)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    __skb_pull(skb, skb_network_header_len(skb));</span><br><span class="line">    rcu_read_lock();</span><br><span class="line">    ip_protocol_deliver_rcu(net, skb, ip_hdr(skb)-&gt;protocol);</span><br><span class="line">    rcu_read_unlock();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">struct</span> <span class="title">net_protocol</span> <span class="title">tcp_protocol</span> = &#123;</span></span><br><span class="line">......</span><br><span class="line">  .handler  =  tcp_v4_rcv,</span><br><span class="line">......</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">struct</span> <span class="title">net_protocol</span> <span class="title">udp_protocol</span> = &#123;</span></span><br><span class="line">......</span><br><span class="line">  .handler =  udp_rcv,</span><br><span class="line">......</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h2 id="五-传输层"><a href="#五-传输层" class="headerlink" title="五. 传输层"></a>五. 传输层</h2><p>&emsp;&emsp;在 <code>tcp_v4_rcv()</code> 中，首先会获取 TCP 的头部，接着就开始处理 TCP 层的事情。因为 TCP 层是分状态的，状态被维护在数据结构 <code>struct sock</code> 里面，因而要根据 <code>IP</code> 地址以及 <code>TCP</code> 头里面的内容，在 <code>tcp_hashinfo</code> 中找到这个包对应的 struct sock，从而得到这个包对应的连接的状态。接下来就根据不同的状态做不同的处理。如在前文三次握手的分析中已经剖析了<code>TCP_NEW_SYN_RECV</code>后续的逻辑。对于正常通信包，则会涉及到三条队列的操作。     </p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">tcp_v4_rcv</span><span class="params">(struct sk_buff *skb)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">net</span> *<span class="title">net</span> = <span class="title">dev_net</span>(<span class="title">skb</span>-&gt;<span class="title">dev</span>);</span></span><br><span class="line">    <span class="keyword">int</span> sdif = inet_sdif(skb);</span><br><span class="line">    <span class="keyword">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">iphdr</span> *<span class="title">iph</span>;</span></span><br><span class="line">    <span class="keyword">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">tcphdr</span> *<span class="title">th</span>;</span></span><br><span class="line">    <span class="keyword">bool</span> refcounted;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sock</span> *<span class="title">sk</span>;</span></span><br><span class="line">    <span class="keyword">int</span> ret;</span><br><span class="line">......</span><br><span class="line">    th = (<span class="keyword">const</span> struct tcphdr *)skb-&gt;data;</span><br><span class="line">    iph = ip_hdr(skb);</span><br><span class="line">lookup:</span><br><span class="line">    sk = __inet_lookup_skb(&amp;tcp_hashinfo, skb, __tcp_hdrlen(th), th-&gt;source,</span><br><span class="line">                   th-&gt;dest, sdif, &amp;refcounted);</span><br><span class="line">    <span class="keyword">if</span> (!sk)</span><br><span class="line">        <span class="keyword">goto</span> no_tcp_socket;</span><br><span class="line"><span class="built_in">process</span>:</span><br><span class="line">    <span class="keyword">if</span> (sk-&gt;sk_state == TCP_TIME_WAIT)</span><br><span class="line">        <span class="keyword">goto</span> do_time_wait;</span><br><span class="line">    <span class="keyword">if</span> (sk-&gt;sk_state == TCP_NEW_SYN_RECV) &#123;</span><br><span class="line">    ......</span><br><span class="line">    &#125;</span><br><span class="line">......</span><br><span class="line">    th = (<span class="keyword">const</span> struct tcphdr *)skb-&gt;data;</span><br><span class="line">    iph = ip_hdr(skb);</span><br><span class="line">    tcp_v4_fill_cb(skb, iph, th);</span><br><span class="line">    skb-&gt;dev = <span class="literal">NULL</span>;</span><br><span class="line">    <span class="keyword">if</span> (sk-&gt;sk_state == TCP_LISTEN) &#123;</span><br><span class="line">        ret = tcp_v4_do_rcv(sk, skb);</span><br><span class="line">        <span class="keyword">goto</span> put_and_return;</span><br><span class="line">    &#125;</span><br><span class="line">......</span><br><span class="line">    <span class="keyword">if</span> (!sock_owned_by_user(sk)) &#123;</span><br><span class="line">        ret = tcp_v4_do_rcv(sk, skb);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tcp_add_backlog(sk, skb)) &#123;</span><br><span class="line">        <span class="keyword">goto</span> discard_and_relse;</span><br><span class="line">    &#125;</span><br><span class="line">......</span><br><span class="line">    <span class="keyword">case</span> TCP_TW_SYN: &#123;</span><br><span class="line">......</span><br><span class="line">    &#125;</span><br><span class="line">        <span class="comment">/* to ACK */</span></span><br><span class="line">        <span class="comment">/* fall through */</span></span><br><span class="line">    <span class="keyword">case</span> TCP_TW_ACK:</span><br><span class="line">......</span><br><span class="line">    <span class="keyword">case</span> TCP_TW_RST:</span><br><span class="line">......</span><br><span class="line">    <span class="keyword">case</span> TCP_TW_SUCCESS:;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">goto</span> discard_it;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;网络包接收过程中常见的三个队列为</p>
+<ul>
+<li>backlog 队列：软中断过程中的数据包处理队列</li>
+<li>prequeue 队列：用户态进程读队列</li>
+<li>sk_receive_queue 队列：内核态数据包缓存队列</li>
+</ul>
+<p>&emsp;&emsp;存在三个队列的原因是运行至<code>tcp_v4_rcv()</code>时，依然处于软中断的处理逻辑里，所以必然会占用这个软中断。如果用户态使用了系统调用<code>read()</code>读取数据包，则放入<code>prequeue</code>队列等待读取，如果暂时没有读取请求，则放入内核态的缓存队列<code>sk_receive_queue</code>中等候用户态请求。</p>
+<p>&emsp;&emsp;<code>tcp_v4_rcv()</code>调用<code>sock_owned_by_user()</code>判断该包现在是否正在被用户态进行读操作，如果没有则调用<code>tcp_add_backlog()</code>暂存在 <code>backlog</code> 队列中，并且抓紧离开软中断的处理过程，如果是则调用 <code>tcp_prequeue()</code>，将数据包放入 <code>prequeue</code> 队列并且离开软中断的处理过程。在这个函数里面，会对 <code>sysctl_tcp_low_latency</code> 进行判断，也即是不是要低时延地处理网络包。如果把 <code>sysctl_tcp_low_latency</code> 设置为 0，那就要放在 <code>prequeue</code> 队列中暂存，这样不用等待网络包处理完毕，就可以离开软中断的处理过程，但是会造成比较长的时延。如果把 <code>sysctl_tcp_low_latency</code> 设置为 1，则调用 <code>tcp_v4_do_rcv()</code>立即处理。</p>
+<p>&emsp;&emsp;<strong>特别注意</strong>：在2017年的一个<a href="https://lwn.net/Articles/729155/" target="_blank" rel="noopener">patch</a>中，有大佬提出取消prequeue队列以顺应新的TCP需求。但是我们这里依然以三条队列进行分析，实际上代码中较新的版本已经没有了<code>tcp_prequeue()</code>函数。之所以取消<code>prequeue</code>，是因为在大多使用事件驱动(epoll)的当下，已经很少有阻塞在<code>recvfrom()</code>或者<code>read()</code>的服务端代码了。<strong>下面分析中会加上<code>prequeue</code>相关功能，但是实际代码中不一定有</strong>。</p>
+<p>&emsp;&emsp;在 <code>tcp_v4_do_rcv()</code> 中会分两种情况处理，一种情况是连接已经建立，处于 <code>TCP_ESTABLISHED</code> 状态，调用 <code>tcp_rcv_established()</code>。另一种情况，就是未建立连接的状态，调用 <code>tcp_rcv_state_process()</code>。关于<code>tcp_rcv_state_process()</code>在三次握手中已分析过了，这里重点看<code>tcp_rcv_established()</code>。该函数会调用 <code>tcp_data_queue()</code>，将数据包放入 <code>sk_receive_queue</code> 队列进行处理。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">tcp_rcv_established</span><span class="params">(struct sock *sk, struct sk_buff *skb)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">tcphdr</span> *<span class="title">th</span> = (<span class="title">const</span> <span class="title">struct</span> <span class="title">tcphdr</span> *)<span class="title">skb</span>-&gt;<span class="title">data</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">tcp_sock</span> *<span class="title">tp</span> = <span class="title">tcp_sk</span>(<span class="title">sk</span>);</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> len = skb-&gt;len;</span><br><span class="line">......</span><br><span class="line">    tcp_data_queue(sk, skb);</span><br><span class="line">    tcp_data_snd_check(sk);</span><br><span class="line">    tcp_ack_snd_check(sk);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;在 <code>tcp_data_queue()</code> 中，对于收到的网络包，我们要分情况进行处理。</p>
+<ul>
+<li>第一种情况，<code>seq == tp-&gt;rcv_nxt</code>，说明来的网络包正是我服务端期望的下一个网络包。这个时候我们判断 <code>sock_owned_by_user()</code>，也即用户进程也是正在等待读取，这种情况下，就直接 <code>skb_copy_datagram_msg()</code>，将网络包拷贝给用户进程就可以了。如果用户进程没有正在等待读取，或者因为内存原因没有能够拷贝成功，<code>tcp_queue_rcv()</code> 里面还是将网络包放入 <code>sk_receive_queue</code> 队列。</li>
+<li></li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">tcp_data_queue</span><span class="params">(struct sock *sk, struct sk_buff *skb)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">tcp_sock</span> *<span class="title">tp</span> = <span class="title">tcp_sk</span>(<span class="title">sk</span>);</span></span><br><span class="line">    <span class="keyword">bool</span> fragstolen;</span><br><span class="line">    <span class="keyword">int</span> eaten;</span><br><span class="line">......</span><br><span class="line">    <span class="keyword">if</span> (TCP_SKB_CB(skb)-&gt;seq == tp-&gt;rcv_nxt) &#123;</span><br><span class="line">        <span class="keyword">if</span> (tcp_receive_window(tp) == <span class="number">0</span>) &#123;</span><br><span class="line">            NET_INC_STATS(sock_net(sk), LINUX_MIB_TCPZEROWINDOWDROP);</span><br><span class="line">            <span class="keyword">goto</span> out_of_window;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">/* Ok. In sequence. In window. */</span></span><br><span class="line">queue_and_out:</span><br><span class="line">        <span class="keyword">if</span> (skb_queue_len(&amp;sk-&gt;sk_receive_queue) == <span class="number">0</span>)</span><br><span class="line">            sk_forced_mem_schedule(sk, skb-&gt;truesize);</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (tcp_try_rmem_schedule(sk, skb, skb-&gt;truesize)) &#123;</span><br><span class="line">            NET_INC_STATS(sock_net(sk), LINUX_MIB_TCPRCVQDROP);</span><br><span class="line">            <span class="keyword">goto</span> drop;</span><br><span class="line">        &#125;</span><br><span class="line">        eaten = tcp_queue_rcv(sk, skb, &amp;fragstolen);</span><br><span class="line">        <span class="keyword">if</span> (skb-&gt;len)</span><br><span class="line">            tcp_event_data_recv(sk, skb);</span><br><span class="line">        <span class="keyword">if</span> (TCP_SKB_CB(skb)-&gt;tcp_flags &amp; TCPHDR_FIN)</span><br><span class="line">            tcp_fin(sk);</span><br><span class="line">        <span class="keyword">if</span> (!RB_EMPTY_ROOT(&amp;tp-&gt;out_of_order_queue)) &#123;</span><br><span class="line">            tcp_ofo_queue(sk);</span><br><span class="line">            <span class="comment">/* RFC5681. 4.2. SHOULD send immediate ACK, when</span></span><br><span class="line"><span class="comment">			 * gap in queue is filled.</span></span><br><span class="line"><span class="comment">			 */</span></span><br><span class="line">            <span class="keyword">if</span> (RB_EMPTY_ROOT(&amp;tp-&gt;out_of_order_queue))</span><br><span class="line">                inet_csk(sk)-&gt;icsk_ack.pending |= ICSK_ACK_NOW;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (tp-&gt;rx_opt.num_sacks)</span><br><span class="line">            tcp_sack_remove(tp);</span><br><span class="line">        tcp_fast_path_check(sk);</span><br><span class="line">        <span class="keyword">if</span> (eaten &gt; <span class="number">0</span>)</span><br><span class="line">            kfree_skb_partial(skb, fragstolen);</span><br><span class="line">        <span class="keyword">if</span> (!sock_flag(sk, SOCK_DEAD))</span><br><span class="line">            tcp_data_ready(sk);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (!after(TCP_SKB_CB(skb)-&gt;end_seq, tp-&gt;rcv_nxt)) &#123;</span><br><span class="line">        tcp_rcv_spurious_retrans(sk, skb);</span><br><span class="line">        <span class="comment">/* A retransmit, 2nd most common case.  Force an immediate ack. */</span></span><br><span class="line">        NET_INC_STATS(sock_net(sk), LINUX_MIB_DELAYEDACKLOST);</span><br><span class="line">        tcp_dsack_set(sk, TCP_SKB_CB(skb)-&gt;seq, TCP_SKB_CB(skb)-&gt;end_seq);</span><br><span class="line">out_of_window:</span><br><span class="line">        tcp_enter_quickack_mode(sk, TCP_MAX_QUICKACKS);</span><br><span class="line">        inet_csk_schedule_ack(sk);</span><br><span class="line">drop:</span><br><span class="line">        tcp_drop(sk, skb);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/* Out of window. F.e. zero window probe. */</span></span><br><span class="line">    <span class="keyword">if</span> (!before(TCP_SKB_CB(skb)-&gt;seq, tp-&gt;rcv_nxt + tcp_receive_window(tp)))</span><br><span class="line">        <span class="keyword">goto</span> out_of_window;</span><br><span class="line">    <span class="keyword">if</span> (before(TCP_SKB_CB(skb)-&gt;seq, tp-&gt;rcv_nxt)) &#123;</span><br><span class="line">        <span class="comment">/* Partial packet, seq &lt; rcv_next &lt; end_seq */</span></span><br><span class="line">        tcp_dsack_set(sk, TCP_SKB_CB(skb)-&gt;seq, tp-&gt;rcv_nxt);</span><br><span class="line">        <span class="comment">/* If window is closed, drop tail of packet. But after</span></span><br><span class="line"><span class="comment">		 * remembering D-SACK for its head made in previous line.</span></span><br><span class="line"><span class="comment">		 */</span></span><br><span class="line">        <span class="keyword">if</span> (!tcp_receive_window(tp)) &#123;</span><br><span class="line">            NET_INC_STATS(sock_net(sk), LINUX_MIB_TCPZEROWINDOWDROP);</span><br><span class="line">            <span class="keyword">goto</span> out_of_window;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">goto</span> queue_and_out;</span><br><span class="line">    &#125;</span><br><span class="line">    tcp_data_queue_ofo(sk, skb);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="源码资料"><a href="#源码资料" class="headerlink" title="源码资料"></a>源码资料</h2><p>[1] <a href="https://code.woboq.org/linux/linux/drivers/net/ethernet/intel/ixgb/ixgb_main.c.html#ixgb_init_module" target="_blank" rel="noopener">ixgb_init_module()</a></p>
+<p>[2] <a href="https://code.woboq.org/linux/linux/net/core/dev.c.html#5967" target="_blank" rel="noopener">__napi_schedule()</a></p>
+<p>[3] <a href="https://code.woboq.org/linux/linux/net/ipv4/ip_input.c.html#ip_rcv" target="_blank" rel="noopener">ip_rcv()</a></p>
+<p>[4] <a href="https://code.woboq.org/linux/linux/net/ipv4/tcp_ipv4.c.html#tcp_v4_rcv" target="_blank" rel="noopener">tcp_v4_rcv()</a></p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1] wiki</p>
+<p>[2] <a href="https://elixir.bootlin.com/linux/v5.7-rc1/source" target="_blank" rel="noopener">elixir.bootlin.com/linux</a></p>
+<p>[3] <a href="https://code.woboq.org/" target="_blank" rel="noopener">woboq</a></p>
+<p>[4] Linux-insides</p>
+<p>[5] 深入理解Linux内核</p>
+<p>[6] Linux内核设计的艺术</p>
+<p>[7] 极客时间 趣谈Linux操作系统</p>
+<p>[8] 深入理解Linux网络技术内幕</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>坚持原创，坚持分享，谢谢鼓励和支持</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.png" alt="Ty Chen 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="Ty Chen 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    Ty Chen
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://ty-chen.github.io/linux-kernel-tcp-receive/" title="Linux操作系统学习笔记（二十一）网络通信之收包">https://ty-chen.github.io/linux-kernel-tcp-receive/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Linux/" rel="tag"># Linux</a>
+          
+            <a href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" rel="tag"># 操作系统</a>
+          
+            <a href="/tags/%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/" rel="tag"># 进程间通信</a>
+          
+            <a href="/tags/%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1/" rel="tag"># 网络通信</a>
+          
+            <a href="/tags/TCP/" rel="tag"># TCP</a>
+          
+            <a href="/tags/%E7%BD%91%E7%BB%9C%E5%8D%8F%E8%AE%AE%E6%A0%88/" rel="tag"># 网络协议栈</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/linux-kernel-tcp-send/" rel="next" title="Linux操作系统学习笔记（二十一）网络通信之发包">
+                <i class="fa fa-chevron-left"></i> Linux操作系统学习笔记（二十一）网络通信之发包
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/me.JPG"
+                alt="Ty Chen" />
+            
+              <p class="site-author-name" itemprop="name">Ty Chen</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">27</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">48</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/Ty-Chen" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:tianyuch@hotmail.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                Friends
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://stanleylsx.github.io/" title="Stanleylsx" target="_blank">Stanleylsx</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-网卡驱动层"><span class="nav-text">二. 网卡驱动层</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-MAC层"><span class="nav-text">三. MAC层</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-网络层"><span class="nav-text">四. 网络层</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-传输层"><span class="nav-text">五. 传输层</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源码资料"><span class="nav-text">源码资料</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ty Chen</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">Site words total count&#58;</span>
+    
+    <span title="Site words total count">125.6k</span>
+  
+  <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
+</div>
+
+
+
+
+
+
+
+
+
+        
+<div class="busuanzi-count">
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+	</script>
+
+  
+    <span class="site-uv">
+      你是来访的第
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      位同学
+    </span>
+  
+
+  
+    <span class="site-pv">
+      访问次数：
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item=>{
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'aTqo2eFkO2Bn0AGX008uKDV7-gzGzoHsz',
+        appKey: 'uJ6nxqW7RHWpAILCtttkJfJu',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

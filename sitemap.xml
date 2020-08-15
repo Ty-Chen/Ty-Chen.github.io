@@ -2,9 +2,16 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://ty-chen.github.io/linux-kernel-tcp-receive/</loc>
+    
+    <lastmod>2020-08-15T16:00:35.074Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://ty-chen.github.io/linux-kernel-tcp-send/</loc>
     
-    <lastmod>2020-08-14T16:05:53.979Z</lastmod>
+    <lastmod>2020-08-15T09:17:55.284Z</lastmod>
     
   </url>
   
