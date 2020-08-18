@@ -81,12 +81,12 @@
 
 <meta name="description" content="一. 简介&amp;emsp;&amp;emsp;在前面的几篇文章中，我们大致介绍了Linux网络协议栈的基本结构体、收发流程、TCP协议设计原理等，整个网络通信其实是一个很复杂的过程。本文介绍性能测试、性能评估、性能优化等方方面面的基本内容和大致优化思路。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Linux操作系统学习笔记（二十三）网络通信之性能优化">
+<meta property="og:title" content="Linux操作系统学习笔记（二十四）网络通信之性能优化">
 <meta property="og:url" content="https://ty-chen.github.io/linux-kernel-network-optimization/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;在前面的几篇文章中，我们大致介绍了Linux网络协议栈的基本结构体、收发流程、TCP协议设计原理等，整个网络通信其实是一个很复杂的过程。本文介绍性能测试、性能评估、性能优化等方方面面的基本内容和大致优化思路。">
 <meta property="article:published_time" content="2020-08-16T16:17:38.000Z">
-<meta property="article:modified_time" content="2020-08-17T15:58:28.428Z">
+<meta property="article:modified_time" content="2020-08-18T16:09:25.451Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -128,7 +128,7 @@
 
 
 
-  <title>Linux操作系统学习笔记（二十三）网络通信之性能优化 | Ty-Chen's Home</title>
+  <title>Linux操作系统学习笔记（二十四）网络通信之性能优化 | Ty-Chen's Home</title>
   
 
 
@@ -282,7 +282,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">Linux操作系统学习笔记（二十三）网络通信之性能优化</h1>
+          <h1 class="post-title" itemprop="name headline">Linux操作系统学习笔记（二十四）网络通信之性能优化</h1>
         
 
         <div class="post-meta">
@@ -306,8 +306,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-08-17T23:58:28+08:00" content="2020-08-17">
-                2020-08-17
+              <time itemprop="dateUpdated" datetime="2020-08-19T00:09:25+08:00" content="2020-08-19">
+                2020-08-19
               </time>
             </span>
           
@@ -370,7 +370,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  221
+                  2.1k
                 </span>
               
 
@@ -386,7 +386,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  1
+                  9
                 </span>
               
             </div>
@@ -410,17 +410,70 @@
         <h2 id="一-简介"><a href="#一-简介" class="headerlink" title="一. 简介"></a>一. 简介</h2><p>&emsp;&emsp;在前面的几篇文章中，我们大致介绍了Linux网络协议栈的基本结构体、收发流程、TCP协议设计原理等，整个网络通信其实是一个很复杂的过程。本文介绍性能测试、性能评估、性能优化等方方面面的基本内容和大致优化思路。</p>
 <a id="more"></a>
 
-<h2 id="二-性能参数和工具"><a href="#二-性能参数和工具" class="headerlink" title="二. 性能参数和工具"></a>二. 性能参数和工具</h2><p>&emsp;&emsp;对于服务器来说，大致的性能参数无外乎以下几点</p>
+<h2 id="二-性能参数和工具"><a href="#二-性能参数和工具" class="headerlink" title="二. 性能参数和工具"></a>二. 性能参数和工具</h2><p>&emsp;&emsp;对于服务器来说，首先需要一个大致的轮廓来描述其性能，这些性能参数将整个应用视为黑盒，测试其从外部看上去的性能表现，属于第一步需要掌握的数据。只有先掌握了这些数据后，后续的分析才有意义。</p>
 <ul>
-<li><p>带宽：带宽决定了网络的承载能力，如果网络带宽无法承受众多的玩家连接，那么则会出现致命的问题。当然往往带宽问题是最容易解决的，砸钱就可以了。</p>
-</li>
-<li><p>吞吐量</p>
-</li>
-<li><p>时延</p>
-</li>
-<li><p><code>pps</code></p>
+<li>带宽：表示链路的最大传输速率，单位通常为 b/s （比特 / 秒）。带宽决定了网络的承载能力，如果网络带宽无法承受用户连接，那么则会出现致命的问题。</li>
+<li>吞吐量：表示单位时间内成功传输的数据量，单位通常为 b/s（比特 / 秒）或者 B/s（字节 / 秒）。吞吐量受带宽限制，而吞吐量 / 带宽，也就是该网络的使用率。</li>
+<li>时延：表示从网络请求发出后，一直到收到远端响应，所需要的时间延迟。在不同场景中，这一指标可能会有不同含义。比如，它可以表示，建立连接需要的时间（比如 TCP 握手延时），或一个数据包往返所需的时间（比如 RTT）。</li>
+<li><code>PPS</code>：<code>Packet Per Second</code>（包 / 秒）的缩写，表示以网络包为单位的传输速率。<code>PPS</code> 通常用来评估网络的转发能力，比如硬件交换机，通常可以达到线性转发（即 <code>PPS</code> 可以达到或者接近理论最大值）。而基于 Linux 服务器的转发，则容易受网络包大小的影响。</li>
+<li>并发连接数：TCP的连接数数量</li>
+<li>丢包率：网络丢包百分比</li>
+<li>重传率：网络重传百分比</li>
+</ul>
+<p>&emsp;&emsp;我们可以使用以下工具完成需要的性能参数</p>
+<ol>
+<li>使用<code>ethtool</code>可以查询当前带宽信息</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 这里仅输出Speed就够用了，其他的没有太大参考价值</span></span><br><span class="line">root@ubuntu:/home/ty<span class="comment"># ethtool ens33 | grep Speed</span></span><br><span class="line">    Speed: 1000Mb/s</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>使用<code>ping</code>查看网络联通性</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">root@ubuntu:/home/ty<span class="comment"># ping -c3 www.chtyty.com</span></span><br><span class="line">PING www.chtyty.com (106.53.84.11) 56(84) bytes of data.</span><br><span class="line">64 bytes from 106.53.84.11: icmp_seq=1 ttl=128 time=9.57 ms</span><br><span class="line">64 bytes from 106.53.84.11: icmp_seq=2 ttl=128 time=10.2 ms</span><br><span class="line">64 bytes from 106.53.84.11: icmp_seq=3 ttl=128 time=10.3 ms</span><br><span class="line"></span><br><span class="line">--- www.chtyty.com ping statistics ---</span><br><span class="line">3 packets transmitted, 3 received, 0% packet loss, time 2003ms</span><br><span class="line">rtt min/avg/max/mdev = 9.578/10.050/10.304/0.344 ms</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>使用<code>sar -n</code>可以查询如网络接口（DEV）、网络接口错误（EDEV）、TCP、UDP、ICMP 等等，我们这里用它来查询PPS，吞吐量和网络接口使用率。</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 数字1表示每隔1秒输出一组数据</span></span><br><span class="line">root@ubuntu:/home/ty<span class="comment"># sar -n DEV 1			</span></span><br><span class="line">Linux 4.10.0-28-generic (ubuntu) 	08/18/2020 	_x86_64_	(1 CPU)</span><br><span class="line"></span><br><span class="line">08:19:15 AM     IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil</span><br><span class="line">08:19:16 AM        lo      0.00      0.00      0.00      0.00      0.00      0.00      0.00      0.00</span><br><span class="line">08:19:16 AM     ens33      6.06      3.03      7.37      0.18      0.00      0.00      0.00      0.01</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>rxpck/s 和 txpck/s 分别是接收和发送的 PPS，单位为包 / 秒。</li>
+<li>rxkB/s 和 txkB/s 分别是接收和发送的吞吐量，单位是 KB/ 秒。</li>
+<li>rxcmp/s 和 txcmp/s 分别是接收和发送的压缩数据包数，单位是包 / 秒。</li>
+<li>%ifutil 是网络接口的使用率，即半双工模式下为 (rxkB/s+txkB/s)/Bandwidth，而全双工模式下为 max(rxkB/s, txkB/s)/Bandwidth</li>
+<li>注意，<code>sar</code>工具不一定自带，可以通过<code>sudo apt-get install -y sysstat</code> 安装</li>
+</ul>
+<ol start="4">
+<li>使用<code>ifconfig/ip</code>指令获取当前基础信息状态:网络接口的状态标志、MTU 大小、IP、子网、MAC 地址以及网络包收发的统计信息。</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">root@ubuntu:/home/ty<span class="comment"># ifconfig ens33</span></span><br><span class="line">ens33     Link encap:Ethernet  HWaddr 00:0c:29:dd:d8:6c  </span><br><span class="line">          inet addr:192.168.11.129  Bcast:192.168.11.255  Mask:255.255.255.0</span><br><span class="line">          inet6 addr: fe80::fddc:39f0:b689:ae4b/64 Scope:Link</span><br><span class="line">          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1</span><br><span class="line">          RX packets:309387 errors:0 dropped:0 overruns:0 frame:0</span><br><span class="line">          TX packets:33253 errors:0 dropped:0 overruns:0 carrier:0</span><br><span class="line">          collisions:0 txqueuelen:1000 </span><br><span class="line">          RX bytes:455022931 (455.0 MB)  TX bytes:2123111 (2.1 MB)</span><br><span class="line"></span><br><span class="line">root@ubuntu:/home/ty<span class="comment"># ip -s addr show dev ens33</span></span><br><span class="line">2: ens33: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast state UP group default qlen 1000</span><br><span class="line">    link/ether 00:0c:29:dd:d8:6c brd ff:ff:ff:ff:ff:ff</span><br><span class="line">    inet 192.168.11.129/24 brd 192.168.11.255 scope global dynamic ens33</span><br><span class="line">       valid_lft 1590sec preferred_lft 1590sec</span><br><span class="line">    inet6 fe80::fddc:39f0:b689:ae4b/64 scope link </span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">    RX: bytes  packets  errors  dropped overrun mcast   </span><br><span class="line">    455202493  309512   0       0       0       0       </span><br><span class="line">    TX: bytes  packets  errors  dropped carrier collsns </span><br><span class="line">    2126891    33316    0       0       0       0</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>网络接口的状态标志中，ifconfig 输出中的 <code>RUNNING</code> 或 ip 输出中的 <code>LOWER_UP</code> 都表示物理网络是连通的，即网卡已经连接到了交换机或者路由器中。如果你看不到它们，通常表示网线被拔掉了。</li>
+<li>MTU 的大小。MTU 默认大小是 1500，根据网络架构的不同（比如是否使用了 VXLAN 等叠加网络），你可能需要调大或者调小 MTU 的数值。</li>
+<li>网络收发的字节数、包数、错误数以及丢包情况，特别是 TX 和 RX 部分的 errors、dropped、overruns、carrier 以及 collisions 等指标不为 0 时，通常表示出现了网络 I/O 问题。其中：<ul>
+<li>errors 表示发生错误的数据包数，比如校验错误、帧同步错误等；</li>
+<li>dropped 表示丢弃的数据包数，即数据包已经收到了 Ring Buffer，但因为内存不足等原因丢包；</li>
+<li>overruns 表示超限数据包数，即网络 I/O 速度过快，导致 Ring Buffer 中的数据包来不及处理（队列满）而导致的丢包；</li>
+<li>carrier 表示发生 carrirer 错误的数据包数，比如双工模式不匹配、物理电缆出现问题等；</li>
+<li>collisions 表示碰撞数据包数。</li>
+</ul>
 </li>
 </ul>
+<ol start="5">
+<li>使用<code>netstat/ss -ntlp</code>指令获取当前套接字状态：全连接队列长度、最大长度、收发缓冲区用量</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># head -n 5 表示只显示前面5行</span></span><br><span class="line"><span class="comment"># -l 表示只显示监听套接字</span></span><br><span class="line"><span class="comment"># -n 表示显示数字地址和端口(而不是名字)</span></span><br><span class="line"><span class="comment"># -p 表示显示进程信息</span></span><br><span class="line"><span class="comment"># -t 表示只显示 TCP 套接字</span></span><br><span class="line"></span><br><span class="line">root@ubuntu:/home/ty<span class="comment"># netstat -nlp | head -n 5</span></span><br><span class="line">Active Internet connections (only servers)</span><br><span class="line">Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name</span><br><span class="line">tcp        0      0 127.0.1.1:53            0.0.0.0:*               LISTEN      1045/dnsmasq    </span><br><span class="line">udp        0      0 0.0.0.0:43323           0.0.0.0:*                           1045/dnsmasq    </span><br><span class="line">udp        0      0 0.0.0.0:631             0.0.0.0:*                           2444/cups-browsed</span><br><span class="line"></span><br><span class="line">root@ubuntu:/home/ty<span class="comment"># ss -ntlp | head -n 3</span></span><br><span class="line">State      Recv-Q Send-Q Local Address:Port               Peer Address:Port              </span><br><span class="line">LISTEN     0      5      127.0.1.1:53                       *:*                   users:((<span class="string">"dnsmasq"</span>,pid=1045,fd=5))</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>当套接字处于连接状态（<code>Established</code>）时，Recv-Q 表示套接字缓冲还没有被应用程序取走的字节数（即<strong>接收队列长度</strong>）。而 Send-Q 表示还没有被远端主机确认的字节数（即<strong>发送队列长度</strong>）。</li>
+<li>当套接字处于监听状态（<code>Listening</code>）时，Recv-Q 表示<strong>全连接队列的长度</strong>。而 Send-Q 表示<strong>全连接队列的最大长度</strong>。</li>
+</ul>
+<ol start="6">
+<li>使用<code>netstat/ss -s</code>指令获取当前连接状态：主动连接、被动连接、失败重试、发送和接收的分段数量、TCP扩展性能等各种信息。ss 只显示已经连接、关闭、孤儿套接字等简要统计，而 netstat 则提供的是更详细的网络协议栈信息。</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">root@ubuntu:/home/ty<span class="comment"># netstat -st</span></span><br><span class="line">IcmpMsg:</span><br><span class="line">......</span><br><span class="line">Tcp:</span><br><span class="line">    119 active connections openings</span><br><span class="line">    1 passive connection openings</span><br><span class="line">    7 failed connection attempts</span><br><span class="line">    2 connection resets received</span><br><span class="line">    1 connections established</span><br><span class="line">    35379 segments received</span><br><span class="line">    34664 segments send out</span><br><span class="line">    53 segments retransmited</span><br><span class="line">    0 bad segments received.</span><br><span class="line">    10 resets sent</span><br><span class="line">UdpLite:</span><br><span class="line">TcpExt:</span><br><span class="line">    44 TCP sockets finished time <span class="built_in">wait</span> <span class="keyword">in</span> fast timer</span><br><span class="line">    400 delayed acks sent</span><br><span class="line">    Quick ack mode was activated 20 <span class="built_in">times</span></span><br><span class="line">    27253 packet headers predicted</span><br><span class="line">    244 acknowledgments not containing data payload received</span><br><span class="line">    597 predicted acknowledgments</span><br><span class="line">    18 congestion windows recovered without slow start after partial ack</span><br><span class="line">    31 other TCP timeouts</span><br><span class="line">    1 connections reset due to early user close</span><br><span class="line">    TCPRcvCoalesce: 278</span><br><span class="line">    TCPAutoCorking: 1</span><br><span class="line">    TCPSynRetrans: 53</span><br><span class="line">    TCPOrigDataSent: 717</span><br><span class="line">    TCPKeepAlive: 149</span><br><span class="line">IpExt:</span><br><span class="line">......</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">root@ubuntu:/home/ty<span class="comment"># ss -st</span></span><br><span class="line">Total: 1369 (kernel 1439)</span><br><span class="line">TCP:   3 (estab 1, closed 0, orphaned 0, synrecv 0, timewait 0/0), ports 0</span><br><span class="line"></span><br><span class="line">Transport Total     IP        IPv6</span><br><span class="line">*	  	  1439      -         -        </span><br><span class="line">RAW	  	  1         0         1        </span><br><span class="line">UDP	  	  8         6         2        </span><br><span class="line">TCP	  	  3         3         0        </span><br><span class="line">INET	  12        9         3        </span><br><span class="line">FRAG	  0         0         0        </span><br><span class="line"></span><br><span class="line">State       Recv-Q Send-Q                                Local Address:Port                          Peer Address:Port                </span><br><span class="line">ESTAB       0      0                                    192.168.11.129:59926                         91.189.91.38:http                 </span><br><span class="line">CLOSE-WAIT  1      0                                    192.168.11.129:59922                         91.189.91.38:http</span><br></pre></td></tr></table></figure>
+
 <h2 id="三-TCP常见问题及解决方法"><a href="#三-TCP常见问题及解决方法" class="headerlink" title="三. TCP常见问题及解决方法"></a>三. TCP常见问题及解决方法</h2><h2 id="四-丢包可能出现的地方及解决方法"><a href="#四-丢包可能出现的地方及解决方法" class="headerlink" title="四. 丢包可能出现的地方及解决方法"></a>四. 丢包可能出现的地方及解决方法</h2>
       
     </div>
@@ -470,7 +523,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="https://ty-chen.github.io/linux-kernel-network-optimization/" title="Linux操作系统学习笔记（二十三）网络通信之性能优化">https://ty-chen.github.io/linux-kernel-network-optimization/</a>
+    <a href="https://ty-chen.github.io/linux-kernel-network-optimization/" title="Linux操作系统学习笔记（二十四）网络通信之性能优化">https://ty-chen.github.io/linux-kernel-network-optimization/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>
@@ -504,8 +557,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/linux-kernel-tcp-receive/" rel="next" title="Linux操作系统学习笔记（二十二）网络通信之收包">
-                <i class="fa fa-chevron-left"></i> Linux操作系统学习笔记（二十二）网络通信之收包
+              <a href="/linux-kernel-tcp-receive/" rel="next" title="Linux操作系统学习笔记（二十三）网络通信之收包">
+                <i class="fa fa-chevron-left"></i> Linux操作系统学习笔记（二十三）网络通信之收包
               </a>
             
           </div>
@@ -697,7 +750,7 @@
               <ul class="links-of-blogroll-list">
                 
                   <li class="links-of-blogroll-item">
-                    <a href="https://stanleylsx.github.io/" title="Stanleylsx" target="_blank">Stanleylsx</a>
+                    <a href="https://lishouxian.cn/" title="Stanleylsx" target="_blank">Stanleylsx</a>
                   </li>
                 
               </ul>
@@ -753,7 +806,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">127.6k</span>
+    <span title="Site words total count">129.5k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
