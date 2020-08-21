@@ -89,8 +89,9 @@
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/c7/ac/c7b5b16539f90caabb537362ee7c27ac.png">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/5f/f0/5f2d4957663dd8bf3410da8180ab18f0.png">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/b0/e0/b07ea76a8737ed93395736795ede44e0.png">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/dd/fd/dd5b4050d555b1c23362456e357dfffd.png">
 <meta property="article:published_time" content="2020-08-16T16:17:38.000Z">
-<meta property="article:modified_time" content="2020-08-20T14:10:42.185Z">
+<meta property="article:modified_time" content="2020-08-21T13:14:21.531Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -311,8 +312,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-08-20T22:10:42+08:00" content="2020-08-20">
-                2020-08-20
+              <time itemprop="dateUpdated" datetime="2020-08-21T21:14:21+08:00" content="2020-08-21">
+                2020-08-21
               </time>
             </span>
           
@@ -375,7 +376,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  4.6k
+                  5.6k
                 </span>
               
 
@@ -391,7 +392,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  18
+                  22
                 </span>
               
             </div>
@@ -572,14 +573,42 @@
 <ul>
 <li>开启网络接口的多队列功能。这样，每个队列就可以用不同的中断号，调度到不同 CPU 上执行，从而提升网络的吞吐量。</li>
 <li>增大网络接口的缓冲区大小，以及队列长度等，提升网络传输的吞吐量（注意，这可能导致延迟增大）。</li>
-<li>使用 Traffic Control 工具，为不同网络流量配置 QoS。‘</li>
+<li>使用 Traffic Control 工具，为不同网络流量配置 QoS。</li>
 </ul>
 <h3 id="3-7-协议之外"><a href="#3-7-协议之外" class="headerlink" title="3.7 协议之外"></a>3.7 协议之外</h3><p>&emsp;&emsp;最后，在单机并发 1000 万的场景中，对 Linux 网络协议栈进行的各种优化策略，基本都没有太大效果。因为这种情况下，网络协议栈的冗长流程，其实才是最主要的性能负担。这时，我们可以用两种方式来优化。</p>
 <ul>
 <li>第一种，使用 DPDK 技术，跳过内核协议栈，直接由用户态进程用轮询的方式，来处理网络请求。同时，再结合大页、CPU 绑定、内存对齐、流水线并发等多种机制，优化网络包的处理效率。</li>
 <li>第二种，使用内核自带的 XDP 技术，在网络包进入内核协议栈前，就对其进行处理，这样也可以实现很好的性能。</li>
 </ul>
-<h2 id="四-TCP常见问题及解决方法"><a href="#四-TCP常见问题及解决方法" class="headerlink" title="四. TCP常见问题及解决方法"></a>四. TCP常见问题及解决方法</h2><h2 id="五-丢包可能出现的地方及解决方法"><a href="#五-丢包可能出现的地方及解决方法" class="headerlink" title="五. 丢包可能出现的地方及解决方法"></a>五. 丢包可能出现的地方及解决方法</h2>
+<h2 id="四-关于DDOS"><a href="#四-关于DDOS" class="headerlink" title="四. 关于DDOS"></a>四. 关于DDOS</h2><p>&emsp;&emsp;从攻击的原理上来看，DDoS 可以分为下面几种类型。</p>
+<ul>
+<li>第一种，耗尽带宽。无论是服务器还是路由器、交换机等网络设备，带宽都有固定的上限。带宽耗尽后，就会发生网络拥堵，从而无法传输其他正常的网络报文。对于流量型的 DDoS 来说，当服务器的带宽被耗尽后，在服务器内部处理就无能为力了。这时，只能在服务器外部的网络设备中，设法识别并阻断流量（当然前提是网络设备要能扛住流量攻击）。比如，购置专业的入侵检测和防御设备，配置流量清洗设备阻断恶意流量等。</li>
+<li>第二种，耗尽操作系统的资源。网络服务的正常运行，都需要一定的系统资源，像是 CPU、内存等物理资源，以及连接表等软件资源。一旦资源耗尽，系统就不能处理其他正常的网络连接。对于该种攻击，比较好的处理方式是基于 XDP 或者 DPDK，构建 DDoS 方案，在内核网络协议栈前，或者跳过内核协议栈，来识别并丢弃 DDoS 报文，避免 DDoS 对系统其他资源的消耗。也可以采取SYN COOKIE等方式紧急处理。</li>
+<li>第三种，消耗应用程序的运行资源。应用程序的运行，通常还需要跟其他的资源或系统交互。如果应用程序一直忙于处理无效请求，也会导致正常请求的处理变慢，甚至得不到响应。这种需要应用程序考虑识别，并尽早拒绝掉这些恶意流量，比如合理利用缓存、增加 WAF（Web Application Firewall）、使用 CDN 等等。</li>
+</ul>
+<h2 id="五-丢包和掉线排查"><a href="#五-丢包和掉线排查" class="headerlink" title="五. 丢包和掉线排查"></a>五. 丢包和掉线排查</h2><p><img src="https://static001.geekbang.org/resource/image/dd/fd/dd5b4050d555b1c23362456e357dfffd.png" alt="img"></p>
+<p>从图中可以看出，可能发生丢包的位置，实际上贯穿了整个网络协议栈。换句话说，全程都有丢包的可能。比如我们从下往上看：</p>
+<ul>
+<li>在两台PC连接之间，可能会发生传输失败的错误，比如网络拥塞、线路错误等；</li>
+<li>在网卡收包后，环形缓冲区可能会因为溢出而丢包；（<code>netstat -i</code>）</li>
+<li>在链路层，可能会因为网络帧校验失败、QoS 等而丢包；</li>
+<li>在 IP 层，可能会因为路由失败、组包大小超过 MTU 等而丢包；（<code>sysctl net.ipv4.ip_local_port_range</code>）</li>
+<li>在传输层，可能会因为端口未监听、资源占用超过内核限制等而丢包；（<code>netstat -s</code>， <code>ss -s</code>，<code>ss -ltnp</code>）</li>
+<li>在套接字层，可能会因为套接字缓冲区溢出而丢包；（<code>dmesg | tail</code>）</li>
+<li>在应用层，可能会因为应用程序异常而丢包；（<code>tc -s qdisc show dev eth0</code>，<code>perf record -g</code>）</li>
+<li>此外，如果配置了 iptables 规则，这些网络包也可能因为 iptables 过滤规则而丢包。（<code>sysctl net.netfilter.nf_conntrack_max</code>，<code>sysctl net.netfilter.nf_conntrack_count</code>，<code>iptables -t filter -nvL</code>）</li>
+</ul>
+<p>&emsp;&emsp;所以在实际工作中对于丢包、掉线问题的排查需要先排除不可能出现问题的地方，然后根据众多性能参数和Log日志逐一进行排查，对存有疑虑的地方进行重点追踪。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>&emsp;&emsp;网络优化是一个极为复杂的事，需要了解业务代码，了解Linux网络协议栈的内容和源码，并掌握很多测试工具，在此基础上小心翼翼地排查瓶颈和问题所在并尝试优化。但是这也是一件极为有趣的事，希望大家都能取得极好的性能优化效果。</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] Linux-insides</p>
+<p>[2] 深入理解Linux内核</p>
+<p>[3] Linux内核设计的艺术</p>
+<p>[4] 深入理解计算机系统</p>
+<p>[5] 深入理解Linux网络技术内幕</p>
+<p>[6] shell脚本编程大全</p>
+<p>[7] 极客时间 Linux性能优化实战</p>
+<p>[8] 极客时间 系统性能调优必知必会</p>
+
       
     </div>
     
@@ -877,7 +906,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-总体性能参数和工具"><span class="nav-text">二. 总体性能参数和工具</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-协议逐层优化"><span class="nav-text">三.协议逐层优化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-应用层"><span class="nav-text">3.1 应用层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-套接字层"><span class="nav-text">3.2  套接字层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-传输层"><span class="nav-text">3.3 传输层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-网络层"><span class="nav-text">3.4 网络层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-5-链路层"><span class="nav-text">3.5 链路层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-7-协议之外"><span class="nav-text">3.7 协议之外</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-TCP常见问题及解决方法"><span class="nav-text">四. TCP常见问题及解决方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-丢包可能出现的地方及解决方法"><span class="nav-text">五. 丢包可能出现的地方及解决方法</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-总体性能参数和工具"><span class="nav-text">二. 总体性能参数和工具</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-协议逐层优化"><span class="nav-text">三.协议逐层优化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-应用层"><span class="nav-text">3.1 应用层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-套接字层"><span class="nav-text">3.2  套接字层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-传输层"><span class="nav-text">3.3 传输层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-网络层"><span class="nav-text">3.4 网络层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-5-链路层"><span class="nav-text">3.5 链路层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-7-协议之外"><span class="nav-text">3.7 协议之外</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-关于DDOS"><span class="nav-text">四. 关于DDOS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-丢包和掉线排查"><span class="nav-text">五. 丢包和掉线排查</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
@@ -911,7 +940,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">132k</span>
+    <span title="Site words total count">133k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
