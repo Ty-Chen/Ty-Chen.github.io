@@ -91,7 +91,7 @@
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/b0/e0/b07ea76a8737ed93395736795ede44e0.png">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/dd/fd/dd5b4050d555b1c23362456e357dfffd.png">
 <meta property="article:published_time" content="2020-08-16T16:17:38.000Z">
-<meta property="article:modified_time" content="2020-08-25T16:03:40.829Z">
+<meta property="article:modified_time" content="2020-08-25T16:16:32.727Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -312,7 +312,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-08-26T00:03:40+08:00" content="2020-08-26">
+              <time itemprop="dateUpdated" datetime="2020-08-26T00:16:32+08:00" content="2020-08-26">
                 2020-08-26
               </time>
             </span>
@@ -376,7 +376,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  8.3k
+                  8.4k
                 </span>
               
 
@@ -635,7 +635,7 @@
 </ol>
 <p>&emsp;&emsp;当被动方收到 FIN 报文时，就开启了被动方的四次挥手流程。内核自动回复 ACK 报文后，连接就进入 CLOSE_WAIT 状态，顾名思义，它表示等待进程调用 close 函数关闭连接。内核没有权力替代进程去关闭连接，因为若主动方是通过 shutdown 关闭连接，那么它就是想在半关闭连接上接收数据。因此，Linux 并没有限制 CLOSE_WAIT 状态的持续时间。</p>
 <p>&emsp;&emsp;当然，大多数应用程序并不使用 shutdown 函数关闭连接，所以，当你用 netstat 命令发现大量 CLOSE_WAIT 状态时，要么是程序出现了 Bug，read 函数返回 0 时忘记调用 close 函数关闭连接，要么就是程序负载太高，close 函数所在的回调函数被延迟执行了。此时，我们应当在应用代码层面解决问题。由于 CLOSE_WAIT 状态下，连接已经处于半关闭状态，所以此时进程若要关闭连接，只能调用 close 函数（再调用 shutdown 关闭单向通道就没有意义了），内核就会发出 FIN 报文关闭发送通道，同时连接进入 LAST_ACK 状态，等待主动方返回 ACK 来确认连接关闭。</p>
-<h3 id="6-3-通信过程"><a href="#6-3-通信过程" class="headerlink" title="6.3 通信过程"></a>6.3 通信过程</h3><p>&emsp;&emsp;TCP通信是一个复杂的过程，其源码在原文中已经详细分析，下面简单摘取其中TCP相关的逻辑。</p>
+<h3 id="6-3-通信过程"><a href="#6-3-通信过程" class="headerlink" title="6.3 通信过程"></a>6.3 通信过程</h3><p>&emsp;&emsp;TCP通信是一个复杂的过程。我们知道，TCP 必须保证每一个报文都能够到达对方，它采用的机制就是：报文发出后，必须收到接收方返回的 ACK 确认报文（Acknowledge 确认的意思）。如果在一段时间内（称为 RTO，retransmission timeout）没有收到，这个报文还得重新发送，直到收到 ACK 为止。可见，TCP 报文发出去后，并不能立刻从内存中删除，因为重发时还需要用到它。由于 TCP 是由内核实现的，所以报文存放在内核缓冲区中，这也是高并发下 buff/cache 内存增加很多的原因。在此过程中，我们需要关注的是缓冲区的大小。其源码在原文中已经详细分析，下面简单摘取其中TCP相关的逻辑。</p>
 <ul>
 <li><code>tcp_sendmsg</code><ul>
 <li><code>sk_stream_wait_memory</code> 若内核缓存不足则按超时时间指示等待</li>
@@ -654,7 +654,20 @@
 <p>&emsp;&emsp;如果<code>sendbuffer</code>不够就会卡在上图中的第一步 <code>sk_stream_wait_memory</code>, 通过<code>systemtap</code>脚本可以验证：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/usr/bin/stap</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> Simple probe to detect when a process is waiting <span class="keyword">for</span> more socket send</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> buffer memory. Usually means the process is doing writes larger than the</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> socket send buffer size or there is a slow receiver at the other side.</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> Increasing the socket<span class="string">'s send buffer size might help decrease application</span></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> latencies, but it might also make it worse, so buyer beware.</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> Typical output: timestamp <span class="keyword">in</span> microseconds: procname(pid) event</span></span><br><span class="line"><span class="meta">#</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 1218230114875167: python(17631) blocked on full send buffer</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 1218230114876196: python(17631) recovered from full send buffer</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 1218230114876271: python(17631) blocked on full send buffer</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 1218230114876479: python(17631) recovered from full send buffer</span></span><br><span class="line">probe kernel.function("sk_stream_wait_memory")</span><br><span class="line">&#123;</span><br><span class="line">    printf("%u: %s(%d) blocked on full send buffern",</span><br><span class="line">        gettimeofday_us(), execname(), pid())</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">probe kernel.function("sk_stream_wait_memory").return</span><br><span class="line">&#123;</span><br><span class="line">    printf("%u: %s(%d) recovered from full send buffern",</span><br><span class="line">        gettimeofday_us(), execname(), pid())</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>&emsp;&emsp;我们知道，TCP 必须保证每一个报文都能够到达对方，它采用的机制就是：报文发出后，必须收到接收方返回的 ACK 确认报文（Acknowledge 确认的意思）。如果在一段时间内（称为 RTO，retransmission timeout）没有收到，这个报文还得重新发送，直到收到 ACK 为止。可见，TCP 报文发出去后，并不能立刻从内存中删除，因为重发时还需要用到它。由于 TCP 是由内核实现的，所以报文存放在内核缓冲区中，这也是高并发下 buff/cache 内存增加很多的原因。</p>
+<h3 id="6-4-拥塞控制"><a href="#6-4-拥塞控制" class="headerlink" title="6.4 拥塞控制"></a>6.4 拥塞控制</h3><ol>
+<li><strong>加快慢启动</strong></li>
+</ol>
+<p>&emsp;&emsp;拥塞控制的状态可以通过<code>ss</code>查看</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> ss -nli|fgrep cwnd</span></span><br><span class="line">cubic rto:1000 mss:536 cwnd:10 segs_in:10621866 lastsnd:1716864402 lastrcv:1716864402 lastack:1716864402</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;<code>再通过 ip route change</code> 命令修改初始拥塞窗口：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> ip route | <span class="keyword">while</span> <span class="built_in">read</span> r; <span class="keyword">do</span></span></span><br><span class="line">    ip route change $r initcwnd 10;</span><br><span class="line">       done</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li><strong>修改拥塞控制算法</strong></li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">net.ipv4.tcp_congestion_control = cubic</span><br></pre></td></tr></table></figure>
+
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>&emsp;&emsp;网络优化是一个极为复杂的事，需要了解业务代码，了解Linux网络协议栈的内容和源码，并掌握很多测试工具，在此基础上小心翼翼地排查瓶颈和问题所在并尝试优化。但是这也是一件极为有趣的事，希望大家都能取得极好的性能优化效果。</p>
 <h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] Linux-insides</p>
 <p>[2] 深入理解Linux内核</p>
@@ -962,7 +975,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-总体性能参数和工具"><span class="nav-text">二. 总体性能参数和工具</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-协议逐层优化"><span class="nav-text">三.协议逐层优化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-应用层"><span class="nav-text">3.1 应用层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-套接字层"><span class="nav-text">3.2  套接字层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-传输层"><span class="nav-text">3.3 传输层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-网络层"><span class="nav-text">3.4 网络层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-5-链路层"><span class="nav-text">3.5 链路层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-7-协议之外"><span class="nav-text">3.7 协议之外</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-关于DDOS"><span class="nav-text">四. 关于DDOS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-丢包和掉线排查"><span class="nav-text">五. 丢包和掉线排查</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#六-传输层优化详解"><span class="nav-text">六. 传输层优化详解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#6-1-三次握手"><span class="nav-text">6.1 三次握手</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-2-四次挥手"><span class="nav-text">6.2 四次挥手</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-3-通信过程"><span class="nav-text">6.3 通信过程</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-总体性能参数和工具"><span class="nav-text">二. 总体性能参数和工具</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-协议逐层优化"><span class="nav-text">三.协议逐层优化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-应用层"><span class="nav-text">3.1 应用层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-套接字层"><span class="nav-text">3.2  套接字层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-传输层"><span class="nav-text">3.3 传输层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-网络层"><span class="nav-text">3.4 网络层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-5-链路层"><span class="nav-text">3.5 链路层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-7-协议之外"><span class="nav-text">3.7 协议之外</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-关于DDOS"><span class="nav-text">四. 关于DDOS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-丢包和掉线排查"><span class="nav-text">五. 丢包和掉线排查</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#六-传输层优化详解"><span class="nav-text">六. 传输层优化详解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#6-1-三次握手"><span class="nav-text">6.1 三次握手</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-2-四次挥手"><span class="nav-text">6.2 四次挥手</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-3-通信过程"><span class="nav-text">6.3 通信过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-4-拥塞控制"><span class="nav-text">6.4 拥塞控制</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
@@ -996,7 +1009,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">135.7k</span>
+    <span title="Site words total count">135.8k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
