@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;本文介绍Linux服务器CPU性能评估和优化的基本方法。">
 <meta property="article:published_time" content="2020-08-26T15:53:46.000Z">
-<meta property="article:modified_time" content="2020-08-26T15:55:45.938Z">
+<meta property="article:modified_time" content="2020-08-27T16:02:12.880Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -306,8 +306,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-08-26T23:55:45+08:00" content="2020-08-26">
-                2020-08-26
+              <time itemprop="dateUpdated" datetime="2020-08-28T00:02:12+08:00" content="2020-08-28">
+                2020-08-28
               </time>
             </span>
           
@@ -370,7 +370,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  25
+                  582
                 </span>
               
 
@@ -386,7 +386,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  1
+                  2
                 </span>
               
             </div>
@@ -409,6 +409,21 @@
       
         <h2 id="一-简介"><a href="#一-简介" class="headerlink" title="一. 简介"></a>一. 简介</h2><p>&emsp;&emsp;本文介绍Linux服务器CPU性能评估和优化的基本方法。</p>
 <a id="more"></a>
+
+<h2 id="二-CPU性能查询工具详解"><a href="#二-CPU性能查询工具详解" class="headerlink" title="二. CPU性能查询工具详解"></a>二. CPU性能查询工具详解</h2><h3 id="2-1-平均负载和CPU使用率"><a href="#2-1-平均负载和CPU使用率" class="headerlink" title="2.1 平均负载和CPU使用率"></a>2.1 平均负载和CPU使用率</h3><p>&emsp;&emsp;平均负载是指单位时间内，系统处于<strong>可运行状态</strong>和<strong>不可中断状态</strong>的平均进程数，也就是平均活跃进程数，它和 CPU 使用率并没有直接关系。所谓可运行状态的进程，是指<strong>正在使用 CPU 或者正在等待 CPU 的进程</strong>，也就是我们常用 ps 命令看到的，处于 <strong>R 状态（Running 或 Runnable）</strong>的进程。不可中断状态的进程则是正处于<strong>内核态关键流程中的进程</strong>，并且这些流程<strong>是不可打断的</strong>，比如最常见的是等待硬件设备的 I/O 响应，也就是我们在 ps 命令中看到的 <strong>D 状态（Uninterruptible Sleep，也称为 Disk Sleep）</strong>的进程。</p>
+<p>&emsp;&emsp;平均负载最理想的情况是等于 CPU 个数。所以在评判平均负载时，首先要知道系统有几个 CPU，这可以通过 <code>top</code> 命令或者从文件 <code>/proc/cpuinfo</code> 中读取。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> wc表示word count， -l表示显示文本的行数， 每行表示一个CPU，因此行数表示有几个CPU</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> grep <span class="string">'model name'</span> /proc/cpuinfo | wc -l</span></span><br><span class="line">2</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;平均负载的查询可以通过<code>uptime</code>进行，实时状态变化则使用<code>watch -d uptime</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> watch 表示实时变化，-d表示高亮变化的位，uptime </span></span><br><span class="line"><span class="meta">$</span><span class="bash"> watch -d uptime</span></span><br><span class="line">02:34:03 up 2 days, 20:14,  1 user,  load average: 0.63, 0.83, 0.88</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;平均负载是指单位时间内，处于可运行状态和不可中断状态的进程数。所以，它不仅包括了正在使用 CPU 的进程，还包括等待 CPU 和等待 I/O 的进程。而 CPU 使用率是单位时间内 CPU 繁忙情况的统计，跟平均负载并不一定完全对应。</p>
+<ul>
+<li>CPU 密集型进程，使用大量 CPU 会导致平均负载升高，此时这两者是一致的；</li>
+<li>I/O 密集型进程，等待 I/O 也会导致平均负载升高，但 CPU 使用率不一定很高；</li>
+<li>大量等待 CPU 的进程调度也会导致平均负载升高，此时的 CPU 使用率也会比较高。</li>
+</ul>
+
       
     </div>
     
@@ -706,7 +721,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-CPU性能查询工具详解"><span class="nav-text">二. CPU性能查询工具详解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-平均负载和CPU使用率"><span class="nav-text">2.1 平均负载和CPU使用率</span></a></li></ol></li></ol></div>
             
 
           </div>
@@ -740,7 +755,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">135.9k</span>
+    <span title="Site words total count">136.4k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
