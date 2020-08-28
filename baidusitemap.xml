@@ -2,6 +2,9 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://ty-chen.github.io/linux-kernel-cpu-optimization/</loc>
+    <lastmod>2020-08-28</lastmod>
+  </url>  <url>
+    <loc>https://ty-chen.github.io/linux-kernel-interrupt/</loc>
     <lastmod>2020-08-27</lastmod>
   </url>  <url>
     <loc>https://ty-chen.github.io/linux-kernel-network-optimization/</loc>
@@ -35,9 +38,6 @@
     <lastmod>2020-07-20</lastmod>
   </url>  <url>
     <loc>https://ty-chen.github.io/linux-kernel-block-device/</loc>
-    <lastmod>2020-07-19</lastmod>
-  </url>  <url>
-    <loc>https://ty-chen.github.io/linux-kernel-interrupt/</loc>
     <lastmod>2020-07-19</lastmod>
   </url>  <url>
     <loc>https://ty-chen.github.io/linux-kernel-zero-process/</loc>
