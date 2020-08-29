@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;本文介绍Linux服务器CPU性能评估和优化的基本方法。">
 <meta property="article:published_time" content="2020-08-26T15:53:46.000Z">
-<meta property="article:modified_time" content="2020-08-28T14:49:30.302Z">
+<meta property="article:modified_time" content="2020-08-29T16:00:57.005Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -306,8 +306,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-08-28T22:49:30+08:00" content="2020-08-28">
-                2020-08-28
+              <time itemprop="dateUpdated" datetime="2020-08-30T00:00:57+08:00" content="2020-08-30">
+                2020-08-30
               </time>
             </span>
           
@@ -370,7 +370,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1.5k
+                  1.9k
                 </span>
               
 
@@ -386,7 +386,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  6
+                  8
                 </span>
               
             </div>
@@ -433,7 +433,7 @@
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ty@ubuntu:~$ vmstat 5 1</span><br><span class="line">procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu-----</span><br><span class="line"> r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st</span><br><span class="line"> 0  0    268 266720  99700 917660    0    0   317   231   77  273  1  1 96  2  0</span><br></pre></td></tr></table></figure>
 
 <ul>
-<li>r 和 b 分别表示运行队列和等待IO的进程数量</li>
+<li>r 和 b 分别表示运行队列和等待IO的进程数量，r显著增加说明当前CPU负荷的运行任务过多</li>
 <li>memory为内存相关的统计数据<ul>
 <li>swpd表示使用的虚拟内存大小</li>
 <li>free表示可用内存大小</li>
@@ -457,10 +457,22 @@
 <li>自愿上下文切换，是指进程无法获取所需资源，导致的上下文切换。比如说， I/O、内存等系统资源不足时，就会发生自愿上下文切换。</li>
 <li>非自愿上下文切换，则是指进程由于时间片已到等原因，被系统强制调度，进而发生的上下文切换。比如说，大量进程都在争抢 CPU 时，就容易发生非自愿上下文切换。</li>
 </ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">ty@ubuntu:~$ pidstat -w 5 1 | more</span><br><span class="line">Linux 4.15.0-112-generic (ubuntu) 	08/28/2020 	_x86_64_	(1 CPU)</span><br><span class="line"></span><br><span class="line">07:36:25 AM   UID       PID   cswch/s nvcswch/s  Command</span><br><span class="line">07:36:31 AM     0         7      0.80      0.00  ksoftirqd/0</span><br><span class="line">07:36:31 AM     0         8      5.62      0.00  rcu_sched</span><br><span class="line">07:36:31 AM     0        11      0.40      0.00  watchdog/0</span><br><span class="line">07:36:31 AM     0       270      0.20      0.00  kworker/0:1H</span><br><span class="line">07:36:31 AM     0       381     10.24      0.00  vmtoolsd</span><br><span class="line">......</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> w表示输出进程切换指标，t表示输出线程切换指标，u表示输出CPU使用指标</span></span><br><span class="line">ty@ubuntu:~$ pidstat -w -u -t 1</span><br><span class="line">Linux 4.15.0-112-generic (ubuntu) 	08/29/2020 	_x86_64_	(1 CPU)</span><br><span class="line"></span><br><span class="line">08:51:22 AM   UID      TGID       TID    %usr %system  %guest    %CPU   CPU  Command</span><br><span class="line">08:51:23 AM     0      1269         -    2.02    0.00    0.00    2.02     0  Xorg</span><br><span class="line">08:51:23 AM     0         -      1269    1.01    0.00    0.00    1.01     0  |__Xorg</span><br><span class="line">08:51:23 AM     0         -      1616    0.00    1.01    0.00    1.01     0  |__InputThread</span><br><span class="line">08:51:23 AM  1000         -      2638    1.01    0.00    0.00    1.01     0  |__ibus-daemon</span><br><span class="line"></span><br><span class="line">08:51:22 AM   UID      TGID       TID   cswch/s nvcswch/s  Command</span><br><span class="line">08:51:23 AM     0         7         -      9.09      0.00  ksoftirqd/0</span><br><span class="line">08:51:23 AM     0         -         7      9.09      0.00  |__ksoftirqd/0</span><br><span class="line">08:51:23 AM     0         8         -     34.34      0.00  rcu_sched</span><br><span class="line">......</span><br></pre></td></tr></table></figure>
 
+<p>一般来说，如果CPU上下文切换次数异常升高，主要可以从以下角度考虑</p>
+<ul>
+<li>自愿上下文切换变多了，说明进程都在等待资源，有可能发生了 I/O 等其他问题；</li>
+<li>非自愿上下文切换变多了，说明进程都在被强制调度，也就是都在争抢 CPU，说明 CPU 的确成了瓶颈；</li>
+<li>中断次数变多了，说明 CPU 被中断处理程序占用，还需要通过查看 /proc/interrupts 文件来分析具体的中断类型。</li>
+</ul>
 <h2 id="三-压测工具"><a href="#三-压测工具" class="headerlink" title="三. 压测工具"></a>三. 压测工具</h2><h3 id="1-stress"><a href="#1-stress" class="headerlink" title="1. stress"></a>1. stress</h3><p>stress 是一个 Linux 系统压力测试工具，可以用作异常进程模拟平均负载升高的场景。</p>
+<p>stress基于多进程的，会fork多个进程，导致进程上下文切换，导致us开销很高；</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> --cpu表示模拟CPU，1表示100%，-i表示I/O压力测试，-c表示进程</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> stress --cpu 1 --timeout 600</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> stress -i 1 --timeout 600</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> stress -c 8 --timeout 600</span></span><br></pre></td></tr></table></figure>
+
 <h3 id="2-sysbench"><a href="#2-sysbench" class="headerlink" title="2. sysbench"></a>2. sysbench</h3><p>sysbench 是一个多线程的基准测试工具，一般用来评估不同系统参数下的数据库负载情况，也可以用于模拟上下文切换过多的问题。</p>
+<p>sysbench基于多线程的，会创建多个线程，单一进程基于内核线程切换，导致sy的内核开销很高；</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">root@ubuntu:/home/ty# sysbench --num-threads=10 --max-time=300 --max-requests=10000000 --test=threads run</span><br><span class="line">sysbench 0.4.12:  multi-threaded system evaluation benchmark</span><br><span class="line"></span><br><span class="line">Running the test with following options:</span><br><span class="line">Number of threads: 10</span><br><span class="line"></span><br><span class="line">Doing thread subsystem performance test</span><br><span class="line">Thread yields per test: 1000 Locks used: 8</span><br><span class="line">Threads started!</span><br></pre></td></tr></table></figure>
+
 
       
     </div>
@@ -793,7 +805,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">137.4k</span>
+    <span title="Site words total count">137.7k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
