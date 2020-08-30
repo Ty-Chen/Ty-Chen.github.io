@@ -87,7 +87,7 @@
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;在前文中，我们分析了内核中进程和线程的统一结构体task_struct，并分析进程、线程的创建和派生的过程。在本文中，我们会对任务间调度进行详细剖析，了解其原理和整个执行过程。由此，进程、线程部分的大体框架就算是介绍完了。本节主要分为三个部分：Linux内核中常见的调度策略，调度的基本结构体以及调度发生的整个流程。下面将详细展开说明。">
 <meta property="og:image" content="c:%5CUsers%5CRaytine%5CAppData%5CRoaming%5CTypora%5Ctypora-user-images%5Cimage-20200530133049327.png">
 <meta property="article:published_time" content="2020-05-25T14:58:34.000Z">
-<meta property="article:modified_time" content="2020-07-18T05:56:17.806Z">
+<meta property="article:modified_time" content="2020-08-30T13:55:25.558Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -309,8 +309,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-07-18T13:56:17+08:00" content="2020-07-18">
-                2020-07-18
+              <time itemprop="dateUpdated" datetime="2020-08-30T21:55:25+08:00" content="2020-08-30">
+                2020-08-30
               </time>
             </span>
           
@@ -373,7 +373,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  7.6k
+                  7.7k
                 </span>
               
 
@@ -413,7 +413,8 @@
         <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;在前文中，我们分析了内核中进程和线程的统一结构体<code>task_struct</code>，并分析进程、线程的创建和派生的过程。在本文中，我们会对任务间调度进行详细剖析，了解其原理和整个执行过程。由此，进程、线程部分的大体框架就算是介绍完了。本节主要分为三个部分：Linux内核中常见的调度策略，调度的基本结构体以及调度发生的整个流程。下面将详细展开说明。</p>
 <a id="more"></a>
 
-<h2 id="二-调度策略"><a href="#二-调度策略" class="headerlink" title="二. 调度策略"></a>二. 调度策略</h2><p>&emsp;&emsp;Linux的调度策略主要分为实时任务和普通任务。实时任务需求尽快返回结果，而普通任务则没有较高的要求。在前文中我们提到了<code>task_struct</code>中调度策略相应的变量为<code>policy</code>，调度优先级有<code>prio, static_prio, normal_prio, rt_priority</code>几个。优先级其实就是一个数值，对于实时进程，优先级的范围是 0～99；对于普通进程，优先级的范围是 100～139。数值越小，优先级越高。</p>
+<h2 id="二-调度策略"><a href="#二-调度策略" class="headerlink" title="二. 调度策略"></a>二. 调度策略</h2><p>&emsp;&emsp;Linux 作为一个多任务操作系统，将每个 CPU 的时间划分为很短的时间片，再通过调度器轮流分配给各个任务使用，因此造成多任务同时运行的错觉。为了维护 CPU 时间，Linux 通过事先定义的节拍率（内核中表示为 HZ），触发时间中断，并使用全局变量 Jiffies 记录了开机以来的节拍数。每发生一次时间中断，Jiffies 的值就加 1。节拍率 HZ 是内核的可配选项，可以设置为 100、250、1000 等。不同的系统可能设置不同数值，以通过查询 <code>/boot/config</code> 内核选项来查看它的配置值。</p>
+<p>&emsp;&emsp;Linux的调度策略主要分为实时任务和普通任务。实时任务需求尽快返回结果，而普通任务则没有较高的要求。在前文中我们提到了<code>task_struct</code>中调度策略相应的变量为<code>policy</code>，调度优先级有<code>prio, static_prio, normal_prio, rt_priority</code>几个。优先级其实就是一个数值，对于实时进程，优先级的范围是 0～99；对于普通进程，优先级的范围是 100～139。数值越小，优先级越高。</p>
 <h3 id="2-1-实时调度策略"><a href="#2-1-实时调度策略" class="headerlink" title="2.1 实时调度策略"></a>2.1 实时调度策略</h3><p>&emsp;&emsp;实时调度策略主要包括以下几种</p>
 <ul>
 <li><code>SCHED_FIFO</code>：先来先出型策略，顾名思义相同优先级的情况下先到先得</li>
@@ -910,7 +911,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">137.7k</span>
+    <span title="Site words total count">138.1k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>

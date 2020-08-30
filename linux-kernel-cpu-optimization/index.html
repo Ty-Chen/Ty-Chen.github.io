@@ -85,14 +85,16 @@
 <meta property="og:url" content="https://ty-chen.github.io/linux-kernel-cpu-optimization/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;本文介绍Linux服务器CPU性能评估和优化的基本方法。">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/84/5a/8408bb45922afb2db09629a9a7eb1d5a.png">
 <meta property="article:published_time" content="2020-08-26T15:53:46.000Z">
-<meta property="article:modified_time" content="2020-08-29T16:00:57.005Z">
+<meta property="article:modified_time" content="2020-08-30T16:09:38.536Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
 <meta property="article:tag" content="性能优化">
 <meta property="article:tag" content="CPU">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://static001.geekbang.org/resource/image/84/5a/8408bb45922afb2db09629a9a7eb1d5a.png">
 
 
 
@@ -306,8 +308,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-08-30T00:00:57+08:00" content="2020-08-30">
-                2020-08-30
+              <time itemprop="dateUpdated" datetime="2020-08-31T00:09:38+08:00" content="2020-08-31">
+                2020-08-31
               </time>
             </span>
           
@@ -370,7 +372,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1.9k
+                  2.1k
                 </span>
               
 
@@ -410,7 +412,7 @@
         <h2 id="一-简介"><a href="#一-简介" class="headerlink" title="一. 简介"></a>一. 简介</h2><p>&emsp;&emsp;本文介绍Linux服务器CPU性能评估和优化的基本方法。</p>
 <a id="more"></a>
 
-<h2 id="二-CPU性能查询工具详解"><a href="#二-CPU性能查询工具详解" class="headerlink" title="二. CPU性能查询工具详解"></a>二. CPU性能查询工具详解</h2><h3 id="2-1-平均负载和CPU使用率"><a href="#2-1-平均负载和CPU使用率" class="headerlink" title="2.1 平均负载和CPU使用率"></a>2.1 平均负载和CPU使用率</h3><p>&emsp;&emsp;平均负载是指单位时间内，系统处于<strong>可运行状态</strong>和<strong>不可中断状态</strong>的平均进程数，也就是平均活跃进程数，它和 CPU 使用率并没有直接关系。所谓可运行状态的进程，是指<strong>正在使用 CPU 或者正在等待 CPU 的进程</strong>，也就是我们常用 ps 命令看到的，处于 <strong>R 状态（Running 或 Runnable）</strong>的进程。不可中断状态的进程则是正处于<strong>内核态关键流程中的进程</strong>，并且这些流程<strong>是不可打断的</strong>，比如最常见的是等待硬件设备的 I/O 响应，也就是我们在 ps 命令中看到的 <strong>D 状态（Uninterruptible Sleep，也称为 Disk Sleep）</strong>的进程。</p>
+<h2 id="二-CPU性能查询工具详解"><a href="#二-CPU性能查询工具详解" class="headerlink" title="二. CPU性能查询工具详解"></a>二. CPU性能查询工具详解</h2><h3 id="2-1-平均负载"><a href="#2-1-平均负载" class="headerlink" title="2.1 平均负载"></a>2.1 平均负载</h3><p>&emsp;&emsp;平均负载是指单位时间内，系统处于<strong>可运行状态</strong>和<strong>不可中断状态</strong>的平均进程数，也就是平均活跃进程数，它和 CPU 使用率并没有直接关系。所谓可运行状态的进程，是指<strong>正在使用 CPU 或者正在等待 CPU 的进程</strong>，也就是我们常用 ps 命令看到的，处于 <strong>R 状态（Running 或 Runnable）</strong>的进程。不可中断状态的进程则是正处于<strong>内核态关键流程中的进程</strong>，并且这些流程<strong>是不可打断的</strong>，比如最常见的是等待硬件设备的 I/O 响应，也就是我们在 ps 命令中看到的 <strong>D 状态（Uninterruptible Sleep，也称为 Disk Sleep）</strong>的进程。</p>
 <p>&emsp;&emsp;平均负载最理想的情况是等于 CPU 个数。所以在评判平均负载时，首先要知道系统有几个 CPU，这可以通过 <code>top</code> 命令或者从文件 <code>/proc/cpuinfo</code> 中读取。</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> wc表示word count， -l表示显示文本的行数， 每行表示一个CPU，因此行数表示有几个CPU</span></span><br><span class="line">ty@ubuntu:~$ grep 'model name' /proc/cpuinfo | wc -l</span><br><span class="line">1</span><br></pre></td></tr></table></figure>
 
@@ -429,7 +431,9 @@
 </ul>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> -P ALL 表示监控所有CPU，数字5表示间隔5秒后输出一组数据，后面再加个单独的1的话表示仅输出1组即退出</span></span><br><span class="line">ty@ubuntu:~$ mpstat -P ALL 5</span><br><span class="line">Linux 4.15.0-112-generic (ubuntu) 	08/28/2020 	_x86_64_	(1 CPU)</span><br><span class="line"></span><br><span class="line">06:28:36 AM  CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest  %gnice   %idle</span><br><span class="line">06:28:41 AM  all    0.00    0.00    0.40    0.00    0.00    0.00    0.00    0.00    0.00   99.60</span><br><span class="line">06:28:41 AM    0    0.00    0.00    0.40    0.00    0.00    0.00    0.00    0.00    0.00   99.60</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 间隔5秒后输出一组数据</span></span><br><span class="line">ty@ubuntu:~$ pidstat -u 5 1</span><br><span class="line">Linux 4.15.0-112-generic (ubuntu) 	08/28/2020 	_x86_64_	(1 CPU)</span><br><span class="line"></span><br><span class="line">06:30:04 AM   UID       PID    %usr %system  %guest    %CPU   CPU  Command</span><br><span class="line">06:30:09 AM     0       381    0.00    0.20    0.00    0.20     0  vmtoolsd</span><br><span class="line"></span><br><span class="line">Average:      UID       PID    %usr %system  %guest    %CPU   CPU  Command</span><br><span class="line">Average:        0       381    0.00    0.20    0.00    0.20     -  vmtoolsd</span><br></pre></td></tr></table></figure>
 
-<h3 id="2-2-CPU上下文切换"><a href="#2-2-CPU上下文切换" class="headerlink" title="2.2 CPU上下文切换"></a>2.2 CPU上下文切换</h3><p>&emsp;&emsp;vmstat 是一个常用的系统性能分析工具，主要用来分析系统的内存使用情况，也常用来分析 CPU 上下文切换和中断的次数。</p>
+<h3 id="2-2-CPU使用率"><a href="#2-2-CPU使用率" class="headerlink" title="2.2 CPU使用率"></a>2.2 CPU使用率</h3><p>&emsp;&emsp; CPU 使用率，就是除了空闲时间外的其他时间占总 CPU 时间的百分比。我们就可以从 /proc/stat 中的数据，很容易地计算出 CPU 使用率。当然，也可以用每一个场景的 CPU 时间，除以总的 CPU 时间，计算出每个场景的 CPU 使用率。事实上，为了计算 CPU 使用率，性能工具一般都会取间隔一段时间（比如 3 秒）的两次值，作差后，再计算出这段时间内的平均 CPU 使用率，即</p>
+<p><img src="https://static001.geekbang.org/resource/image/84/5a/8408bb45922afb2db09629a9a7eb1d5a.png" alt="img"></p>
+<h3 id="2-3-CPU上下文切换"><a href="#2-3-CPU上下文切换" class="headerlink" title="2.3 CPU上下文切换"></a>2.3 CPU上下文切换</h3><p>&emsp;&emsp;vmstat 是一个常用的系统性能分析工具，主要用来分析系统的内存使用情况，也常用来分析 CPU 上下文切换和中断的次数。</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ty@ubuntu:~$ vmstat 5 1</span><br><span class="line">procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu-----</span><br><span class="line"> r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st</span><br><span class="line"> 0  0    268 266720  99700 917660    0    0   317   231   77  273  1  1 96  2  0</span><br></pre></td></tr></table></figure>
 
 <ul>
@@ -459,18 +463,18 @@
 </ul>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> w表示输出进程切换指标，t表示输出线程切换指标，u表示输出CPU使用指标</span></span><br><span class="line">ty@ubuntu:~$ pidstat -w -u -t 1</span><br><span class="line">Linux 4.15.0-112-generic (ubuntu) 	08/29/2020 	_x86_64_	(1 CPU)</span><br><span class="line"></span><br><span class="line">08:51:22 AM   UID      TGID       TID    %usr %system  %guest    %CPU   CPU  Command</span><br><span class="line">08:51:23 AM     0      1269         -    2.02    0.00    0.00    2.02     0  Xorg</span><br><span class="line">08:51:23 AM     0         -      1269    1.01    0.00    0.00    1.01     0  |__Xorg</span><br><span class="line">08:51:23 AM     0         -      1616    0.00    1.01    0.00    1.01     0  |__InputThread</span><br><span class="line">08:51:23 AM  1000         -      2638    1.01    0.00    0.00    1.01     0  |__ibus-daemon</span><br><span class="line"></span><br><span class="line">08:51:22 AM   UID      TGID       TID   cswch/s nvcswch/s  Command</span><br><span class="line">08:51:23 AM     0         7         -      9.09      0.00  ksoftirqd/0</span><br><span class="line">08:51:23 AM     0         -         7      9.09      0.00  |__ksoftirqd/0</span><br><span class="line">08:51:23 AM     0         8         -     34.34      0.00  rcu_sched</span><br><span class="line">......</span><br></pre></td></tr></table></figure>
 
-<p>一般来说，如果CPU上下文切换次数异常升高，主要可以从以下角度考虑</p>
+<p>&emsp;&emsp;一般来说，如果CPU上下文切换次数异常升高，主要可以从以下角度考虑</p>
 <ul>
 <li>自愿上下文切换变多了，说明进程都在等待资源，有可能发生了 I/O 等其他问题；</li>
 <li>非自愿上下文切换变多了，说明进程都在被强制调度，也就是都在争抢 CPU，说明 CPU 的确成了瓶颈；</li>
 <li>中断次数变多了，说明 CPU 被中断处理程序占用，还需要通过查看 /proc/interrupts 文件来分析具体的中断类型。</li>
 </ul>
-<h2 id="三-压测工具"><a href="#三-压测工具" class="headerlink" title="三. 压测工具"></a>三. 压测工具</h2><h3 id="1-stress"><a href="#1-stress" class="headerlink" title="1. stress"></a>1. stress</h3><p>stress 是一个 Linux 系统压力测试工具，可以用作异常进程模拟平均负载升高的场景。</p>
-<p>stress基于多进程的，会fork多个进程，导致进程上下文切换，导致us开销很高；</p>
+<h2 id="三-压测工具"><a href="#三-压测工具" class="headerlink" title="三. 压测工具"></a>三. 压测工具</h2><h3 id="1-stress"><a href="#1-stress" class="headerlink" title="1. stress"></a>1. stress</h3><p>&emsp;&emsp;stress 是一个 Linux 系统压力测试工具，可以用作异常进程模拟平均负载升高的场景。</p>
+<p>&emsp;&emsp;stress基于多进程的，会fork多个进程，导致进程上下文切换，导致us开销很高；</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> --cpu表示模拟CPU，1表示100%，-i表示I/O压力测试，-c表示进程</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> stress --cpu 1 --timeout 600</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> stress -i 1 --timeout 600</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> stress -c 8 --timeout 600</span></span><br></pre></td></tr></table></figure>
 
-<h3 id="2-sysbench"><a href="#2-sysbench" class="headerlink" title="2. sysbench"></a>2. sysbench</h3><p>sysbench 是一个多线程的基准测试工具，一般用来评估不同系统参数下的数据库负载情况，也可以用于模拟上下文切换过多的问题。</p>
-<p>sysbench基于多线程的，会创建多个线程，单一进程基于内核线程切换，导致sy的内核开销很高；</p>
+<h3 id="2-sysbench"><a href="#2-sysbench" class="headerlink" title="2. sysbench"></a>2. sysbench</h3><p>&emsp;&emsp;sysbench 是一个多线程的基准测试工具，一般用来评估不同系统参数下的数据库负载情况，也可以用于模拟上下文切换过多的问题。</p>
+<p>&emsp;&emsp;sysbench基于多线程的，会创建多个线程，单一进程基于内核线程切换，导致sy的内核开销很高；</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">root@ubuntu:/home/ty# sysbench --num-threads=10 --max-time=300 --max-requests=10000000 --test=threads run</span><br><span class="line">sysbench 0.4.12:  multi-threaded system evaluation benchmark</span><br><span class="line"></span><br><span class="line">Running the test with following options:</span><br><span class="line">Number of threads: 10</span><br><span class="line"></span><br><span class="line">Doing thread subsystem performance test</span><br><span class="line">Thread yields per test: 1000 Locks used: 8</span><br><span class="line">Threads started!</span><br></pre></td></tr></table></figure>
 
 
@@ -771,7 +775,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-CPU性能查询工具详解"><span class="nav-text">二. CPU性能查询工具详解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-平均负载和CPU使用率"><span class="nav-text">2.1 平均负载和CPU使用率</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-CPU上下文切换"><span class="nav-text">2.2 CPU上下文切换</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-压测工具"><span class="nav-text">三. 压测工具</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-stress"><span class="nav-text">1. stress</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-sysbench"><span class="nav-text">2. sysbench</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-CPU性能查询工具详解"><span class="nav-text">二. CPU性能查询工具详解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-平均负载"><span class="nav-text">2.1 平均负载</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-CPU使用率"><span class="nav-text">2.2 CPU使用率</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-CPU上下文切换"><span class="nav-text">2.3 CPU上下文切换</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-压测工具"><span class="nav-text">三. 压测工具</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-stress"><span class="nav-text">1. stress</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-sysbench"><span class="nav-text">2. sysbench</span></a></li></ol></li></ol></div>
             
 
           </div>
@@ -805,7 +809,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">137.7k</span>
+    <span title="Site words total count">138.1k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
