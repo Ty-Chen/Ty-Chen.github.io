@@ -87,7 +87,7 @@
 <meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;本文介绍Linux服务器CPU性能评估和优化的基本方法。">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/84/5a/8408bb45922afb2db09629a9a7eb1d5a.png">
 <meta property="article:published_time" content="2020-08-26T15:53:46.000Z">
-<meta property="article:modified_time" content="2020-08-30T16:09:38.536Z">
+<meta property="article:modified_time" content="2020-08-31T13:44:51.023Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -308,7 +308,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-08-31T00:09:38+08:00" content="2020-08-31">
+              <time itemprop="dateUpdated" datetime="2020-08-31T21:44:51+08:00" content="2020-08-31">
                 2020-08-31
               </time>
             </span>
@@ -372,7 +372,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  2.1k
+                  2.5k
                 </span>
               
 
@@ -388,7 +388,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  8
+                  10
                 </span>
               
             </div>
@@ -433,6 +433,23 @@
 
 <h3 id="2-2-CPU使用率"><a href="#2-2-CPU使用率" class="headerlink" title="2.2 CPU使用率"></a>2.2 CPU使用率</h3><p>&emsp;&emsp; CPU 使用率，就是除了空闲时间外的其他时间占总 CPU 时间的百分比。我们就可以从 /proc/stat 中的数据，很容易地计算出 CPU 使用率。当然，也可以用每一个场景的 CPU 时间，除以总的 CPU 时间，计算出每个场景的 CPU 使用率。事实上，为了计算 CPU 使用率，性能工具一般都会取间隔一段时间（比如 3 秒）的两次值，作差后，再计算出这段时间内的平均 CPU 使用率，即</p>
 <p><img src="https://static001.geekbang.org/resource/image/84/5a/8408bb45922afb2db09629a9a7eb1d5a.png" alt="img"></p>
+<p>&emsp;&emsp; top 和 ps 是最常用的性能分析工具：</p>
+<ul>
+<li>top 显示了系统总体的 CPU 和内存使用情况，以及各个进程的资源使用情况。</li>
+<li>ps 则只显示了每个进程的资源使用情况。</li>
+</ul>
+<p>&emsp;&emsp;对比一下 top 和 ps 这两个工具报告的 CPU 使用率，默认的结果很可能不一样，因为 top 默认使用 3 秒时间间隔，而 ps 使用的却是进程的整个生命周期。以下是CPU使用率的主要指标</p>
+<ul>
+<li>user（通常缩写为 us），代表用户态 CPU 时间。注意，<strong>它不包括下面的 nice 时间，但包括了 guest 时间</strong>。</li>
+<li>nice（通常缩写为 ni），代表低优先级用户态 CPU 时间，也就是进程的 nice 值被调整为 1-19 之间时的 CPU 时间。这里注意，nice 可取值范围是 -20 到 19，数值越大，优先级反而越低。</li>
+<li>system（通常缩写为 sys），代表内核态 CPU 时间。idle（通常缩写为 id），代表空闲时间。注意，<strong>它不包括等待 I/O 的时间（iowait）</strong>。</li>
+<li>iowait（通常缩写为 wa），代表等待 I/O 的 CPU 时间。</li>
+<li>irq（通常缩写为 hi），代表处理硬中断的 CPU 时间。</li>
+<li>softirq（通常缩写为 si），代表处理软中断的 CPU 时间。</li>
+<li>steal（通常缩写为 st），代表当系统运行在虚拟机中的时候，被其他虚拟机占用的 CPU 时间。</li>
+<li>guest（通常缩写为 guest），代表通过虚拟化运行其他操作系统的时间，也就是运行虚拟机的 CPU 时间。</li>
+<li>guest_nice（通常缩写为 gnice），代表以低优先级运行虚拟机的时间。</li>
+</ul>
 <h3 id="2-3-CPU上下文切换"><a href="#2-3-CPU上下文切换" class="headerlink" title="2.3 CPU上下文切换"></a>2.3 CPU上下文切换</h3><p>&emsp;&emsp;vmstat 是一个常用的系统性能分析工具，主要用来分析系统的内存使用情况，也常用来分析 CPU 上下文切换和中断的次数。</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ty@ubuntu:~$ vmstat 5 1</span><br><span class="line">procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu-----</span><br><span class="line"> r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st</span><br><span class="line"> 0  0    268 266720  99700 917660    0    0   317   231   77  273  1  1 96  2  0</span><br></pre></td></tr></table></figure>
 
@@ -809,7 +826,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">138.1k</span>
+    <span title="Site words total count">138.5k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
