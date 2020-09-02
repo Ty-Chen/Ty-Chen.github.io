@@ -87,7 +87,7 @@
 <meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;本文介绍Linux服务器CPU性能评估和优化的基本方法。">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/84/5a/8408bb45922afb2db09629a9a7eb1d5a.png">
 <meta property="article:published_time" content="2020-08-26T15:53:46.000Z">
-<meta property="article:modified_time" content="2020-09-02T14:13:44.299Z">
+<meta property="article:modified_time" content="2020-09-02T16:04:50.540Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -308,8 +308,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-09-02T22:13:44+08:00" content="2020-09-02">
-                2020-09-02
+              <time itemprop="dateUpdated" datetime="2020-09-03T00:04:50+08:00" content="2020-09-03">
+                2020-09-03
               </time>
             </span>
           
@@ -372,7 +372,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  2.5k
+                  3k
                 </span>
               
 
@@ -388,7 +388,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  10
+                  12
                 </span>
               
             </div>
@@ -450,23 +450,32 @@
 <li>guest（通常缩写为 guest），代表通过虚拟化运行其他操作系统的时间，也就是运行虚拟机的 CPU 时间。</li>
 <li>guest_nice（通常缩写为 gnice），代表以低优先级运行虚拟机的时间。</li>
 </ul>
-<p>&emsp;&emsp;对于CPU使用率高的问题，我们可以采用<code>perf top</code>，它能够实时显示占用 CPU 时钟最多的函数或者指令，因此可以用来查找热点函数。</p>
+<p>&emsp;&emsp;对于CPU使用率高的问题，主要有两种方式可以查找对应的热点函数或进程</p>
+<ul>
+<li>采用<code>perf top</code>，它能够实时显示占用 CPU 时钟最多的函数或者指令，因此可以用来查找热点函数。</li>
+<li>使用<code>perf record</code>和<code>perf report</code>。<code>perf top</code> 虽然实时展示了系统的性能信息，但它的缺点是并不保存数据，也就无法用于离线或者后续的分析。而 <code>perf record</code> 则提供了保存数据的功能，保存后的数据，需要用 <code>perf report</code> 解析展示。</li>
+</ul>
+<p>&emsp;&emsp;碰到常规问题无法解释的 CPU 使用率情况时，首先要想到有可能是短时应用导致的问题，比如有可能是下面这两种情况，可以结合<code>pstree</code>以及<code>perf record</code>分析，也可以使用<code>execsnoop</code>。</p>
+<ul>
+<li>第一，应用里直接调用了其他二进制程序，这些程序通常运行时间比较短，通过 top 等工具也不容易发现。</li>
+<li>第二，应用本身在不停地崩溃重启，而启动过程的资源初始化，很可能会占用相当多的 CPU。</li>
+</ul>
 <h3 id="2-3-CPU上下文切换"><a href="#2-3-CPU上下文切换" class="headerlink" title="2.3 CPU上下文切换"></a>2.3 CPU上下文切换</h3><p>&emsp;&emsp;vmstat 是一个常用的系统性能分析工具，主要用来分析系统的内存使用情况，也常用来分析 CPU 上下文切换和中断的次数。</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ty@ubuntu:~$ vmstat 5 1</span><br><span class="line">procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu-----</span><br><span class="line"> r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st</span><br><span class="line"> 0  0    268 266720  99700 917660    0    0   317   231   77  273  1  1 96  2  0</span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>r 和 b 分别表示运行队列和等待IO的进程数量，r显著增加说明当前CPU负荷的运行任务过多</li>
-<li>memory为内存相关的统计数据<ul>
-<li>swpd表示使用的虚拟内存大小</li>
-<li>free表示可用内存大小</li>
-<li>buff表示缓冲区大小</li>
-<li>cache表示缓存大小</li>
+<li>memory 为内存相关的统计数据<ul>
+<li>swpd 表示使用的虚拟内存大小</li>
+<li>free 表示可用内存大小</li>
+<li>buff 表示缓冲区大小</li>
+<li>cache 表示缓存大小</li>
 </ul>
 </li>
-<li>swap表示虚拟内存和物理内存页的交换，si为写入内存，so为写出内存至交换区</li>
-<li>io表示磁盘读写，bi为读取块数，bo为写出块数</li>
+<li>swap 表示虚拟内存和物理内存页的交换，si为写入内存，so为写出内存至交换区</li>
+<li>io 表示磁盘读写，bi为读取块数，bo为写出块数</li>
 <li>syhstem中in表示中断，cs表示上下文切换数</li>
-<li>cpu中<ul>
+<li>cpu 中<ul>
 <li>us: 用户进程执行时间(user time)</li>
 <li>sy: 系统进程执行时间(system time)</li>
 <li>id: 空闲时间(包括IO等待时间),中央处理器的空闲时间 。以百分比表示。</li>
@@ -494,6 +503,9 @@
 <h3 id="2-sysbench"><a href="#2-sysbench" class="headerlink" title="2. sysbench"></a>2. sysbench</h3><p>&emsp;&emsp;sysbench 是一个多线程的基准测试工具，一般用来评估不同系统参数下的数据库负载情况，也可以用于模拟上下文切换过多的问题。</p>
 <p>&emsp;&emsp;sysbench基于多线程的，会创建多个线程，单一进程基于内核线程切换，导致sy的内核开销很高；</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">root@ubuntu:/home/ty# sysbench --num-threads=10 --max-time=300 --max-requests=10000000 --test=threads run</span><br><span class="line">sysbench 0.4.12:  multi-threaded system evaluation benchmark</span><br><span class="line"></span><br><span class="line">Running the test with following options:</span><br><span class="line">Number of threads: 10</span><br><span class="line"></span><br><span class="line">Doing thread subsystem performance test</span><br><span class="line">Thread yields per test: 1000 Locks used: 8</span><br><span class="line">Threads started!</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-ab"><a href="#3-ab" class="headerlink" title="3. ab"></a>3. ab</h3><p>&emsp;&emsp;ab是一个HTTP性能测试工具。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">ty@ubuntu:~$ ab -c 10 -n 100 http://192.168.11.129:10000/</span><br><span class="line">This is ApacheBench, Version 2.3 &lt;$Revision: 1706008 $&gt;</span><br><span class="line">Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/</span><br><span class="line">Licensed to The Apache Software Foundation, http://www.apache.org/</span><br><span class="line"></span><br><span class="line">Benchmarking 192.168.11.129 (be patient).....done</span><br><span class="line"></span><br><span class="line">Server Software:        nginx/1.15.4</span><br><span class="line">Server Hostname:        192.168.11.129</span><br><span class="line">Server Port:            10000</span><br><span class="line"></span><br><span class="line">Document Path:          /</span><br><span class="line">Document Length:        9 bytes</span><br><span class="line"></span><br><span class="line">Concurrency Level:      10</span><br><span class="line">Time taken for tests:   1.038 seconds</span><br><span class="line">Complete requests:      100</span><br><span class="line">Failed requests:        0</span><br><span class="line">Total transferred:      17200 bytes</span><br><span class="line">HTML transferred:       900 bytes</span><br><span class="line">Requests per second:    96.31 [#/sec] (mean)</span><br><span class="line">Time per request:       103.826 [ms] (mean)</span><br><span class="line">Time per request:       10.383 [ms] (mean, across all concurrent requests)</span><br><span class="line">Transfer rate:          16.18 [Kbytes/sec] received</span><br><span class="line"></span><br><span class="line">Connection Times (ms)</span><br><span class="line">              min  mean[+/-sd] median   max</span><br><span class="line">Connect:        0    0   0.2      0       1</span><br><span class="line">Processing:    70  101  25.0     94     248</span><br><span class="line">Waiting:       69  101  25.0     93     248</span><br><span class="line">Total:         71  101  25.1     94     248</span><br><span class="line"></span><br><span class="line">Percentage of the requests served within a certain time (ms)</span><br><span class="line"><span class="meta">  50%</span><span class="bash">     94</span></span><br><span class="line"><span class="meta">  66%</span><span class="bash">     95</span></span><br><span class="line"><span class="meta">  75%</span><span class="bash">     97</span></span><br><span class="line"><span class="meta">  80%</span><span class="bash">     98</span></span><br><span class="line"><span class="meta">  90%</span><span class="bash">    130</span></span><br><span class="line"><span class="meta">  95%</span><span class="bash">    151</span></span><br><span class="line"><span class="meta">  98%</span><span class="bash">    200</span></span><br><span class="line"><span class="meta">  99%</span><span class="bash">    248</span></span><br><span class="line"><span class="meta"> 100%</span><span class="bash">    248 (longest request)</span></span><br></pre></td></tr></table></figure>
 
 
       
@@ -793,7 +805,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-CPU性能查询工具详解"><span class="nav-text">二. CPU性能查询工具详解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-平均负载"><span class="nav-text">2.1 平均负载</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-CPU使用率"><span class="nav-text">2.2 CPU使用率</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-CPU上下文切换"><span class="nav-text">2.3 CPU上下文切换</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-压测工具"><span class="nav-text">三. 压测工具</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-stress"><span class="nav-text">1. stress</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-sysbench"><span class="nav-text">2. sysbench</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-CPU性能查询工具详解"><span class="nav-text">二. CPU性能查询工具详解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-平均负载"><span class="nav-text">2.1 平均负载</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-CPU使用率"><span class="nav-text">2.2 CPU使用率</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-CPU上下文切换"><span class="nav-text">2.3 CPU上下文切换</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-压测工具"><span class="nav-text">三. 压测工具</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-stress"><span class="nav-text">1. stress</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-sysbench"><span class="nav-text">2. sysbench</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-ab"><span class="nav-text">3. ab</span></a></li></ol></li></ol></div>
             
 
           </div>
@@ -827,7 +839,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">138.6k</span>
+    <span title="Site words total count">139k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
