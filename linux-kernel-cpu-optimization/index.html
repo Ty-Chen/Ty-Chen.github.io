@@ -87,7 +87,7 @@
 <meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;本文介绍Linux服务器CPU性能评估和优化的基本方法。">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/84/5a/8408bb45922afb2db09629a9a7eb1d5a.png">
 <meta property="article:published_time" content="2020-08-26T15:53:46.000Z">
-<meta property="article:modified_time" content="2020-09-03T16:24:46.573Z">
+<meta property="article:modified_time" content="2020-09-04T16:02:59.193Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -308,8 +308,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-09-04T00:24:46+08:00" content="2020-09-04">
-                2020-09-04
+              <time itemprop="dateUpdated" datetime="2020-09-05T00:02:59+08:00" content="2020-09-05">
+                2020-09-05
               </time>
             </span>
           
@@ -372,7 +372,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  3k
+                  3.6k
                 </span>
               
 
@@ -388,7 +388,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  12
+                  14
                 </span>
               
             </div>
@@ -496,15 +496,30 @@
 <li>非自愿上下文切换变多了，说明进程都在被强制调度，也就是都在争抢 CPU，说明 CPU 的确成了瓶颈；</li>
 <li>中断次数变多了，说明 CPU 被中断处理程序占用，还需要通过查看 /proc/interrupts 文件来分析具体的中断类型。</li>
 </ul>
-<h2 id="三-压测工具"><a href="#三-压测工具" class="headerlink" title="三. 压测工具"></a>三. 压测工具</h2><h3 id="1-stress"><a href="#1-stress" class="headerlink" title="1. stress"></a>1. stress</h3><p>&emsp;&emsp;stress 是一个 Linux 系统压力测试工具，可以用作异常进程模拟平均负载升高的场景。</p>
+<h3 id="2-4-不可中断进程-僵尸进程"><a href="#2-4-不可中断进程-僵尸进程" class="headerlink" title="2.4 不可中断进程/僵尸进程"></a>2.4 不可中断进程/僵尸进程</h3><p>&emsp;&emsp;对于此类问题我们通常可以使用<code>top</code>或者<code>ps</code>进行观察。首先看看进程状态的分类：</p>
+<ul>
+<li>R 是 Running 或 Runnable 的缩写，表示进程在 CPU 的就绪队列中，正在运行或者正在等待运行。</li>
+<li>D 是 Disk Sleep 的缩写，也就是不可中断状态睡眠（Uninterruptible Sleep），一般表示进程正在跟硬件交互，并且交互过程不允许被其他进程或中断打断。</li>
+<li>Z 是 Zombie 的缩写，它表示僵尸进程，也就是进程实际上已经结束了，但是父进程还没有回收它的资源（比如进程的描述符、PID 等）。</li>
+<li>S 是 Interruptible Sleep 的缩写，也就是可中断状态睡眠，表示进程因为等待某个事件而被系统挂起。当进程等待的事件发生时，它会被唤醒并进入 R 状态。</li>
+<li>I 是 Idle 的缩写，也就是空闲状态，用在不可中断睡眠的内核线程上。前面说了，硬件交互导致的不可中断进程用 D 表示，但对某些内核线程来说，它们有可能实际上并没有任何负载，用 Idle 正是为了区分这种情况。要注意，D 状态的进程会导致平均负载升高， I 状态的进程却不会。</li>
+<li>T 或者 t，也就是 Stopped 或 Traced 的缩写，表示进程处于暂停或者跟踪状态。</li>
+<li>X，也就是 Dead 的缩写，表示进程已经消亡，所以你不会在 top 或者 ps 命令中看到它。</li>
+</ul>
+<p>&emsp;&emsp;除此之外，还可以使用<code>dstat</code>命令观察CPU和I/O的使用情况。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"># 每<span class="number">1</span>秒输出一次，共输出<span class="number">5</span>次</span><br><span class="line">ty@ubuntu:~$ dstat <span class="number">1</span> <span class="number">5</span></span><br><span class="line">You did <span class="keyword">not</span> select any stats, <span class="keyword">using</span> -cdngy by <span class="keyword">default</span>.</span><br><span class="line">----total-cpu-usage---- -dsk/total- -net/total- ---paging-- ---system--</span><br><span class="line">usr sys idl wai hiq siq| <span class="built_in">read</span>  writ| recv  send|  in   out | <span class="keyword">int</span>   csw </span><br><span class="line">  <span class="number">8</span>  <span class="number">15</span>  <span class="number">54</span>  <span class="number">24</span>   <span class="number">0</span>   <span class="number">0</span>|<span class="number">6105</span>k   <span class="number">89</span>k|   <span class="number">0</span>     <span class="number">0</span> |   <span class="number">0</span>     <span class="number">0</span> | <span class="number">352</span>  <span class="number">1896</span> </span><br><span class="line">  <span class="number">0</span>   <span class="number">0</span> <span class="number">100</span>   <span class="number">0</span>   <span class="number">0</span>   <span class="number">0</span>|  <span class="number">56</span>k    <span class="number">0</span> |   <span class="number">0</span>     <span class="number">0</span> |   <span class="number">0</span>     <span class="number">0</span> |  <span class="number">74</span>   <span class="number">198</span> </span><br><span class="line">  <span class="number">0</span>   <span class="number">0</span>  <span class="number">99</span>   <span class="number">0</span>   <span class="number">0</span>   <span class="number">1</span>|   <span class="number">0</span>     <span class="number">0</span> |   <span class="number">0</span>     <span class="number">0</span> |   <span class="number">0</span>     <span class="number">0</span> | <span class="number">215</span>   <span class="number">483</span> </span><br><span class="line">  <span class="number">0</span>   <span class="number">0</span> <span class="number">100</span>   <span class="number">0</span>   <span class="number">0</span>   <span class="number">0</span>|   <span class="number">0</span>     <span class="number">0</span> | <span class="number">120B</span>    <span class="number">0</span> |   <span class="number">0</span>     <span class="number">0</span> | <span class="number">113</span>   <span class="number">298</span> </span><br><span class="line">  <span class="number">0</span>   <span class="number">0</span> <span class="number">100</span>   <span class="number">0</span>   <span class="number">0</span>   <span class="number">0</span>|   <span class="number">0</span>     <span class="number">0</span> |  <span class="number">60B</span>    <span class="number">0</span> |   <span class="number">0</span>     <span class="number">0</span> | <span class="number">260</span>   <span class="number">634</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="三-压测工具"><a href="#三-压测工具" class="headerlink" title="三. 压测工具"></a>三. 压测工具</h2><h3 id="3-1-stress"><a href="#3-1-stress" class="headerlink" title="3.1 stress"></a>3.1 stress</h3><p>&emsp;&emsp;stress 是一个 Linux 系统压力测试工具，可以用作异常进程模拟平均负载升高的场景。</p>
 <p>&emsp;&emsp;stress基于多进程的，会fork多个进程，导致进程上下文切换，导致us开销很高；</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> --cpu表示模拟CPU，1表示100%，-i表示I/O压力测试，-c表示进程</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> stress --cpu 1 --timeout 600</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> stress -i 1 --timeout 600</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> stress -c 8 --timeout 600</span></span><br></pre></td></tr></table></figure>
 
-<h3 id="2-sysbench"><a href="#2-sysbench" class="headerlink" title="2. sysbench"></a>2. sysbench</h3><p>&emsp;&emsp;sysbench 是一个多线程的基准测试工具，一般用来评估不同系统参数下的数据库负载情况，也可以用于模拟上下文切换过多的问题。</p>
+<h3 id="3-2-sysbench"><a href="#3-2-sysbench" class="headerlink" title="3.2 sysbench"></a>3.2 sysbench</h3><p>&emsp;&emsp;sysbench 是一个多线程的基准测试工具，一般用来评估不同系统参数下的数据库负载情况，也可以用于模拟上下文切换过多的问题。</p>
 <p>&emsp;&emsp;sysbench基于多线程的，会创建多个线程，单一进程基于内核线程切换，导致sy的内核开销很高；</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">root@ubuntu:/home/ty# sysbench --num-threads=10 --max-time=300 --max-requests=10000000 --test=threads run</span><br><span class="line">sysbench 0.4.12:  multi-threaded system evaluation benchmark</span><br><span class="line"></span><br><span class="line">Running the test with following options:</span><br><span class="line">Number of threads: 10</span><br><span class="line"></span><br><span class="line">Doing thread subsystem performance test</span><br><span class="line">Thread yields per test: 1000 Locks used: 8</span><br><span class="line">Threads started!</span><br></pre></td></tr></table></figure>
 
-<h3 id="3-ab"><a href="#3-ab" class="headerlink" title="3. ab"></a>3. ab</h3><p>&emsp;&emsp; ab是apache自带的压力测试工具。ab非常实用，它不仅可以对apache服务器进行网站访问压力测试，也可以对或其它类型的服务器进行压力测试。比如nginx、tomcat、IIS等。</p>
+<h3 id="3-3-ab"><a href="#3-3-ab" class="headerlink" title="3.3 ab"></a>3.3 ab</h3><p>&emsp;&emsp; ab是apache自带的压力测试工具。ab非常实用，它不仅可以对apache服务器进行网站访问压力测试，也可以对或其它类型的服务器进行压力测试。比如nginx、tomcat、IIS等。</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> c表示并发数， n表示测试次数， 还可以用t来指定测试时间</span></span><br><span class="line">ty@ubuntu:~$ ab -c 10 -n 100 http://192.168.11.129:10000/</span><br><span class="line">This is ApacheBench, Version 2.3 &lt;$Revision: 1706008 $&gt;</span><br><span class="line">Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/</span><br><span class="line">Licensed to The Apache Software Foundation, http://www.apache.org/</span><br><span class="line"></span><br><span class="line">Benchmarking 192.168.11.129 (be patient).....done</span><br><span class="line"></span><br><span class="line">Server Software:        nginx/1.15.4</span><br><span class="line">Server Hostname:        192.168.11.129</span><br><span class="line">Server Port:            10000</span><br><span class="line"></span><br><span class="line">Document Path:          /</span><br><span class="line">Document Length:        9 bytes</span><br><span class="line"></span><br><span class="line">Concurrency Level:      10</span><br><span class="line">Time taken for tests:   1.038 seconds</span><br><span class="line">Complete requests:      100</span><br><span class="line">Failed requests:        0</span><br><span class="line">Total transferred:      17200 bytes</span><br><span class="line">HTML transferred:       900 bytes</span><br><span class="line">Requests per second:    96.31 [#/sec] (mean)</span><br><span class="line">Time per request:       103.826 [ms] (mean)</span><br><span class="line">Time per request:       10.383 [ms] (mean, across all concurrent requests)</span><br><span class="line">Transfer rate:          16.18 [Kbytes/sec] received</span><br><span class="line"></span><br><span class="line">Connection Times (ms)</span><br><span class="line">              min  mean[+/-sd] median   max</span><br><span class="line">Connect:        0    0   0.2      0       1</span><br><span class="line">Processing:    70  101  25.0     94     248</span><br><span class="line">Waiting:       69  101  25.0     93     248</span><br><span class="line">Total:         71  101  25.1     94     248</span><br><span class="line"></span><br><span class="line">Percentage of the requests served within a certain time (ms)</span><br><span class="line"><span class="meta">  50%</span><span class="bash">     94</span></span><br><span class="line"><span class="meta">  66%</span><span class="bash">     95</span></span><br><span class="line"><span class="meta">  75%</span><span class="bash">     97</span></span><br><span class="line"><span class="meta">  80%</span><span class="bash">     98</span></span><br><span class="line"><span class="meta">  90%</span><span class="bash">    130</span></span><br><span class="line"><span class="meta">  95%</span><span class="bash">    151</span></span><br><span class="line"><span class="meta">  98%</span><span class="bash">    200</span></span><br><span class="line"><span class="meta">  99%</span><span class="bash">    248</span></span><br><span class="line"><span class="meta"> 100%</span><span class="bash">    248 (longest request)</span></span><br></pre></td></tr></table></figure>
 
 
@@ -805,7 +820,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-CPU性能查询工具详解"><span class="nav-text">二. CPU性能查询工具详解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-平均负载"><span class="nav-text">2.1 平均负载</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-CPU使用率"><span class="nav-text">2.2 CPU使用率</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-CPU上下文切换"><span class="nav-text">2.3 CPU上下文切换</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-压测工具"><span class="nav-text">三. 压测工具</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-stress"><span class="nav-text">1. stress</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-sysbench"><span class="nav-text">2. sysbench</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-ab"><span class="nav-text">3. ab</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-CPU性能查询工具详解"><span class="nav-text">二. CPU性能查询工具详解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-平均负载"><span class="nav-text">2.1 平均负载</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-CPU使用率"><span class="nav-text">2.2 CPU使用率</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-CPU上下文切换"><span class="nav-text">2.3 CPU上下文切换</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-不可中断进程-僵尸进程"><span class="nav-text">2.4 不可中断进程&#x2F;僵尸进程</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-压测工具"><span class="nav-text">三. 压测工具</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-stress"><span class="nav-text">3.1 stress</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-sysbench"><span class="nav-text">3.2 sysbench</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-ab"><span class="nav-text">3.3 ab</span></a></li></ol></li></ol></div>
             
 
           </div>
@@ -839,7 +854,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">139.1k</span>
+    <span title="Site words total count">139.6k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
