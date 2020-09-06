@@ -87,7 +87,7 @@
 <meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;本文介绍Linux服务器CPU性能评估和优化的基本方法。">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/84/5a/8408bb45922afb2db09629a9a7eb1d5a.png">
 <meta property="article:published_time" content="2020-08-26T15:53:46.000Z">
-<meta property="article:modified_time" content="2020-09-04T16:02:59.193Z">
+<meta property="article:modified_time" content="2020-09-06T14:32:18.150Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -308,8 +308,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-09-05T00:02:59+08:00" content="2020-09-05">
-                2020-09-05
+              <time itemprop="dateUpdated" datetime="2020-09-06T22:32:18+08:00" content="2020-09-06">
+                2020-09-06
               </time>
             </span>
           
@@ -508,8 +508,6 @@
 </ul>
 <p>&emsp;&emsp;除此之外，还可以使用<code>dstat</code>命令观察CPU和I/O的使用情况。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"># 每<span class="number">1</span>秒输出一次，共输出<span class="number">5</span>次</span><br><span class="line">ty@ubuntu:~$ dstat <span class="number">1</span> <span class="number">5</span></span><br><span class="line">You did <span class="keyword">not</span> select any stats, <span class="keyword">using</span> -cdngy by <span class="keyword">default</span>.</span><br><span class="line">----total-cpu-usage---- -dsk/total- -net/total- ---paging-- ---system--</span><br><span class="line">usr sys idl wai hiq siq| <span class="built_in">read</span>  writ| recv  send|  in   out | <span class="keyword">int</span>   csw </span><br><span class="line">  <span class="number">8</span>  <span class="number">15</span>  <span class="number">54</span>  <span class="number">24</span>   <span class="number">0</span>   <span class="number">0</span>|<span class="number">6105</span>k   <span class="number">89</span>k|   <span class="number">0</span>     <span class="number">0</span> |   <span class="number">0</span>     <span class="number">0</span> | <span class="number">352</span>  <span class="number">1896</span> </span><br><span class="line">  <span class="number">0</span>   <span class="number">0</span> <span class="number">100</span>   <span class="number">0</span>   <span class="number">0</span>   <span class="number">0</span>|  <span class="number">56</span>k    <span class="number">0</span> |   <span class="number">0</span>     <span class="number">0</span> |   <span class="number">0</span>     <span class="number">0</span> |  <span class="number">74</span>   <span class="number">198</span> </span><br><span class="line">  <span class="number">0</span>   <span class="number">0</span>  <span class="number">99</span>   <span class="number">0</span>   <span class="number">0</span>   <span class="number">1</span>|   <span class="number">0</span>     <span class="number">0</span> |   <span class="number">0</span>     <span class="number">0</span> |   <span class="number">0</span>     <span class="number">0</span> | <span class="number">215</span>   <span class="number">483</span> </span><br><span class="line">  <span class="number">0</span>   <span class="number">0</span> <span class="number">100</span>   <span class="number">0</span>   <span class="number">0</span>   <span class="number">0</span>|   <span class="number">0</span>     <span class="number">0</span> | <span class="number">120B</span>    <span class="number">0</span> |   <span class="number">0</span>     <span class="number">0</span> | <span class="number">113</span>   <span class="number">298</span> </span><br><span class="line">  <span class="number">0</span>   <span class="number">0</span> <span class="number">100</span>   <span class="number">0</span>   <span class="number">0</span>   <span class="number">0</span>|   <span class="number">0</span>     <span class="number">0</span> |  <span class="number">60B</span>    <span class="number">0</span> |   <span class="number">0</span>     <span class="number">0</span> | <span class="number">260</span>   <span class="number">634</span></span><br></pre></td></tr></table></figure>
-
-
 
 <h2 id="三-压测工具"><a href="#三-压测工具" class="headerlink" title="三. 压测工具"></a>三. 压测工具</h2><h3 id="3-1-stress"><a href="#3-1-stress" class="headerlink" title="3.1 stress"></a>3.1 stress</h3><p>&emsp;&emsp;stress 是一个 Linux 系统压力测试工具，可以用作异常进程模拟平均负载升高的场景。</p>
 <p>&emsp;&emsp;stress基于多进程的，会fork多个进程，导致进程上下文切换，导致us开销很高；</p>
