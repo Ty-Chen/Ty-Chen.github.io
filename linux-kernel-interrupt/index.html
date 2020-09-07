@@ -87,7 +87,7 @@
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;在前面的文章里，我们多次见到了中断的作用，如任务调度，系统调用从用户态陷入内核，文件系统的读写操作等。本文就Linux的中断机制进行较为全面的剖析。">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/dd/13/dd492efdcf956cb22ce3d51592cdc113.png">
 <meta property="article:published_time" content="2020-07-05T11:28:06.000Z">
-<meta property="article:modified_time" content="2020-08-27T16:28:48.861Z">
+<meta property="article:modified_time" content="2020-09-07T16:10:03.531Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -307,8 +307,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-08-28T00:28:48+08:00" content="2020-08-28">
-                2020-08-28
+              <time itemprop="dateUpdated" datetime="2020-09-08T00:10:03+08:00" content="2020-09-08">
+                2020-09-08
               </time>
             </span>
           
@@ -371,7 +371,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  3.1k
+                  3.8k
                 </span>
               
 
@@ -387,7 +387,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  13
+                  16
                 </span>
               
             </div>
@@ -432,7 +432,11 @@
 </ul>
 <img src="https://static001.geekbang.org/resource/image/dd/13/dd492efdcf956cb22ce3d51592cdc113.png" alt="img" style="zoom:25%;" />
 
-<h2 id="三-中断结构体"><a href="#三-中断结构体" class="headerlink" title="三. 中断结构体"></a>三. 中断结构体</h2><p>&emsp;&emsp;对于每一个中断，我们都有一个对应的描述结构体<code>irq_desc</code>，其中包括了众多描述该中断特点的成员变量，这里尤其需要强调描述该中断对应的全部动作的变量<code>struct irqaction *action</code>。</p>
+<h2 id="三-软中断的必要性"><a href="#三-软中断的必要性" class="headerlink" title="三. 软中断的必要性"></a>三. 软中断的必要性</h2><p>&emsp;&emsp;上面我们分析了硬中断、软中断的概念以及中断的流程，但是为什么我们需要设计软中断呢？中断其实是一种异步的事件处理机制，可以提高系统的并发处理能力。由于中断处理程序会打断其他进程的运行，所以，<strong>为了减少对正常进程运行调度的影响，中断处理程序就需要尽可能快地运行</strong>。如果中断本身要做的事情不多，那么处理起来也不会有太大问题；但如果中断要处理的事情很多，中断服务程序就有可能要运行很长时间。特别是，中断处理程序在响应中断时，还会临时关闭中断。这就会导致上一次中断处理完成之前，其他中断都不能响应，也就是说<strong>中断有可能会丢失</strong>。</p>
+<p>&emsp;&emsp;为了解决中断处理程序执行过长和中断丢失的问题，Linux 将中断处理过程分成了两个阶段，也就是上半部和下半部：上半部用来快速处理中断，它在中断禁止模式下运行，主要处理跟硬件紧密相关的或时间敏感的工作。下半部用来延迟处理上半部未完成的工作，通常以内核线程的方式运行。这也就是我们熟悉的硬中断和软中断了。</p>
+<p>&emsp;&emsp;以网卡收包为例，网卡接收到数据包后，会通过硬件中断的方式，通知内核有新的数据到了。这时，内核就应该调用中断处理程序来响应它。对上半部来说，既然是快速处理，其实就是要把网卡的数据读到内存中，然后更新一下硬件寄存器的状态（表示数据已经读好了），最后再发送一个软中断信号，通知下半部做进一步的处理。而下半部被软中断信号唤醒后，需要从内存中找到网络数据，再按照网络协议栈，对数据进行逐层解析和处理，直到把它送给应用程序。</p>
+<p>&emsp;&emsp;实际上，上半部会打断 CPU 正在执行的任务，然后立即执行中断处理程序。而下半部以内核线程的方式执行，并且每个 CPU 都对应一个软中断内核线程，名字为 <code>“ksoftirqd/CPU 编号”</code>，比如说， 0 号 CPU 对应的软中断内核线程的名字就是 <code>ksoftirqd/0</code>。不过要注意的是，软中断不只包括了刚刚所讲的硬件设备中断处理程序的下半部，一些内核自定义的事件也属于软中断，比如内核调度和 RCU 锁（Read-Copy Update 的缩写，RCU 是 Linux 内核中最常用的锁之一）等。</p>
+<h2 id="四-中断结构体"><a href="#四-中断结构体" class="headerlink" title="四. 中断结构体"></a>四. 中断结构体</h2><p>&emsp;&emsp;对于每一个中断，我们都有一个对应的描述结构体<code>irq_desc</code>，其中包括了众多描述该中断特点的成员变量，这里尤其需要强调描述该中断对应的全部动作的变量<code>struct irqaction *action</code>。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">irq_desc</span> &#123;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">irq_common_data</span>	<span class="title">irq_common_data</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">irq_data</span>		<span class="title">irq_data</span>;</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> __percpu	*kstat_irqs;</span><br><span class="line">    <span class="keyword">irq_flow_handler_t</span>	handle_irq;</span><br><span class="line">......</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">irqaction</span>	*<span class="title">action</span>;</span>	<span class="comment">/* IRQ action list */</span></span><br><span class="line">......</span><br><span class="line">    <span class="keyword">int</span>			parent_irq;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">module</span>		*<span class="title">owner</span>;</span></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span>		*name;</span><br><span class="line">&#125; ____cacheline_internodealigned_in_smp;</span><br></pre></td></tr></table></figure>
 
 <p>&emsp;&emsp;每一个中断处理动作的结构 <code>struct irqaction</code>，都有以下成员：</p>
@@ -448,7 +452,7 @@
 <p>&emsp;&emsp;众多的中断<code>irq_desc</code>则采取类似于内存管理中所用到的基数树radix tree的方式进行管理。这种结构对于从某个整型 key 找到 value 速度很快，中断信号 <code>irq</code> 是这个整数。通过它，我们很快就能定位到对应的 <code>irq_desc</code>。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> CONFIG_SPARSE_IRQ</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="title">RADIX_TREE</span><span class="params">(irq_desc_tree, GFP_KERNEL)</span></span>;</span><br><span class="line"><span class="function">struct irq_desc *<span class="title">irq_to_desc</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">int</span> irq)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> radix_tree_lookup(&amp;irq_desc_tree, irq);</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span> <span class="comment">/* !CONFIG_SPARSE_IRQ */</span></span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">irq_desc</span> <span class="title">irq_desc</span>[<span class="title">NR_IRQS</span>] __<span class="title">cacheline_aligned_in_smp</span> = &#123;</span></span><br><span class="line">    [<span class="number">0</span> ... NR_IRQS<span class="number">-1</span>] = &#123;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="function">struct irq_desc *<span class="title">irq_to_desc</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">int</span> irq)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> (irq &lt; NR_IRQS) ? irq_desc + irq : <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span> <span class="comment">/* !CONFIG_SPARSE_IRQ */</span></span></span><br></pre></td></tr></table></figure>
 
-<h2 id="四-中断流程"><a href="#四-中断流程" class="headerlink" title="四. 中断流程"></a>四. 中断流程</h2><p>&emsp;&emsp;我们从 CPU 收到中断向量开始分析.CPU收到的中断向量定义于<a href="https://code.woboq.org/linux/linux/arch/x86/include/asm/irq_vectors.h.html" target="_blank" rel="noopener"><code>irq_vectors.h</code></a>。下面这一段是该头文件的注释，详细描述了IRQ向量的基本信息：</p>
+<h2 id="五-中断流程"><a href="#五-中断流程" class="headerlink" title="五. 中断流程"></a>五. 中断流程</h2><p>&emsp;&emsp;我们从 CPU 收到中断向量开始分析.CPU收到的中断向量定义于<a href="https://code.woboq.org/linux/linux/arch/x86/include/asm/irq_vectors.h.html" target="_blank" rel="noopener"><code>irq_vectors.h</code></a>。下面这一段是该头文件的注释，详细描述了IRQ向量的基本信息：</p>
 <ul>
 <li>单个CPU拥有256（8位）IDT，即能处理256个中断，定义为<code>NR_VECTORS</code></li>
 <li>CPU处理的中断分为几类<ul>
@@ -799,7 +803,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-什么是中断"><span class="nav-text">二. 什么是中断</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-中断结构体"><span class="nav-text">三. 中断结构体</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-中断流程"><span class="nav-text">四. 中断流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源码资料"><span class="nav-text">源码资料</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-text">参考资料</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-什么是中断"><span class="nav-text">二. 什么是中断</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-软中断的必要性"><span class="nav-text">三. 软中断的必要性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-中断结构体"><span class="nav-text">四. 中断结构体</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-中断流程"><span class="nav-text">五. 中断流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源码资料"><span class="nav-text">源码资料</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-text">参考资料</span></a></li></ol></div>
             
 
           </div>
@@ -833,7 +837,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">139.6k</span>
+    <span title="Site words total count">140.4k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
