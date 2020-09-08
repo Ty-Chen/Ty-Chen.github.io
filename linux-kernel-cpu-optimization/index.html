@@ -87,7 +87,7 @@
 <meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;本文介绍Linux服务器CPU性能评估和优化的基本方法。">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/84/5a/8408bb45922afb2db09629a9a7eb1d5a.png">
 <meta property="article:published_time" content="2020-08-26T15:53:46.000Z">
-<meta property="article:modified_time" content="2020-09-08T15:37:55.971Z">
+<meta property="article:modified_time" content="2020-09-08T16:08:04.076Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -308,8 +308,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-09-08T23:37:55+08:00" content="2020-09-08">
-                2020-09-08
+              <time itemprop="dateUpdated" datetime="2020-09-09T00:08:04+08:00" content="2020-09-09">
+                2020-09-09
               </time>
             </span>
           
@@ -372,7 +372,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  3.8k
+                  4k
                 </span>
               
 
@@ -388,7 +388,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  15
+                  16
                 </span>
               
             </div>
@@ -513,9 +513,8 @@
 <p>&emsp;&emsp;对于软中断较多的情况，可以监控<code>/proc/softirqs</code>来观察到底是哪种软中断过多，主要有TIMER（定时中断）、NET_RX（网络接收）、SCHED（内核调度）、RCU（RCU 锁）等这几个软中断。</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> watch -d cat /proc/softirqs</span></span><br><span class="line">                    CPU0       CPU1</span><br><span class="line">          HI:          0          0</span><br><span class="line">       TIMER:    1083906    2368646</span><br><span class="line">      NET_TX:         53          9</span><br><span class="line">      NET_RX:    1550643    1916776</span><br><span class="line">       BLOCK:          0          0</span><br><span class="line">    IRQ_POLL:          0          0</span><br><span class="line">     TASKLET:     333637       3930</span><br><span class="line">       SCHED:     963675    2293171</span><br><span class="line">     HRTIMER:          0          0</span><br><span class="line">         RCU:    1542111    1590625</span><br></pre></td></tr></table></figure>
 
-
-
-
+<p>&emsp;&emsp;针对网络收发导致的软中断，我们可以通过<code>sar</code>查看并比较出是否出现了小包问题等，最后通过<code>tcmdump</code>进行更深入的抓包分析。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># -n DEV 表示显示网络收发的报告，间隔<span class="number">1</span>秒输出一组数据</span><br><span class="line">$ sar -n DEV <span class="number">1</span></span><br><span class="line"><span class="number">15</span>:<span class="number">03</span>:<span class="number">46</span>        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s   %ifutil</span><br><span class="line"><span class="number">15</span>:<span class="number">03</span>:<span class="number">47</span>         eth0  <span class="number">12607.00</span>   <span class="number">6304.00</span>    <span class="number">664.86</span>    <span class="number">358.11</span>      <span class="number">0.00</span>      <span class="number">0.00</span>      <span class="number">0.00</span>      <span class="number">0.01</span></span><br><span class="line"><span class="number">15</span>:<span class="number">03</span>:<span class="number">47</span>      docker0   <span class="number">6302.00</span>  <span class="number">12604.00</span>    <span class="number">270.79</span>    <span class="number">664.66</span>      <span class="number">0.00</span>      <span class="number">0.00</span>      <span class="number">0.00</span>      <span class="number">0.00</span></span><br><span class="line"><span class="number">15</span>:<span class="number">03</span>:<span class="number">47</span>           lo      <span class="number">0.00</span>      <span class="number">0.00</span>      <span class="number">0.00</span>      <span class="number">0.00</span>      <span class="number">0.00</span>      <span class="number">0.00</span>      <span class="number">0.00</span>      <span class="number">0.00</span></span><br><span class="line"><span class="number">15</span>:<span class="number">03</span>:<span class="number">47</span>    veth9f6bbcd   <span class="number">6302.00</span>  <span class="number">12604.00</span>    <span class="number">356.95</span>    <span class="number">664.66</span>      <span class="number">0.00</span>      <span class="number">0.00</span>      <span class="number">0.00</span>      <span class="number">0.05</span></span><br></pre></td></tr></table></figure>
 
 <h2 id="三-压测工具"><a href="#三-压测工具" class="headerlink" title="三. 压测工具"></a>三. 压测工具</h2><h3 id="3-1-stress"><a href="#3-1-stress" class="headerlink" title="3.1 stress"></a>3.1 stress</h3><p>&emsp;&emsp;stress 是一个 Linux 系统压力测试工具，可以用作异常进程模拟平均负载升高的场景。</p>
 <p>&emsp;&emsp;stress基于多进程的，会fork多个进程，导致进程上下文切换，导致us开销很高；</p>
@@ -528,7 +527,7 @@
 <h3 id="3-3-ab"><a href="#3-3-ab" class="headerlink" title="3.3 ab"></a>3.3 ab</h3><p>&emsp;&emsp; ab是apache自带的压力测试工具。ab非常实用，它不仅可以对apache服务器进行网站访问压力测试，也可以对或其它类型的服务器进行压力测试。比如nginx、tomcat、IIS等。</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> c表示并发数， n表示测试次数， 还可以用t来指定测试时间</span></span><br><span class="line">ty@ubuntu:~$ ab -c 10 -n 100 http://192.168.11.129:10000/</span><br><span class="line">This is ApacheBench, Version 2.3 &lt;$Revision: 1706008 $&gt;</span><br><span class="line">Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/</span><br><span class="line">Licensed to The Apache Software Foundation, http://www.apache.org/</span><br><span class="line"></span><br><span class="line">Benchmarking 192.168.11.129 (be patient).....done</span><br><span class="line"></span><br><span class="line">Server Software:        nginx/1.15.4</span><br><span class="line">Server Hostname:        192.168.11.129</span><br><span class="line">Server Port:            10000</span><br><span class="line"></span><br><span class="line">Document Path:          /</span><br><span class="line">Document Length:        9 bytes</span><br><span class="line"></span><br><span class="line">Concurrency Level:      10</span><br><span class="line">Time taken for tests:   1.038 seconds</span><br><span class="line">Complete requests:      100</span><br><span class="line">Failed requests:        0</span><br><span class="line">Total transferred:      17200 bytes</span><br><span class="line">HTML transferred:       900 bytes</span><br><span class="line">Requests per second:    96.31 [#/sec] (mean)</span><br><span class="line">Time per request:       103.826 [ms] (mean)</span><br><span class="line">Time per request:       10.383 [ms] (mean, across all concurrent requests)</span><br><span class="line">Transfer rate:          16.18 [Kbytes/sec] received</span><br><span class="line"></span><br><span class="line">Connection Times (ms)</span><br><span class="line">              min  mean[+/-sd] median   max</span><br><span class="line">Connect:        0    0   0.2      0       1</span><br><span class="line">Processing:    70  101  25.0     94     248</span><br><span class="line">Waiting:       69  101  25.0     93     248</span><br><span class="line">Total:         71  101  25.1     94     248</span><br><span class="line"></span><br><span class="line">Percentage of the requests served within a certain time (ms)</span><br><span class="line"><span class="meta">  50%</span><span class="bash">     94</span></span><br><span class="line"><span class="meta">  66%</span><span class="bash">     95</span></span><br><span class="line"><span class="meta">  75%</span><span class="bash">     97</span></span><br><span class="line"><span class="meta">  80%</span><span class="bash">     98</span></span><br><span class="line"><span class="meta">  90%</span><span class="bash">    130</span></span><br><span class="line"><span class="meta">  95%</span><span class="bash">    151</span></span><br><span class="line"><span class="meta">  98%</span><span class="bash">    200</span></span><br><span class="line"><span class="meta">  99%</span><span class="bash">    248</span></span><br><span class="line"><span class="meta"> 100%</span><span class="bash">    248 (longest request)</span></span><br></pre></td></tr></table></figure>
 
-
+<h3 id="3-4-hping3"><a href="#3-4-hping3" class="headerlink" title="3.4 hping3"></a>3.4 hping3</h3>
       
     </div>
     
@@ -826,7 +825,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-CPU性能查询工具详解"><span class="nav-text">二. CPU性能查询工具详解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-平均负载"><span class="nav-text">2.1 平均负载</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-CPU使用率"><span class="nav-text">2.2 CPU使用率</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-CPU上下文切换"><span class="nav-text">2.3 CPU上下文切换</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-不可中断进程-僵尸进程"><span class="nav-text">2.4 不可中断进程&#x2F;僵尸进程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-软中断"><span class="nav-text">2.5 软中断</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-压测工具"><span class="nav-text">三. 压测工具</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-stress"><span class="nav-text">3.1 stress</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-sysbench"><span class="nav-text">3.2 sysbench</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-ab"><span class="nav-text">3.3 ab</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-CPU性能查询工具详解"><span class="nav-text">二. CPU性能查询工具详解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-平均负载"><span class="nav-text">2.1 平均负载</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-CPU使用率"><span class="nav-text">2.2 CPU使用率</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-CPU上下文切换"><span class="nav-text">2.3 CPU上下文切换</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-不可中断进程-僵尸进程"><span class="nav-text">2.4 不可中断进程&#x2F;僵尸进程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-软中断"><span class="nav-text">2.5 软中断</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-压测工具"><span class="nav-text">三. 压测工具</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-stress"><span class="nav-text">3.1 stress</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-sysbench"><span class="nav-text">3.2 sysbench</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-ab"><span class="nav-text">3.3 ab</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-hping3"><span class="nav-text">3.4 hping3</span></a></li></ol></li></ol></div>
             
 
           </div>
@@ -860,7 +859,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">140.6k</span>
+    <span title="Site words total count">140.7k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
