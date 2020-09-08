@@ -87,7 +87,7 @@
 <meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;本文介绍Linux服务器CPU性能评估和优化的基本方法。">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/84/5a/8408bb45922afb2db09629a9a7eb1d5a.png">
 <meta property="article:published_time" content="2020-08-26T15:53:46.000Z">
-<meta property="article:modified_time" content="2020-09-06T16:19:13.011Z">
+<meta property="article:modified_time" content="2020-09-08T15:37:55.971Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -308,8 +308,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-09-07T00:19:13+08:00" content="2020-09-07">
-                2020-09-07
+              <time itemprop="dateUpdated" datetime="2020-09-08T23:37:55+08:00" content="2020-09-08">
+                2020-09-08
               </time>
             </span>
           
@@ -372,7 +372,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  3.6k
+                  3.8k
                 </span>
               
 
@@ -509,7 +509,14 @@
 <p>&emsp;&emsp;除此之外，还可以使用<code>dstat</code>命令观察CPU和I/O的使用情况。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"># 每<span class="number">1</span>秒输出一次，共输出<span class="number">5</span>次</span><br><span class="line">ty@ubuntu:~$ dstat <span class="number">1</span> <span class="number">5</span></span><br><span class="line">You did <span class="keyword">not</span> select any stats, <span class="keyword">using</span> -cdngy by <span class="keyword">default</span>.</span><br><span class="line">----total-cpu-usage---- -dsk/total- -net/total- ---paging-- ---system--</span><br><span class="line">usr sys idl wai hiq siq| <span class="built_in">read</span>  writ| recv  send|  in   out | <span class="keyword">int</span>   csw </span><br><span class="line">  <span class="number">8</span>  <span class="number">15</span>  <span class="number">54</span>  <span class="number">24</span>   <span class="number">0</span>   <span class="number">0</span>|<span class="number">6105</span>k   <span class="number">89</span>k|   <span class="number">0</span>     <span class="number">0</span> |   <span class="number">0</span>     <span class="number">0</span> | <span class="number">352</span>  <span class="number">1896</span> </span><br><span class="line">  <span class="number">0</span>   <span class="number">0</span> <span class="number">100</span>   <span class="number">0</span>   <span class="number">0</span>   <span class="number">0</span>|  <span class="number">56</span>k    <span class="number">0</span> |   <span class="number">0</span>     <span class="number">0</span> |   <span class="number">0</span>     <span class="number">0</span> |  <span class="number">74</span>   <span class="number">198</span> </span><br><span class="line">  <span class="number">0</span>   <span class="number">0</span>  <span class="number">99</span>   <span class="number">0</span>   <span class="number">0</span>   <span class="number">1</span>|   <span class="number">0</span>     <span class="number">0</span> |   <span class="number">0</span>     <span class="number">0</span> |   <span class="number">0</span>     <span class="number">0</span> | <span class="number">215</span>   <span class="number">483</span> </span><br><span class="line">  <span class="number">0</span>   <span class="number">0</span> <span class="number">100</span>   <span class="number">0</span>   <span class="number">0</span>   <span class="number">0</span>|   <span class="number">0</span>     <span class="number">0</span> | <span class="number">120B</span>    <span class="number">0</span> |   <span class="number">0</span>     <span class="number">0</span> | <span class="number">113</span>   <span class="number">298</span> </span><br><span class="line">  <span class="number">0</span>   <span class="number">0</span> <span class="number">100</span>   <span class="number">0</span>   <span class="number">0</span>   <span class="number">0</span>|   <span class="number">0</span>     <span class="number">0</span> |  <span class="number">60B</span>    <span class="number">0</span> |   <span class="number">0</span>     <span class="number">0</span> | <span class="number">260</span>   <span class="number">634</span></span><br></pre></td></tr></table></figure>
 
-<h3 id="2-5-软中断"><a href="#2-5-软中断" class="headerlink" title="2.5 软中断"></a>2.5 软中断</h3><p>&emsp;&emsp;</p>
+<h3 id="2-5-软中断"><a href="#2-5-软中断" class="headerlink" title="2.5 软中断"></a>2.5 软中断</h3><p>&emsp;&emsp;软中断 CPU 使用率（softirq）升高是一种很常见的性能问题。虽然软中断的类型很多，但实际生产中，我们遇到的性能瓶颈大多是网络收发类型的软中断，特别是网络接收的软中断，除此之外还有可能来自于定时、调度、RCU锁等。通过<code>top</code>命令可以观察软中断是否较多。</p>
+<p>&emsp;&emsp;对于软中断较多的情况，可以监控<code>/proc/softirqs</code>来观察到底是哪种软中断过多，主要有TIMER（定时中断）、NET_RX（网络接收）、SCHED（内核调度）、RCU（RCU 锁）等这几个软中断。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> watch -d cat /proc/softirqs</span></span><br><span class="line">                    CPU0       CPU1</span><br><span class="line">          HI:          0          0</span><br><span class="line">       TIMER:    1083906    2368646</span><br><span class="line">      NET_TX:         53          9</span><br><span class="line">      NET_RX:    1550643    1916776</span><br><span class="line">       BLOCK:          0          0</span><br><span class="line">    IRQ_POLL:          0          0</span><br><span class="line">     TASKLET:     333637       3930</span><br><span class="line">       SCHED:     963675    2293171</span><br><span class="line">     HRTIMER:          0          0</span><br><span class="line">         RCU:    1542111    1590625</span><br></pre></td></tr></table></figure>
+
+
+
+
+
 <h2 id="三-压测工具"><a href="#三-压测工具" class="headerlink" title="三. 压测工具"></a>三. 压测工具</h2><h3 id="3-1-stress"><a href="#3-1-stress" class="headerlink" title="3.1 stress"></a>3.1 stress</h3><p>&emsp;&emsp;stress 是一个 Linux 系统压力测试工具，可以用作异常进程模拟平均负载升高的场景。</p>
 <p>&emsp;&emsp;stress基于多进程的，会fork多个进程，导致进程上下文切换，导致us开销很高；</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> --cpu表示模拟CPU，1表示100%，-i表示I/O压力测试，-c表示进程</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> stress --cpu 1 --timeout 600</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> stress -i 1 --timeout 600</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> stress -c 8 --timeout 600</span></span><br></pre></td></tr></table></figure>
@@ -853,7 +860,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">140.4k</span>
+    <span title="Site words total count">140.6k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
