@@ -88,7 +88,7 @@
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/94/b3/94efd92cbeb4d4ff155a645b93d71eb3.jpg">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/27/9a/274e22b3f5196a4c68bb6813fb643f9a.png">
 <meta property="article:published_time" content="2020-06-07T13:12:49.000Z">
-<meta property="article:modified_time" content="2020-07-18T05:54:53.812Z">
+<meta property="article:modified_time" content="2020-09-11T15:21:30.038Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -312,8 +312,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-07-18T13:54:53+08:00" content="2020-07-18">
-                2020-07-18
+              <time itemprop="dateUpdated" datetime="2020-09-11T23:21:30+08:00" content="2020-09-11">
+                2020-09-11
               </time>
             </span>
           
@@ -376,7 +376,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  4.9k
+                  5.2k
                 </span>
               
 
@@ -392,7 +392,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  23
+                  24
                 </span>
               
             </div>
@@ -416,8 +416,10 @@
         <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;本文为内存部分最后一篇，介绍内存映射。内存映射不仅是物理内存和虚拟内存间的映射，也包括将文件中的内容映射到虚拟内存空间。这个时候，访问内存空间就能够访问到文件里面的数据。而仅有物理内存和虚拟内存的映射，是一种特殊情况。本文首先分析用户态在堆中申请小块内存的<code>brk</code>和申请大块内存的<code>mmap</code>，之后会分析内核态的内存映射机制<code>vmalloc</code>，<code>kmap_atomic</code>，<code>swapper_pg_dir</code>以及内核态缺页异常。</p>
 <a id="more"></a>
 
-<h2 id="二-用户态内存映射"><a href="#二-用户态内存映射" class="headerlink" title="二. 用户态内存映射"></a>二. 用户态内存映射</h2><p>&emsp;&emsp;用户态调用<code>malloc</code>会分配堆内存空间，而实际上则是完成了一次用户态的内存映射，根据分配空间的大小，内存映射主要有<code>brk</code>和<code>mmap</code>，下面分别详细分析。</p>
-<h3 id="2-1-小块内存申请"><a href="#2-1-小块内存申请" class="headerlink" title="2.1 小块内存申请"></a>2.1 小块内存申请</h3><p>&emsp;&emsp;<code>brk</code>系统调用为<code>sys_brk()</code>函数，其参数<code>brk</code>是新的堆顶位置，而<code>mm-&gt;brk</code>是原堆顶位置。该函数主要逻辑如下</p>
+<h2 id="二-用户态内存映射"><a href="#二-用户态内存映射" class="headerlink" title="二. 用户态内存映射"></a>二. 用户态内存映射</h2><p>&emsp;&emsp;用户态调用<code>malloc()</code>会分配堆内存空间，而实际上则是完成了一次用户态的内存映射，根据分配空间的大小，内存映射对应的系统调用主要有<code>brk()</code>和<code>mmap()</code>(当然我们也可以直接调用<code>mmap()</code>来映射文件)。对小块内存（小于 128K），C 标准库使用 <code>brk()</code> 来分配，也就是通过移动堆顶的位置来分配内存。这些内存释放后并不会立刻归还系统，而是被缓存起来，这样就可以重复使用。而大块内存（大于 128K），则直接使用内存映射 <code>mmap()</code> 来分配，也就是在文件映射段找一块空闲内存分配出去。这两种方式，自然各有优缺点。</p>
+<p>&emsp;&emsp;<code>brk()</code> 方式的缓存，可以减少缺页异常的发生，提高内存访问效率。不过，由于这些内存没有归还系统，在内存工作繁忙时，频繁的内存分配和释放会造成内存碎片。</p>
+<p>&emsp;&emsp; <code>mmap()</code> 方式分配的内存，会在释放时直接归还系统，所以每次 <code>mmap()</code> 都会发生缺页异常。在内存工作繁忙时，频繁的内存分配会导致大量的缺页异常，使内核的管理负担增大。这也是 <code>malloc()</code> 只对大块内存使用 <code>mmap()</code>  的原因。</p>
+<h3 id="2-1-小块内存申请"><a href="#2-1-小块内存申请" class="headerlink" title="2.1 小块内存申请"></a>2.1 小块内存申请</h3><p>&emsp;&emsp;<code>brk()</code>系统调用为<code>sys_brk()</code>函数，其参数<code>brk</code>是新的堆顶位置，而<code>mm-&gt;brk</code>是原堆顶位置。该函数主要逻辑如下</p>
 <ul>
 <li>将原来的堆顶和现在的堆顶按照页对齐地址比较大小，判断是否在同一页中<ul>
 <li>如果同一页则不需要分配新页，直接跳转至<code>set_brk</code>，设置<code>mm-&gt;brk</code>为新的<code>brk</code>即可</li>
@@ -520,7 +522,7 @@
 <h3 id="3-3-页交换"><a href="#3-3-页交换" class="headerlink" title="3.3 页交换"></a>3.3 页交换</h3><p>&emsp;&emsp;前文提到了我们会通过主动回收或者被动回收的方式将物理内存已映射的页面回收至硬盘中，当数据再次访问时，我们又需要通过<code>do_swap_page()</code>将其从硬盘中读回来。<code>do_swap_page()</code> 函数逻辑流程如下：查找 <code>swap</code> 文件有没有缓存页。如果没有，就调用 <code>swapin_readahead()</code>将 <code>swap</code> 文件读到内存中来形成内存页，并通过 <code>mk_pte()</code> 生成页表项。<code>set_pte_at</code> 将页表项插入页表，<code>swap_free</code> 将 <code>swap</code> 文件清理。因为重新加载回内存了，不再需要 <code>swap</code> 文件了。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">vm_fault_t</span> <span class="title">do_swap_page</span><span class="params">(struct vm_fault *vmf)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">......</span><br><span class="line">    entry = pte_to_swp_entry(vmf-&gt;orig_pte);</span><br><span class="line">......</span><br><span class="line">    page = lookup_swap_cache(entry, vma, vmf-&gt;address);</span><br><span class="line">    swapcache = page;</span><br><span class="line">    <span class="keyword">if</span> (!page) &#123;</span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">swap_info_struct</span> *<span class="title">si</span> = <span class="title">swp_swap_info</span>(<span class="title">entry</span>);</span></span><br><span class="line">        <span class="keyword">if</span> (si-&gt;flags &amp; SWP_SYNCHRONOUS_IO &amp;&amp;</span><br><span class="line">                __swap_count(si, entry) == <span class="number">1</span>) &#123;</span><br><span class="line">            <span class="comment">/* skip swapcache */</span></span><br><span class="line">            page = alloc_page_vma(GFP_HIGHUSER_MOVABLE, vma,</span><br><span class="line">                            vmf-&gt;address);</span><br><span class="line">......</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            page = swapin_readahead(entry, GFP_HIGHUSER_MOVABLE,</span><br><span class="line">                        vmf);</span><br><span class="line">            swapcache = page;</span><br><span class="line">        &#125;</span><br><span class="line">......</span><br><span class="line">    pte = mk_pte(page, vma-&gt;vm_page_prot);</span><br><span class="line">......</span><br><span class="line">    set_pte_at(vma-&gt;vm_mm, vmf-&gt;address, vmf-&gt;pte, pte);</span><br><span class="line">    arch_do_swap_page(vma-&gt;vm_mm, vma, vmf-&gt;address, pte, vmf-&gt;orig_pte);</span><br><span class="line">    vmf-&gt;orig_pte = pte;</span><br><span class="line">......</span><br><span class="line">    swap_free(entry);</span><br><span class="line">......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>&emsp;&emsp;通过以上步骤，用户态的缺页异常就处理完毕了。物理内存中有了页面，页表也建立好了映射。接下来，用户程序在虚拟内存空间里面可以通过虚拟地址顺利经过页表映射的访问物理页面上的数据了。页表一般都很大，只能存放在内存中。操作系统每次访问内存都要折腾两步，先通过查询页表得到物理地址，然后访问该物理地址读取指令、数据。为了加快映射速度，我们引入了 <a href="https://en.wikipedia.org/wiki/Translation_lookaside_buffer#:~:text=A%20translation%20lookaside%20buffer%20(TLB,called%20an%20address%2Dtranslation%20cache." target="_blank" rel="noopener">TLB</a>（Translation Lookaside Buffer），我们经常称为快表，专门用来做地址映射的硬件设备。它不在内存中，可存储的数据比较少，但是比内存要快。所以我们可以想象，TLB 就是页表的 Cache，其中存储了当前最可能被访问到的页表项，其内容是部分页表项的一个副本。有了 TLB 之后，我们先查块表，块表中有映射关系，然后直接转换为物理地址。如果在 TLB 查不到映射关系时，才会到内存中查询页表。</p>
+<p>&emsp;&emsp;通过以上步骤，用户态的缺页异常就处理完毕了。物理内存中有了页面，页表也建立好了映射。接下来，用户程序在虚拟内存空间里面可以通过虚拟地址顺利经过页表映射的访问物理页面上的数据了。页表一般都很大，只能存放在内存中。操作系统每次访问内存都要折腾两步，先通过查询页表得到物理地址，然后访问该物理地址读取指令、数据。为了加快映射速度，我们引入了 <a href="https://en.wikipedia.org/wiki/Translation_lookaside_buffer#:~:text=A%20translation%20lookaside%20buffer%20(TLB,called%20an%20address%2Dtranslation%20cache" target="_blank" rel="noopener">TLB</a>（Translation Lookaside Buffer），我们经常称为快表，专门用来做地址映射的硬件设备。它不在内存中，可存储的数据比较少，但是比内存要快。所以我们可以想象，TLB 就是页表的 Cache，其中存储了当前最可能被访问到的页表项，其内容是部分页表项的一个副本。有了 TLB 之后，我们先查块表，块表中有映射关系，然后直接转换为物理地址。如果在 TLB 查不到映射关系时，才会到内存中查询页表。</p>
 <h2 id="四-内核态内存映射及缺页异常"><a href="#四-内核态内存映射及缺页异常" class="headerlink" title="四. 内核态内存映射及缺页异常"></a>四. 内核态内存映射及缺页异常</h2><p>&emsp;&emsp;和用户态使用<code>malloc()</code>类似，内核态也有相应的内存映射函数：<code>vmalloc()</code>可用于分配不连续物理页（使用伙伴系统），<code>kmem_cache_alloc()</code>和<code>kmem_cache_create()</code>使用slub分配器分配小块内存，而<code>kmalloc()</code>类似于<code>malloc()</code>，在分配大内存的时候会使用伙伴系统，分配小内存则使用slub分配器。分配内存后会转换为虚拟地址，保存在内核页表中进行映射，有需要时直接访问。由于<code>vmalloc()</code>会带来虚拟连续页和物理不连续页的映射，因此一般速度较慢，使用较少，相比而言<code>kmalloc()</code>使用的更为频繁。而<code>kmem_cache_alloc()</code>和<code>kmem_cache_create()</code>会分配更为精准的小内存块用于特定任务，因此也比较常用。</p>
 <p>&emsp;&emsp;相对于用户态，内核态还有一种特殊的映射：临时映射。内核态高端内存地区为了节省空间会选择临时映射，采用<code>kmap_atomic()</code>实现。如果是 32 位有高端地址的，就需要调用 <code>set_pte</code> 通过内核页表进行临时映射；如果是 64 位没有高端地址的，就调用 <code>page_address</code>，里面会调用 <code>lowmem_page_address</code>。其实低端内存的映射，会直接使用 <code>__va</code> 进行临时映射。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">kmap_atomic_prot</span><span class="params">(struct page *page, <span class="keyword">pgprot_t</span> prot)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">......</span><br><span class="line">    <span class="keyword">if</span> (!PageHighMem(page))</span><br><span class="line">        <span class="keyword">return</span> page_address(page);</span><br><span class="line">......</span><br><span class="line">    vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);</span><br><span class="line">    set_pte(kmap_pte-idx, mk_pte(page, prot));</span><br><span class="line">......</span><br><span class="line">    <span class="keyword">return</span> (<span class="keyword">void</span> *)vaddr;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">kmap_atomic</span><span class="params">(struct page *page)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> kmap_atomic_prot(page, kmap_prot);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> __always_inline <span class="keyword">void</span> *<span class="title">lowmem_page_address</span><span class="params">(<span class="keyword">const</span> struct page *page)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> page_to_virt(page);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> page_to_virt(x)  __va(PFN_PHYS(page_to_pfn(x)</span></span><br></pre></td></tr></table></figure>
@@ -883,7 +885,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">140.9k</span>
+    <span title="Site words total count">142.1k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>

@@ -87,7 +87,7 @@
 <meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;本文介绍Linux服务器CPU性能评估和优化的基本方法。">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/84/5a/8408bb45922afb2db09629a9a7eb1d5a.png">
 <meta property="article:published_time" content="2020-08-26T15:53:46.000Z">
-<meta property="article:modified_time" content="2020-09-10T16:11:31.908Z">
+<meta property="article:modified_time" content="2020-09-11T14:24:03.011Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -308,7 +308,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-09-11T00:11:31+08:00" content="2020-09-11">
+              <time itemprop="dateUpdated" datetime="2020-09-11T22:24:03+08:00" content="2020-09-11">
                 2020-09-11
               </time>
             </span>
@@ -372,7 +372,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  4.2k
+                  5k
                 </span>
               
 
@@ -388,7 +388,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  17
+                  20
                 </span>
               
             </div>
@@ -530,7 +530,24 @@
 <h3 id="3-4-hping3"><a href="#3-4-hping3" class="headerlink" title="3.4 hping3"></a>3.4 hping3</h3><p>&emsp;&emsp;<code>hping3</code>可以用来发送HTTP请求，模拟Nginx的客户端操作</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> -S参数表示设置TCP协议的SYN（同步序列号），-p表示目的端口为80</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> -i u100表示每隔100微秒发送一个网络帧，通过该方法可以模拟SYN攻击</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> hping3 -S -p 80 -i u100 192.168.0.30</span></span><br></pre></td></tr></table></figure>
 
-<h2 id="四-CPU性能优化思路"><a href="#四-CPU性能优化思路" class="headerlink" title="四. CPU性能优化思路"></a>四. CPU性能优化思路</h2><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>&emsp;&emsp;</p>
+<h2 id="四-CPU性能优化思路"><a href="#四-CPU性能优化思路" class="headerlink" title="四. CPU性能优化思路"></a>四. CPU性能优化思路</h2><h3 id="4-1-应用程序优化"><a href="#4-1-应用程序优化" class="headerlink" title="4.1 应用程序优化"></a>4.1 应用程序优化</h3><p>&emsp;&emsp;首先，从应用程序的角度来说，降低 CPU 使用率的最好方法当然是排除所有不必要的工作，只保留最核心的逻辑。比如减少循环的层次、减少递归、减少动态内存分配等等。除此之外，应用程序的性能优化也包括很多种方法。</p>
+<ul>
+<li>编译器优化：很多编译器都会提供优化选项，适当开启它们，在编译阶段你就可以获得编译器的帮助，来提升性能。比如， gcc 就提供了优化选项 -O2，开启后会自动对应用程序的代码进行优化。</li>
+<li>算法优化：使用复杂度更低的算法，可以显著加快处理速度。</li>
+<li>异步处理：使用异步处理，可以避免程序因为等待某个资源而一直阻塞，从而提升程序的并发处理能力。比如，把轮询替换为事件通知，就可以避免轮询耗费 CPU 的问题。</li>
+<li>多线程代替多进程：前面讲过，相对于进程的上下文切换，线程的上下文切换并不切换进程地址空间，因此可以降低上下文切换的成本。</li>
+<li>善用缓存：经常访问的数据或者计算过程中的步骤，可以放到内存中缓存起来，这样在下次用时就能直接从内存中获取，加快程序的处理速度。</li>
+</ul>
+<h3 id="4-2-系统优化"><a href="#4-2-系统优化" class="headerlink" title="4.2 系统优化"></a>4.2 系统优化</h3><p>&emsp;&emsp;从系统的角度来说，优化 CPU 的运行，一方面要充分利用 CPU 缓存的本地性，加速缓存访问；另一方面，就是要控制进程的 CPU 使用情况，减少进程间的相互影响。具体来说，系统层面的 CPU 优化方法也有不少。</p>
+<ul>
+<li>CPU 绑定：把进程绑定到一个或者多个 CPU 上，可以提高 CPU 缓存的命中率，减少跨 CPU 调度带来的上下文切换问题。</li>
+<li>CPU 独占：跟 CPU 绑定类似，进一步将 CPU 分组，并通过 CPU 亲和性机制为其分配进程。这样，这些 CPU 就由指定的进程独占，换句话说，不允许其他进程再来使用这些 CPU。</li>
+<li>优先级调整：使用 nice 调整进程的优先级，正值调低优先级，负值调高优先级。优先级的数值含义前面我们提到过，忘了的话及时复习一下。在这里，适当降低非核心应用的优先级，增高核心应用的优先级，可以确保核心应用得到优先处理。</li>
+<li>为进程设置资源限制：使用 Linux cgroups 来设置进程的 CPU 使用上限，可以防止由于某个应用自身的问题，而耗尽系统资源。</li>
+<li>NUMA（Non-Uniform Memory Access）优化：支持 NUMA 的处理器会被划分为多个 node，每个 node 都有自己的本地内存空间。NUMA 优化，其实就是让 CPU 尽可能只访问本地内存。</li>
+<li>中断负载均衡：无论是软中断还是硬中断，它们的中断处理程序都可能会耗费大量的 CPU。开启 irqbalance 服务或者配置 smp_affinity，就可以把中断处理过程自动负载均衡到多个 CPU 上。</li>
+</ul>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>&emsp;&emsp;优化永远是谋定而后动的事，在做好充分的测评后再有针对性的进行，才能够以最小的代价获得最大的收益。</p>
 <h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] Linux-insides</p>
 <p>[2] 深入理解Linux内核</p>
 <p>[3] Linux内核设计的艺术</p>
@@ -837,7 +854,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-CPU性能查询工具详解"><span class="nav-text">二. CPU性能查询工具详解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-平均负载"><span class="nav-text">2.1 平均负载</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-CPU使用率"><span class="nav-text">2.2 CPU使用率</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-CPU上下文切换"><span class="nav-text">2.3 CPU上下文切换</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-不可中断进程-僵尸进程"><span class="nav-text">2.4 不可中断进程&#x2F;僵尸进程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-软中断"><span class="nav-text">2.5 软中断</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-压测工具"><span class="nav-text">三. 压测工具</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-stress"><span class="nav-text">3.1 stress</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-sysbench"><span class="nav-text">3.2 sysbench</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-ab"><span class="nav-text">3.3 ab</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-hping3"><span class="nav-text">3.4 hping3</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-CPU性能优化思路"><span class="nav-text">四. CPU性能优化思路</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-CPU性能查询工具详解"><span class="nav-text">二. CPU性能查询工具详解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-平均负载"><span class="nav-text">2.1 平均负载</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-CPU使用率"><span class="nav-text">2.2 CPU使用率</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-CPU上下文切换"><span class="nav-text">2.3 CPU上下文切换</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-不可中断进程-僵尸进程"><span class="nav-text">2.4 不可中断进程&#x2F;僵尸进程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-软中断"><span class="nav-text">2.5 软中断</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-压测工具"><span class="nav-text">三. 压测工具</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-stress"><span class="nav-text">3.1 stress</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-sysbench"><span class="nav-text">3.2 sysbench</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-ab"><span class="nav-text">3.3 ab</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-hping3"><span class="nav-text">3.4 hping3</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-CPU性能优化思路"><span class="nav-text">四. CPU性能优化思路</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-应用程序优化"><span class="nav-text">4.1 应用程序优化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-系统优化"><span class="nav-text">4.2 系统优化</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
@@ -871,7 +888,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">140.9k</span>
+    <span title="Site words total count">142.1k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>

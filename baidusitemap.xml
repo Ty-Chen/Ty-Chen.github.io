@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://ty-chen.github.io/linux-kernel-mmap/</loc>
+    <lastmod>2020-09-11</lastmod>
+  </url>  <url>
+    <loc>https://ty-chen.github.io/linux-kernel-mm-mgr/</loc>
+    <lastmod>2020-09-11</lastmod>
+  </url>  <url>
     <loc>https://ty-chen.github.io/linux-kernel-cpu-optimization/</loc>
-    <lastmod>2020-09-10</lastmod>
+    <lastmod>2020-09-11</lastmod>
   </url>  <url>
     <loc>https://ty-chen.github.io/linux-kernel-interrupt/</loc>
     <lastmod>2020-09-07</lastmod>
@@ -59,12 +65,6 @@
     <lastmod>2020-07-18</lastmod>
   </url>  <url>
     <loc>https://ty-chen.github.io/linux-kernel-mmstruct/</loc>
-    <lastmod>2020-07-18</lastmod>
-  </url>  <url>
-    <loc>https://ty-chen.github.io/linux-kernel-mm-mgr/</loc>
-    <lastmod>2020-07-18</lastmod>
-  </url>  <url>
-    <loc>https://ty-chen.github.io/linux-kernel-mmap/</loc>
     <lastmod>2020-07-18</lastmod>
   </url>  <url>
     <loc>https://ty-chen.github.io/linux-kernel-fs/</loc>

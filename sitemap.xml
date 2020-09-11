@@ -2,9 +2,23 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://ty-chen.github.io/linux-kernel-mmap/</loc>
+    
+    <lastmod>2020-09-11T15:21:30.038Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://ty-chen.github.io/linux-kernel-mm-mgr/</loc>
+    
+    <lastmod>2020-09-11T15:11:13.007Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://ty-chen.github.io/linux-kernel-cpu-optimization/</loc>
     
-    <lastmod>2020-09-10T16:11:31.908Z</lastmod>
+    <lastmod>2020-09-11T14:24:03.011Z</lastmod>
     
   </url>
   
@@ -145,20 +159,6 @@
     <loc>https://ty-chen.github.io/linux-kernel-mmstruct/</loc>
     
     <lastmod>2020-07-18T05:55:34.242Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://ty-chen.github.io/linux-kernel-mm-mgr/</loc>
-    
-    <lastmod>2020-07-18T05:55:19.001Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://ty-chen.github.io/linux-kernel-mmap/</loc>
-    
-    <lastmod>2020-07-18T05:54:53.812Z</lastmod>
     
   </url>
   
