@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://ty-chen.github.io/linux-kernel-memory-optimization/</loc>
+    
+    <lastmod>2020-09-12T16:36:54.296Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://ty-chen.github.io/linux-kernel-mmap/</loc>
     
     <lastmod>2020-09-11T15:21:30.038Z</lastmod>
