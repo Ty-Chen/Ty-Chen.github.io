@@ -300,7 +300,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-09-14T23:05:09+08:00" content="2020-09-14">
+              <time itemprop="dateUpdated" datetime="2020-09-14T23:25:30+08:00" content="2020-09-14">
                 2020-09-14
               </time>
             </span>
@@ -359,7 +359,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  474
+                  627
                 </span>
               
 
@@ -375,7 +375,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  1
+                  2
                 </span>
               
             </div>
@@ -399,7 +399,7 @@
         
           
             <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;本文将分析内存的性能指标、测试方法、压测工具以及内存优化的通常套路。</p>
-<h2 id="二-Buffer和Cache"><a href="#二-Buffer和Cache" class="headerlink" title="二. Buffer和Cache"></a>二. Buffer和Cache</h2><p>&emsp;&emsp;通过<code>free</code>或者<code>top</code>命令我们可以发现其将内存分为了buffer和cache等部分。通过<code>man free</code>可以查阅到下面的说明</p>
+<h2 id="二-Buffer和Cache"><a href="#二-Buffer和Cache" class="headerlink" title="二. Buffer和Cache"></a>二. Buffer和Cache</h2><p>&emsp;&emsp;通过<code>free</code>或者<code>top</code>命令我们可以发现其将内存分为了buffer和cache等部分。Buffer 和 Cache 的设计目的，是为了提升系统的 I/O 性能。它们利用内存，充当起慢速磁盘与快速 CPU 之间的桥梁，可以加速 I/O 的访问速度。通过<code>man free</code>可以查阅到下面的说明</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">buffers    Memory used by kernel buffers (Buffers in /proc/meminfo)</span><br><span class="line">cache      Memory used by the page cache and slabs (Cached and SReclaimable in /proc/meminfo)</span><br></pre></td></tr></table></figure>
 
 <ul>
@@ -415,7 +415,11 @@
 <li><code>SReclaimable</code> 是 <code>Slab</code> 的一部分。<code>Slab</code> 包括两部分，其中的可回收部分，用 <code>SReclaimable</code> 记录；而不可回收部分，用 <code>SUnreclaim</code> 记录。</li>
 </ul>
 <p>&emsp;&emsp;最终总结：Buffer 是对磁盘数据的缓存，而 Cache 是文件数据的缓存，它们既会用在读请求中，也会用在写请求中。</p>
-<h2 id="三-内存性能参数"><a href="#三-内存性能参数" class="headerlink" title="三. 内存性能参数"></a>三. 内存性能参数</h2>
+<ul>
+<li>从写的角度来说，不仅可以优化磁盘和文件的写入，对应用程序也有好处，应用程序可以在数据真正落盘前，就返回去做其他工作。</li>
+<li>从读的角度来说，不仅可以提高那些频繁访问数据的读取速度，也降低了频繁 I/O 对磁盘的压力。</li>
+</ul>
+<h2 id="三-内存性能参数"><a href="#三-内存性能参数" class="headerlink" title="三. 内存性能参数"></a>三. 内存性能参数</h2><h3 id="3-1-缓存命中率"><a href="#3-1-缓存命中率" class="headerlink" title="3.1 缓存命中率"></a>3.1 缓存命中率</h3>
           
         
       
@@ -2354,7 +2358,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">142.6k</span>
+    <span title="Site words total count">142.7k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
