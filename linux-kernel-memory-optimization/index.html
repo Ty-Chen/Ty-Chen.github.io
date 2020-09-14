@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;本文将分析内存的性能指标、测试方法、压测工具以及内存优化的通常套路。 二. Buffer和Cache&amp;emsp;&amp;emsp;通过free或者top命令我们可以发现其将内存分为了buffer和cache等部分。通过man free可以查阅到下面的说明 12buffers    Memory used by kernel buffers (Buffers in &#x2F;pr">
 <meta property="article:published_time" content="2020-09-11T16:16:54.000Z">
-<meta property="article:modified_time" content="2020-09-13T03:59:48.800Z">
+<meta property="article:modified_time" content="2020-09-14T15:05:09.071Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -306,8 +306,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-09-13T11:59:48+08:00" content="2020-09-13">
-                2020-09-13
+              <time itemprop="dateUpdated" datetime="2020-09-14T23:05:09+08:00" content="2020-09-14">
+                2020-09-14
               </time>
             </span>
           
@@ -370,7 +370,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  430
+                  474
                 </span>
               
 
@@ -423,6 +423,7 @@
 <li><code>Cached</code> 是从磁盘读取文件的页缓存，也就是用来缓存从文件读取的数据。这样，下次访问这些文件数据时，就可以直接从内存中快速获取，而不需要再次访问缓慢的磁盘。</li>
 <li><code>SReclaimable</code> 是 <code>Slab</code> 的一部分。<code>Slab</code> 包括两部分，其中的可回收部分，用 <code>SReclaimable</code> 记录；而不可回收部分，用 <code>SUnreclaim</code> 记录。</li>
 </ul>
+<p>&emsp;&emsp;最终总结：Buffer 是对磁盘数据的缓存，而 Cache 是文件数据的缓存，它们既会用在读请求中，也会用在写请求中。</p>
 <h2 id="三-内存性能参数"><a href="#三-内存性能参数" class="headerlink" title="三. 内存性能参数"></a>三. 内存性能参数</h2>
       
     </div>
@@ -755,7 +756,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">142.5k</span>
+    <span title="Site words total count">142.6k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
