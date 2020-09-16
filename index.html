@@ -300,8 +300,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-09-16T00:06:11+08:00" content="2020-09-16">
-                2020-09-16
+              <time itemprop="dateUpdated" datetime="2020-09-17T00:19:42+08:00" content="2020-09-17">
+                2020-09-17
               </time>
             </span>
           
@@ -359,7 +359,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  633
+                  964
                 </span>
               
 
@@ -375,7 +375,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  2
+                  3
                 </span>
               
             </div>
@@ -419,7 +419,23 @@
 <li>从写的角度来说，不仅可以优化磁盘和文件的写入，对应用程序也有好处，应用程序可以在数据真正落盘前，就返回去做其他工作。</li>
 <li>从读的角度来说，不仅可以提高那些频繁访问数据的读取速度，也降低了频繁 I/O 对磁盘的压力。</li>
 </ul>
-<h2 id="三-内存性能参数"><a href="#三-内存性能参数" class="headerlink" title="三. 内存性能参数"></a>三. 内存性能参数</h2><h3 id="3-1-缓存命中率"><a href="#3-1-缓存命中率" class="headerlink" title="3.1 缓存命中率"></a>3.1 缓存命中率</h3><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2>
+<h2 id="三-内存性能参数"><a href="#三-内存性能参数" class="headerlink" title="三. 内存性能参数"></a>三. 内存性能参数</h2><h3 id="3-1-缓存命中率"><a href="#3-1-缓存命中率" class="headerlink" title="3.1 缓存命中率"></a>3.1 缓存命中率</h3><p>&emsp;&emsp;缓存命中率，是指直接通过缓存获取数据的请求次数，占所有数据请求次数的百分比。命中率越高，表示使用缓存带来的收益越高，应用程序的性能也就越好。实际上，缓存是现在所有高并发系统必需的核心模块，主要作用就是把经常访问的数据（也就是热点数据），提前读入到内存中。这样，下次访问时就可以直接从内存读取数据，而不需要经过硬盘，从而加快应用程序的响应速度。</p>
+<p>&emsp;&emsp;我们可以通过<code>cachestat</code>和<code>cachetop</code>命令进行查看。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> cachestat 1 3</span></span><br><span class="line">   TOTAL   MISSES     HITS  DIRTIES   BUFFERS_MB  CACHED_MB</span><br><span class="line">       2        0        2        1           17        279</span><br><span class="line">       2        0        2        1           17        279</span><br><span class="line">       2        0        2        1           17        279</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;这些指标从左到右依次表示：</p>
+<ul>
+<li>TOTAL ，表示总的 I/O 次数；</li>
+<li>MISSES ，表示缓存未命中的次数；</li>
+<li>HITS ，表示缓存命中的次数；</li>
+<li>DIRTIES， 表示新增到缓存中的脏页数；</li>
+<li>BUFFERS_MB 表示 Buffers 的大小，以 MB 为单位；</li>
+<li>CACHED_MB 表示 Cache 的大小，以 MB 为单位。</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> cachetop</span></span><br><span class="line">11:58:50 Buffers MB: 258 / Cached MB: 347 / Sort: HITS / Order: ascending</span><br><span class="line">PID      UID      CMD       HITS     MISSES   DIRTIES  READ_HIT%  WRITE_HIT%</span><br><span class="line">13029    root     python    1        0        0        100.0%     0.0%</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;READ_HIT 和 WRITE_HIT ，分别表示读和写的缓存命中率。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2>
           
         
       
@@ -2358,7 +2374,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">142.7k</span>
+    <span title="Site words total count">143.1k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
