@@ -79,15 +79,15 @@
 
 
 
-<meta name="description" content="一. 简介&amp;emsp;&amp;emsp;本文介绍Linux服务器CPU性能评估和优化的基本方法。">
+<meta name="description" content="一. 前言&amp;emsp;&amp;emsp;本文介绍Linux服务器CPU性能评估和优化的基本方法。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux操作系统学习笔记（二十五）CPU性能优化">
 <meta property="og:url" content="https://ty-chen.github.io/linux-kernel-cpu-optimization/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
-<meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;本文介绍Linux服务器CPU性能评估和优化的基本方法。">
+<meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;本文介绍Linux服务器CPU性能评估和优化的基本方法。">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/84/5a/8408bb45922afb2db09629a9a7eb1d5a.png">
 <meta property="article:published_time" content="2020-08-26T15:53:46.000Z">
-<meta property="article:modified_time" content="2020-09-11T14:24:03.011Z">
+<meta property="article:modified_time" content="2020-09-17T15:39:43.304Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -308,8 +308,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-09-11T22:24:03+08:00" content="2020-09-11">
-                2020-09-11
+              <time itemprop="dateUpdated" datetime="2020-09-17T23:39:43+08:00" content="2020-09-17">
+                2020-09-17
               </time>
             </span>
           
@@ -409,7 +409,7 @@
       
 
       
-        <h2 id="一-简介"><a href="#一-简介" class="headerlink" title="一. 简介"></a>一. 简介</h2><p>&emsp;&emsp;本文介绍Linux服务器CPU性能评估和优化的基本方法。</p>
+        <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;本文介绍Linux服务器CPU性能评估和优化的基本方法。</p>
 <a id="more"></a>
 
 <h2 id="二-CPU性能查询工具详解"><a href="#二-CPU性能查询工具详解" class="headerlink" title="二. CPU性能查询工具详解"></a>二. CPU性能查询工具详解</h2><h3 id="2-1-平均负载"><a href="#2-1-平均负载" class="headerlink" title="2.1 平均负载"></a>2.1 平均负载</h3><p>&emsp;&emsp;平均负载是指单位时间内，系统处于<strong>可运行状态</strong>和<strong>不可中断状态</strong>的平均进程数，也就是平均活跃进程数，它和 CPU 使用率并没有直接关系。所谓可运行状态的进程，是指<strong>正在使用 CPU 或者正在等待 CPU 的进程</strong>，也就是我们常用 ps 命令看到的，处于 <strong>R 状态（Running 或 Runnable）</strong>的进程。不可中断状态的进程则是正处于<strong>内核态关键流程中的进程</strong>，并且这些流程<strong>是不可打断的</strong>，比如最常见的是等待硬件设备的 I/O 响应，也就是我们在 ps 命令中看到的 <strong>D 状态（Uninterruptible Sleep，也称为 Disk Sleep）</strong>的进程。</p>
@@ -858,7 +858,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-CPU性能查询工具详解"><span class="nav-text">二. CPU性能查询工具详解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-平均负载"><span class="nav-text">2.1 平均负载</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-CPU使用率"><span class="nav-text">2.2 CPU使用率</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-CPU上下文切换"><span class="nav-text">2.3 CPU上下文切换</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-不可中断进程-僵尸进程"><span class="nav-text">2.4 不可中断进程&#x2F;僵尸进程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-软中断"><span class="nav-text">2.5 软中断</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-压测工具"><span class="nav-text">三. 压测工具</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-stress"><span class="nav-text">3.1 stress</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-sysbench"><span class="nav-text">3.2 sysbench</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-ab"><span class="nav-text">3.3 ab</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-hping3"><span class="nav-text">3.4 hping3</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-CPU性能优化思路"><span class="nav-text">四. CPU性能优化思路</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-应用程序优化"><span class="nav-text">4.1 应用程序优化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-系统优化"><span class="nav-text">4.2 系统优化</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-CPU性能查询工具详解"><span class="nav-text">二. CPU性能查询工具详解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-平均负载"><span class="nav-text">2.1 平均负载</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-CPU使用率"><span class="nav-text">2.2 CPU使用率</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-CPU上下文切换"><span class="nav-text">2.3 CPU上下文切换</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-不可中断进程-僵尸进程"><span class="nav-text">2.4 不可中断进程&#x2F;僵尸进程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-软中断"><span class="nav-text">2.5 软中断</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-压测工具"><span class="nav-text">三. 压测工具</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-stress"><span class="nav-text">3.1 stress</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-sysbench"><span class="nav-text">3.2 sysbench</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-ab"><span class="nav-text">3.3 ab</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-hping3"><span class="nav-text">3.4 hping3</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-CPU性能优化思路"><span class="nav-text">四. CPU性能优化思路</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-应用程序优化"><span class="nav-text">4.1 应用程序优化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-系统优化"><span class="nav-text">4.2 系统优化</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>

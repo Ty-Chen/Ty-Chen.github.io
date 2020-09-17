@@ -79,14 +79,14 @@
 
 
 
-<meta name="description" content="一. 前言&amp;emsp;&amp;emsp;本文将分析内存的性能指标、测试方法、压测工具以及内存优化的通常套路。 二. Buffer和Cache&amp;emsp;&amp;emsp;通过free或者top命令我们可以发现其将内存分为了buffer和cache等部分。Buffer 和 Cache 的设计目的，是为了提升系统的 I&#x2F;O 性能。它们利用内存，充当起慢速磁盘与快速 CPU 之间的桥梁，可以加速 I&#x2F;O 的访问速度">
+<meta name="description" content="一. 前言&amp;emsp;&amp;emsp;本文将分析内存的性能指标、测试方法、压测工具以及内存优化的通常套路。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux操作系统学习笔记（二十六）内存性能优化">
 <meta property="og:url" content="https://ty-chen.github.io/linux-kernel-memory-optimization/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
-<meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;本文将分析内存的性能指标、测试方法、压测工具以及内存优化的通常套路。 二. Buffer和Cache&amp;emsp;&amp;emsp;通过free或者top命令我们可以发现其将内存分为了buffer和cache等部分。Buffer 和 Cache 的设计目的，是为了提升系统的 I&#x2F;O 性能。它们利用内存，充当起慢速磁盘与快速 CPU 之间的桥梁，可以加速 I&#x2F;O 的访问速度">
+<meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;本文将分析内存的性能指标、测试方法、压测工具以及内存优化的通常套路。">
 <meta property="article:published_time" content="2020-09-11T16:16:54.000Z">
-<meta property="article:modified_time" content="2020-09-16T16:19:42.438Z">
+<meta property="article:modified_time" content="2020-09-17T15:47:42.462Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -306,7 +306,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-09-17T00:19:42+08:00" content="2020-09-17">
+              <time itemprop="dateUpdated" datetime="2020-09-17T23:47:42+08:00" content="2020-09-17">
                 2020-09-17
               </time>
             </span>
@@ -370,7 +370,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  964
+                  1k
                 </span>
               
 
@@ -386,7 +386,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  3
+                  4
                 </span>
               
             </div>
@@ -408,6 +408,8 @@
 
       
         <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;本文将分析内存的性能指标、测试方法、压测工具以及内存优化的通常套路。</p>
+<a id="more"></a>
+
 <h2 id="二-Buffer和Cache"><a href="#二-Buffer和Cache" class="headerlink" title="二. Buffer和Cache"></a>二. Buffer和Cache</h2><p>&emsp;&emsp;通过<code>free</code>或者<code>top</code>命令我们可以发现其将内存分为了buffer和cache等部分。Buffer 和 Cache 的设计目的，是为了提升系统的 I/O 性能。它们利用内存，充当起慢速磁盘与快速 CPU 之间的桥梁，可以加速 I/O 的访问速度。通过<code>man free</code>可以查阅到下面的说明</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">buffers    Memory used by kernel buffers (Buffers in /proc/meminfo)</span><br><span class="line">cache      Memory used by the page cache and slabs (Cached and SReclaimable in /proc/meminfo)</span><br></pre></td></tr></table></figure>
 
@@ -444,6 +446,9 @@
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> cachetop</span></span><br><span class="line">11:58:50 Buffers MB: 258 / Cached MB: 347 / Sort: HITS / Order: ascending</span><br><span class="line">PID      UID      CMD       HITS     MISSES   DIRTIES  READ_HIT%  WRITE_HIT%</span><br><span class="line">13029    root     python    1        0        0        100.0%     0.0%</span><br></pre></td></tr></table></figure>
 
 <p>&emsp;&emsp;READ_HIT 和 WRITE_HIT ，分别表示读和写的缓存命中率。</p>
+<p>&emsp;&emsp;除此之外，还可以使用<code>pcstat</code>来查看文件的缓存情况，如查看<code>/bin/ls</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> pcstat /bin/ls</span></span><br><span class="line">+---------+----------------+------------+-----------+---------+</span><br><span class="line">| Name    | Size (bytes)   | Pages      | Cached    | Percent |</span><br><span class="line">|---------+----------------+------------+-----------+---------|</span><br><span class="line">| /bin/ls | 133792         | 33         | 0         | 000.000 |</span><br><span class="line">+---------+----------------+------------+-----------+---------+</span><br></pre></td></tr></table></figure>
+
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2>
       
     </div>
