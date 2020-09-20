@@ -88,7 +88,7 @@
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/83/04/83a6511faf802014fbc2c02afc397a04.jpg">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/7e/f6/7eaf620768c62ff53e5ea2b11b4940f6.jpg">
 <meta property="article:published_time" content="2020-05-30T15:24:34.000Z">
-<meta property="article:modified_time" content="2020-07-18T05:55:34.242Z">
+<meta property="article:modified_time" content="2020-09-20T12:07:08.434Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -309,8 +309,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-07-18T13:55:34+08:00" content="2020-07-18">
-                2020-07-18
+              <time itemprop="dateUpdated" datetime="2020-09-20T20:07:08+08:00" content="2020-09-20">
+                2020-09-20
               </time>
             </span>
           
@@ -531,7 +531,7 @@
 <ol start="4">
 <li>持久内核映射区（permanent kernel mapping）</li>
 </ol>
-<p>&emsp;&emsp;<code>PKMAP_BASE</code> 到 <code>FIXADDR_START</code> 的空间称为持久内核映射，这个地址范围是 4G-8M 到 4G-4M 之间。使用 <code>alloc_pages()</code> 函数的时候，在物理内存的高端内存得到 <code>struct page</code> 结构，可以调用 <code>kmap</code> 将其映射到这个区域。因为允许永久映射的数量有限，当不再需要高端内存时，应该解除映射，这可以通过<code>kunmap()</code>函数来完成。</p>
+<p>&emsp;&emsp;<code>PKMAP_BASE</code> 到 <code>FIXADDR_START</code> 的空间称为持久内核映射，这个地址范围是 4G-8M 到 4G-4M 之间。使用 <code>alloc_pages()</code> 函数的时候，在物理内存的高端内存得到 <code>struct page</code> 结构，可以调用 <code>kmap()</code> 将其映射到这个区域。因为允许永久映射的数量有限，当不再需要高端内存时，应该解除映射，这可以通过<code>kunmap()</code>函数来完成。</p>
 <ol start="5">
 <li>固定映射区</li>
 </ol>
