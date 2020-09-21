@@ -85,10 +85,12 @@
 <meta property="og:url" content="https://ty-chen.github.io/linux-kernel-mm-mgr/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;上文分析了内存再用户态的结构体mm_struct及各个区域映射的vm_area_struct以及32位和64位的内核态结构体，本文将基于这些结构来分析Linux的内存管理系统。内存管理系统包括虚拟内存和物理内存的分页以及虚拟内存和物理内存的映射。本文将介绍分页机制，而映射则在下文中说明。本文首先简单介绍SMP和NUMA系统，然后对物理内存的节点、区域、页结构进行分">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/be/d9/be6cabdecc2ec98893f67ebd5b9aead9.png">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/3f/4f/3fa8123990e5ae2c86859f70a8351f4f.jpeg">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/78/6d/78c8d44d7d8c08c03eee6f7a94652d6d.png">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/c1/20/c1054f1e71037795c6f290e670b29120.png">
 <meta property="article:published_time" content="2020-06-02T15:01:44.000Z">
-<meta property="article:modified_time" content="2020-09-11T15:11:13.007Z">
+<meta property="article:modified_time" content="2020-09-20T16:14:10.119Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -96,7 +98,7 @@
 <meta property="article:tag" content="Slub Allocator">
 <meta property="article:tag" content="内存">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://static001.geekbang.org/resource/image/3f/4f/3fa8123990e5ae2c86859f70a8351f4f.jpeg">
+<meta name="twitter:image" content="https://static001.geekbang.org/resource/image/be/d9/be6cabdecc2ec98893f67ebd5b9aead9.png">
 
 
 
@@ -310,8 +312,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-09-11T23:11:13+08:00" content="2020-09-11">
-                2020-09-11
+              <time itemprop="dateUpdated" datetime="2020-09-21T00:14:10+08:00" content="2020-09-21">
+                2020-09-21
               </time>
             </span>
           
@@ -374,7 +376,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  8.4k
+                  8.8k
                 </span>
               
 
@@ -390,7 +392,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  38
+                  40
                 </span>
               
             </div>
@@ -420,6 +422,7 @@
 <li><a href="https://en.wikipedia.org/wiki/Symmetric_multiprocessing" target="_blank" rel="noopener">对称多处理 SMP(Symmetric MultiProcessing)</a>，是一种多处理器的电脑硬件架构，在对称多处理架构下，每个处理器的地位都是平等的，对资源的使用权限相同。现代多数的多处理器系统都采用对称多处理架构。在这个系统中，拥有超过一个以上的处理器，这些处理器都连接到同一个共享的主存上，并由单一操作系统来控制。在对称多处理系统上，在操作系统的支持下，无论进程是处于用户空间，或是内核态，都可以分配到任何一个处理器上运行。因此，进程可以在不同的处理器间移动，达到负载平衡，使系统的效率提升。</li>
 <li><a href="https://en.wikipedia.org/wiki/Non-uniform_memory_access" target="_blank" rel="noopener">非均衡访存模型 NUMA(Non-Uniform Memory Access)</a>。在这种模式下，内存不是一整块。每个 CPU 都有自己的本地内存，CPU 访问本地内存不用过总线，因而速度要快很多，每个 CPU 和内存在一起，称为一个 NUMA 节点。但是，在本地内存不足的情况下，每个 CPU 都可以去另外的 NUMA 节点申请内存，这个时候访问延时就会比较长。</li>
 </ul>
+<p><img src="https://static001.geekbang.org/resource/image/be/d9/be6cabdecc2ec98893f67ebd5b9aead9.png" alt="img"></p>
 <h2 id="三-节点、区域和页"><a href="#三-节点、区域和页" class="headerlink" title="三. 节点、区域和页"></a>三. 节点、区域和页</h2><h3 id="3-1-节点"><a href="#3-1-节点" class="headerlink" title="3.1 节点"></a>3.1 节点</h3><p>&emsp;&emsp;这里主要分析NUMA模型。我们将内存分为多个节点对应多个CPU，每个节点再被分成一个一个的区域，每个区域有多个页面。由于页需要全局唯一定位，页还是需要有全局唯一的页号的。但是由于物理内存不是连起来的了，因此页号也就不再连续了。于是内存模型就变成了非连续内存模型。NUMA节点对应的结构为<code>pglist_data</code>，主要包括</p>
 <ul>
 <li>节点ID <code>node_id</code></li>
@@ -563,8 +566,20 @@
 <h2 id="六-页面交换"><a href="#六-页面交换" class="headerlink" title="六. 页面交换"></a>六. 页面交换</h2><p>&emsp;&emsp;由于虚拟内存是远大于物理内存的，在物理内存中加载所有的虚拟内存页显然是异想天开，因此我们必须要有页面的交换。和CPU调度相似，页的交换也包括主动的交换和被动的交换。</p>
 <ul>
 <li>被动页面回收：当分配内存的时候发现物理内存不够用了，则尝试回收。如申请页面会调用<code>get_page_from_freelist()</code>，该函数会通过调用链<code>get_page_from_freelist()-&gt;node_reclaim()-&gt;__node_reclaim()-&gt;shrink_node()</code>尝试是否可以对当前的内存节点执行换出操作，从而腾出空</li>
-<li>主动页面管理：在内核中，内核线程<code>kswapd</code>即负责该部分的功能。下面详细展开分析一下该部分功能。</li>
+<li>主动页面管理：在内核中，内核线程<code>kswapd0</code>即负责该部分的功能。下面详细展开分析一下该部分功能。</li>
 </ul>
+<p>&emsp;&emsp;为了衡量内存的使用情况，<code>kswapd0</code> 定义了三个内存阈值（watermark，也称为水位），分别是页最小阈值（pages_min）、页低阈值（pages_low）和页高阈值（pages_high）。剩余内存，则使用 pages_free 表示。</p>
+<p><img src="https://static001.geekbang.org/resource/image/c1/20/c1054f1e71037795c6f290e670b29120.png" alt="img"></p>
+<p>&emsp;&emsp;<code>kswapd0</code> 定期扫描内存的使用情况，并根据剩余内存落在这三个阈值的空间位置，进行内存的回收操作。</p>
+<ul>
+<li>剩余内存小于页最小阈值，说明进程可用内存都耗尽了，只有内核才可以分配内存。</li>
+<li>剩余内存落在页最小阈值和页低阈值中间，说明内存压力比较大，剩余内存不多了。这时 kswapd0 会执行内存回收，直到剩余内存大于高阈值为止。</li>
+<li>剩余内存落在页低阈值和页高阈值中间，说明内存有一定压力，但还可以满足新内存请求。</li>
+<li>剩余内存大于页高阈值，说明剩余内存比较多，没有内存压力。</li>
+</ul>
+<p>&emsp;&emsp;一旦剩余内存小于页低阈值，就会触发内存的回收。这个页低阈值，其实可以通过内核选项 <code>/proc/sys/vm/min_free_kbytes</code> 来间接设置。<code>min_free_kbytes</code> 设置了页最小阈值，而其他两个阈值，都是根据页最小阈值计算生成的，计算方法如下 ：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pages_low &#x3D; pages_min*5&#x2F;4</span><br><span class="line">pages_high &#x3D; pages_min*3&#x2F;2</span><br></pre></td></tr></table></figure>
+
 <p>&emsp;&emsp;如下所示为<code>kswapd()</code>源码，核心调用链为<code>balance_pgdat()-&gt;kswapd_shrink_node()-&gt;shrink_node()</code>，所以被动回收和主动管理最后殊途同归，回到了同样的函数<code>shrink_node()</code>。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * The background pageout daemon, started as a kernel thread</span></span><br><span class="line"><span class="comment"> * from the init process.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * This basically trickles out pages so that we have _some_</span></span><br><span class="line"><span class="comment"> * free memory available even if there is no other activity</span></span><br><span class="line"><span class="comment"> * that frees anything up. This is needed for things like routing</span></span><br><span class="line"><span class="comment"> * etc, where we otherwise might have all activity going on in</span></span><br><span class="line"><span class="comment"> * asynchronous contexts that cannot page things out.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * If there are applications that are active memory-allocators</span></span><br><span class="line"><span class="comment"> * (most normal use), this basically shouldn't matter.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">kswapd</span><span class="params">(<span class="keyword">void</span> *p)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> alloc_order, reclaim_order;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> classzone_idx = MAX_NR_ZONES - <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">pg_data_t</span> *pgdat = (<span class="keyword">pg_data_t</span>*)p;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">task_struct</span> *<span class="title">tsk</span> = <span class="title">current</span>;</span></span><br><span class="line">......</span><br><span class="line">    <span class="keyword">for</span> ( ; ; ) &#123;</span><br><span class="line">......</span><br><span class="line">kswapd_try_sleep:</span><br><span class="line">        kswapd_try_to_sleep(pgdat, alloc_order, reclaim_order,</span><br><span class="line">                    classzone_idx);</span><br><span class="line">......</span><br><span class="line">        <span class="comment">/*</span></span><br><span class="line"><span class="comment">         * Reclaim begins at the requested order but if a high-order</span></span><br><span class="line"><span class="comment">         * reclaim fails then kswapd falls back to reclaiming for</span></span><br><span class="line"><span class="comment">         * order-0. If that happens, kswapd will consider sleeping</span></span><br><span class="line"><span class="comment">         * for the order it finished reclaiming at (reclaim_order)</span></span><br><span class="line"><span class="comment">         * but kcompactd is woken to compact for the original</span></span><br><span class="line"><span class="comment">         * request (alloc_order).</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        trace_mm_vmscan_kswapd_wake(pgdat-&gt;node_id, classzone_idx,</span><br><span class="line">                        alloc_order);</span><br><span class="line">        reclaim_order = balance_pgdat(pgdat, alloc_order, classzone_idx);</span><br><span class="line">......</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
@@ -924,7 +939,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">143.7k</span>
+    <span title="Site words total count">144.3k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
