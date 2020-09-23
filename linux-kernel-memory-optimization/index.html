@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;本文将分析内存的性能指标、测试方法、压测工具以及内存优化的通常套路。">
 <meta property="article:published_time" content="2020-09-11T16:16:54.000Z">
-<meta property="article:modified_time" content="2020-09-20T16:16:48.702Z">
+<meta property="article:modified_time" content="2020-09-23T14:12:12.319Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -306,8 +306,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-09-21T00:16:48+08:00" content="2020-09-21">
-                2020-09-21
+              <time itemprop="dateUpdated" datetime="2020-09-23T22:12:12+08:00" content="2020-09-23">
+                2020-09-23
               </time>
             </span>
           
@@ -460,7 +460,7 @@
 <p>&emsp;&emsp;所以常见的内存泄漏会出现在堆和内存映射段。检测内存泄漏可以先通过<code>vmstat</code>的<code>free</code>字段初步判断，用 <code>top</code> 或 <code>ps</code> 来观察进程的内存使用情况，然后找出内存使用一直增长的进程，然后使用<code>memleak</code>工具进行具体分析。</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">root@ubuntu:/home/ty# /usr/share/bcc/tools/memleak -a -p $(pidof app)</span><br><span class="line">Attaching to pid 5977, Ctrl+C to quit.</span><br><span class="line">cannot attach uprobe, Device or resource busy</span><br><span class="line">[09:08:38] Top 10 stacks with outstanding allocations:</span><br><span class="line">    addr = 7f4ab00f56d0 size = 8192</span><br><span class="line">    addr = 7f4ab00f36c0 size = 8192</span><br><span class="line">    addr = 7f4ab00f76e0 size = 8192</span><br><span class="line">    addr = 7f4ab00f16b0 size = 8192</span><br><span class="line">    32768 bytes in 4 allocations from stack</span><br><span class="line">        fibonacci+0x1f [app]</span><br><span class="line">        child+0x4f [app]</span><br><span class="line">        start_thread+0xdb [libpthread-2.27.so]</span><br></pre></td></tr></table></figure>
 
-<h3 id="3-3-Swap和NUMA"><a href="#3-3-Swap和NUMA" class="headerlink" title="3.3 Swap和NUMA"></a>3.3 Swap和NUMA</h3><p>&emsp;&emsp;当物理内存页不足的时候，<code>kswapd0</code>会触发页面交换，但是在一些时候我们会发现Swap在剩余内存很多的情况下也异常升高，这就是和NUMA有关系了。<code>numactl</code>命令可以查看处理器在Node的分布情况</p>
+<h3 id="3-3-Swap和NUMA"><a href="#3-3-Swap和NUMA" class="headerlink" title="3.3 Swap和NUMA"></a>3.3 Swap和NUMA</h3><p>&emsp;&emsp;当物理内存页不足的时候，<code>kswapd0</code>会触发页面交换，但是在一些时候我们会发现Swap在剩余内存很多的情况下也异常升高，这就是和NUMA有关系了。<code>numactl</code>命令可以查看处理器在Node的分布情况。</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> numactl --hardware</span></span><br><span class="line">available: 1 nodes (0)</span><br><span class="line">node 0 cpus: 0 1</span><br><span class="line">node 0 size: 7977 MB</span><br><span class="line">node 0 free: 4416 MB</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
 
 <p>&emsp;&emsp;内存阈值（页最小阈值、页低阈值和页高阈值）可以通过内存域在 proc 文件系统中的接口 <code>/proc/zoneinfo</code> 来查看</p>
