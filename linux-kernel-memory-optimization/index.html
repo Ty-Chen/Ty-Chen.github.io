@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;本文将分析内存的性能指标、测试方法、压测工具以及内存优化的通常套路。">
 <meta property="article:published_time" content="2020-09-11T16:16:54.000Z">
-<meta property="article:modified_time" content="2020-09-23T14:12:12.319Z">
+<meta property="article:modified_time" content="2020-09-23T14:36:10.773Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -306,7 +306,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-09-23T22:12:12+08:00" content="2020-09-23">
+              <time itemprop="dateUpdated" datetime="2020-09-23T22:36:10+08:00" content="2020-09-23">
                 2020-09-23
               </time>
             </span>
@@ -370,7 +370,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1.8k
+                  1.9k
                 </span>
               
 
@@ -466,7 +466,11 @@
 <p>&emsp;&emsp;内存阈值（页最小阈值、页低阈值和页高阈值）可以通过内存域在 proc 文件系统中的接口 <code>/proc/zoneinfo</code> 来查看</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> cat /proc/zoneinfo</span></span><br><span class="line">...</span><br><span class="line">Node 0, zone   Normal</span><br><span class="line"> pages free     227894</span><br><span class="line">       min      14896</span><br><span class="line">       low      18620</span><br><span class="line">       high     22344</span><br><span class="line">...</span><br><span class="line">     nr_free_pages 227894</span><br><span class="line">     nr_zone_inactive_anon 11082</span><br><span class="line">     nr_zone_active_anon 14024</span><br><span class="line">     nr_zone_inactive_file 539024</span><br><span class="line">     nr_zone_active_file 923986</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
 
+<p>&emsp;&emsp;使用<code>free</code>命令可以查看当前Swap的使用情况</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> free</span></span><br><span class="line">             total        used        free      shared  buff/cache   available</span><br><span class="line">Mem:        8169348      331668     6715972         696     1121708     7522896</span><br><span class="line">Swap:             0           0           0</span><br></pre></td></tr></table></figure>
 
+<p>&emsp;&emsp;Linux 本身支持两种类型的 Swap，即 Swap 分区和 Swap 文件。以 Swap 文件为例，开启方式如下</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 创建Swap文件</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> fallocate -l 8G /mnt/swapfile</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 修改权限只有根用户可以访问</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> chmod 600 /mnt/swapfile</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 配置Swap文件</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> mkswap /mnt/swapfile</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 开启Swap</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> swapon /mnt/swapfile</span></span><br></pre></td></tr></table></figure>
 
 <h2 id="四-测试工具"><a href="#四-测试工具" class="headerlink" title="四. 测试工具"></a>四. 测试工具</h2><h3 id="4-1-dd"><a href="#4-1-dd" class="headerlink" title="4.1 dd"></a>4.1 <code>dd</code></h3><p>&emsp;&emsp;<code>dd</code>命令可以用于生成临时文件以及测试读取速度</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 生成一个512MB的临时文件</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> dd <span class="keyword">if</span>=/dev/sda1 of=file bs=1M count=512</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 清理缓存</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> <span class="built_in">echo</span> 3 &gt; /proc/sys/vm/drop_caches</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash">测试读取</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> dd <span class="keyword">if</span>=file of=/dev/null bs=1M</span></span><br><span class="line">512+0 records in</span><br><span class="line">512+0 records out</span><br><span class="line">536870912 bytes (537 MB, 512 MiB) copied, 16.0509 s, 33.4 MB/s</span><br></pre></td></tr></table></figure>
@@ -813,7 +817,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">144.3k</span>
+    <span title="Site words total count">144.4k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
