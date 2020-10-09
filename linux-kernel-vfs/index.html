@@ -91,7 +91,7 @@
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/80/b9/8070294bacd74e0ac5ccc5ac88be1bb9.png">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/0c/65/0c49a870b9e6441381fec8d9bf3dee65.png">
 <meta property="article:published_time" content="2020-06-17T16:02:55.000Z">
-<meta property="article:modified_time" content="2020-07-31T16:12:47.777Z">
+<meta property="article:modified_time" content="2020-10-09T16:01:23.420Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -312,8 +312,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-08-01T00:12:47+08:00" content="2020-08-01">
-                2020-08-01
+              <time itemprop="dateUpdated" datetime="2020-10-10T00:01:23+08:00" content="2020-10-10">
+                2020-10-10
               </time>
             </span>
           
@@ -376,7 +376,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  7.1k
+                  7.3k
                 </span>
               
 
@@ -426,8 +426,12 @@
 <img src="https://static001.geekbang.org/resource/image/3c/73/3c506edf93b15341da3db658e9970773.jpg" alt="img" style="zoom: 33%;" />
 
 <p>&emsp;&emsp;整体层次如上图所示，下面就此展开详细叙述整个过程。</p>
-<h2 id="二-dentry介绍"><a href="#二-dentry介绍" class="headerlink" title="二. dentry介绍"></a>二. <code>dentry</code>介绍</h2><p>&emsp;&emsp;在介绍从用户态调用至打开文件执行操作的流程前，我们先分析一下虚拟文件系统中的重要结构体，然后再分析映射关系的建立，以便于后文的理解。通过上文我们知道磁盘中实际的文件系统有<code>ext4, NTFS</code>等类型，通过超级块、块描述符、块位图、块列表等结构构成，其中一系列的文件块由文件系统对应的结构体如<code>ext4_inode</code>构成。虚拟文件系统是对文件系统的抽象，保存在内存之中，由<code>dentry</code>结构体和<code>inode</code>构成。<code>inode</code>对应于实际的索引节点如<code>ext4_inode</code>，而<code>dentry</code>则表示了不同层级之间的关系，也是链接所使用的结构体。</p>
-<p>&emsp;&emsp;<code>dentry</code>通过<code>d_parent</code>来和上级目录构成链接关系，通过<code>d_op</code>来存储对应的实际文件系统的文件操作，如创建、删除、打开、读写等。<code>d_sb</code>指向实际文件系统的超级块，该结构在上文已详细介绍。<code>d_inode</code>指向对应的<code>inode</code>，<code>d_name</code>表示该文件的文件名。</p>
+<h2 id="二-dentry介绍"><a href="#二-dentry介绍" class="headerlink" title="二. dentry介绍"></a>二. <code>dentry</code>介绍</h2><p>&emsp;&emsp;在介绍从用户态调用至打开文件执行操作的流程前，我们先分析一下虚拟文件系统中的重要结构体，然后再分析映射关系的建立，以便于后文的理解。通过上文我们知道磁盘中实际的文件系统有<code>ext4, NTFS</code>等类型，通过超级块、块描述符、块位图、块列表等结构构成，其中一系列的文件块由文件系统对应的结构体如<code>ext4_inode</code>构成。虚拟文件系统是对文件系统的抽象，保存在内存之中，由<code>dentry</code>结构体和<code>inode</code>构成。</p>
+<ul>
+<li>索引节点，即 <code>inode</code>，用来记录文件的元数据，比如 <code>inode</code> 编号、文件大小、访问权限、修改日期、数据的位置等。索引节点和文件一一对应，它跟文件内容一样，都会被持久化存储到磁盘中。所以记住，索引节点同样占用磁盘空间。</li>
+<li>目录项，即 <code>dentry</code>，用来记录文件的名字、索引节点指针以及与其他目录项的关联关系。多个关联的目录项，就构成了文件系统的目录结构。不过，不同于索引节点，目录项是由内核维护的一个内存数据结构，所以通常也被叫做目录项缓存。</li>
+</ul>
+<p>&emsp;&emsp;<code>inode</code>对应于实际的索引节点如<code>ext4_inode</code>，而<code>dentry</code>则表示了不同层级之间的关系，也是链接所使用的结构体。<code>dentry</code>通过<code>d_parent</code>来和上级目录构成链接关系，通过<code>d_op</code>来存储对应的实际文件系统的文件操作，如创建、删除、打开、读写等。<code>d_sb</code>指向实际文件系统的超级块，该结构在上文已详细介绍。<code>d_inode</code>指向对应的<code>inode</code>，<code>d_name</code>表示该文件的文件名。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">dentry</span> &#123;</span></span><br><span class="line">......</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">hlist_bl_node</span> <span class="title">d_hash</span>;</span>	<span class="comment">/* lookup hash list */</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">dentry</span> *<span class="title">d_parent</span>;</span>	<span class="comment">/* parent directory */</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">qstr</span> <span class="title">d_name</span>;</span>    </span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">inode</span> *<span class="title">d_inode</span>;</span>		<span class="comment">/* Where the name belongs to - NULL is negative */</span>    </span><br><span class="line">    <span class="keyword">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">dentry_operations</span> *<span class="title">d_op</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">super_block</span> *<span class="title">d_sb</span>;</span>	<span class="comment">/* The root of the dentry tree */</span>    </span><br><span class="line">......</span><br><span class="line">    <span class="keyword">union</span> &#123;</span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">list_head</span> <span class="title">d_lru</span>;</span>		<span class="comment">/* LRU list */</span></span><br><span class="line">        <span class="keyword">wait_queue_head_t</span> *d_wait;	<span class="comment">/* in-lookup ones only */</span></span><br><span class="line">    &#125;;</span><br><span class="line">......</span><br><span class="line">&#125; __randomize_layout;</span><br></pre></td></tr></table></figure>
 
 <p>&emsp;&emsp;除此之外，<code>dentry</code>有两个特殊的成员变量<code>d_lru</code>和<code>d_hash</code>。这其实关联于两张<code>dentry cache</code>表，顾名思义，该表保存的是一系列已分配过的<code>dentry</code>的缓存池，用于文件操作中快速的查找和使用。</p>
@@ -938,7 +942,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">144.7k</span>
+    <span title="Site words total count">144.9k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
