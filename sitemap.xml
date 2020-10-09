@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://ty-chen.github.io/linux-kernel-tcp-send/</loc>
+    
+    <lastmod>2020-10-09T15:15:34.049Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://ty-chen.github.io/linux-kernel-IO-optimization/</loc>
     
     <lastmod>2020-10-08T15:09:20.687Z</lastmod>
@@ -75,13 +82,6 @@
     <loc>https://ty-chen.github.io/linux-kernel-tcp-receive/</loc>
     
     <lastmod>2020-08-18T13:45:14.056Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://ty-chen.github.io/linux-kernel-tcp-send/</loc>
-    
-    <lastmod>2020-08-18T13:45:09.263Z</lastmod>
     
   </url>
   
