@@ -86,12 +86,13 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;基于上文介绍的文件系统的基本结构，本文将继续深入Linux文件系统的精髓所在：虚拟文件系统。操作文件的本质是将磁盘文件数据映射到进程中，上文的文件系统是如何存储文件数据，而从进程如何映射到该文件系统，中间还有一系列的过程，主要包括  进程发出文件操作命令，通过系统调用如sys_open、sys_read、sys_write调用相应内核函数 在内核中为进程打开的文件">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/3c/73/3c506edf93b15341da3db658e9970773.jpg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/14/b1/14bc3d26efe093d3eada173f869146b1.png">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/82/59/82dd76e1e84915206eefb8fc88385859.jpeg">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/66/27/663b3c5903d15fd9ba52f6d049e0dc27.jpeg">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/80/b9/8070294bacd74e0ac5ccc5ac88be1bb9.png">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/0c/65/0c49a870b9e6441381fec8d9bf3dee65.png">
 <meta property="article:published_time" content="2020-06-17T16:02:55.000Z">
-<meta property="article:modified_time" content="2020-10-09T16:01:23.420Z">
+<meta property="article:modified_time" content="2020-10-10T12:27:12.899Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -312,7 +313,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-10-10T00:01:23+08:00" content="2020-10-10">
+              <time itemprop="dateUpdated" datetime="2020-10-10T20:27:12+08:00" content="2020-10-10">
                 2020-10-10
               </time>
             </span>
@@ -376,7 +377,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  7.3k
+                  7.5k
                 </span>
               
 
@@ -392,7 +393,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  30
+                  31
                 </span>
               
             </div>
@@ -425,7 +426,14 @@
 
 <img src="https://static001.geekbang.org/resource/image/3c/73/3c506edf93b15341da3db658e9970773.jpg" alt="img" style="zoom: 33%;" />
 
-<p>&emsp;&emsp;整体层次如上图所示，下面就此展开详细叙述整个过程。</p>
+<p>&emsp;&emsp;整体层次如上图所示，其实可以概括为文件系统层、通用快层和设备层，如下图所示。</p>
+<p><img src="https://static001.geekbang.org/resource/image/14/b1/14bc3d26efe093d3eada173f869146b1.png" alt="img"></p>
+<ul>
+<li>文件系统层，包括虚拟文件系统和其他各种文件系统的具体实现。它为上层的应用程序，提供标准的文件访问接口；对下会通过通用块层，来存储和管理磁盘数据。</li>
+<li>通用块层，包括块设备 I/O 队列和 I/O 调度器。它会对文件系统的 I/O 请求进行排队，再通过重新排序和请求合并，然后才要发送给下一级的设备层。</li>
+<li>设备层，包括存储设备和相应的驱动程序，负责最终物理设备的 I/O 操作。</li>
+</ul>
+<p>&emsp;&emsp;下面就此展开详细叙述虚拟文件系统打开文件的整个过程。</p>
 <h2 id="二-dentry介绍"><a href="#二-dentry介绍" class="headerlink" title="二. dentry介绍"></a>二. <code>dentry</code>介绍</h2><p>&emsp;&emsp;在介绍从用户态调用至打开文件执行操作的流程前，我们先分析一下虚拟文件系统中的重要结构体，然后再分析映射关系的建立，以便于后文的理解。通过上文我们知道磁盘中实际的文件系统有<code>ext4, NTFS</code>等类型，通过超级块、块描述符、块位图、块列表等结构构成，其中一系列的文件块由文件系统对应的结构体如<code>ext4_inode</code>构成。虚拟文件系统是对文件系统的抽象，保存在内存之中，由<code>dentry</code>结构体和<code>inode</code>构成。</p>
 <ul>
 <li>索引节点，即 <code>inode</code>，用来记录文件的元数据，比如 <code>inode</code> 编号、文件大小、访问权限、修改日期、数据的位置等。索引节点和文件一一对应，它跟文件内容一样，都会被持久化存储到磁盘中。所以记住，索引节点同样占用磁盘空间。</li>
@@ -942,7 +950,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">144.9k</span>
+    <span title="Site words total count">146.4k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>

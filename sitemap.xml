@@ -2,9 +2,16 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://ty-chen.github.io/linux-kernel-IO-optimization/</loc>
+    
+    <lastmod>2020-10-10T15:07:06.123Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://ty-chen.github.io/linux-kernel-vfs/</loc>
     
-    <lastmod>2020-10-09T16:01:23.420Z</lastmod>
+    <lastmod>2020-10-10T12:27:12.899Z</lastmod>
     
   </url>
   
@@ -12,13 +19,6 @@
     <loc>https://ty-chen.github.io/linux-kernel-tcp-send/</loc>
     
     <lastmod>2020-10-09T15:15:34.049Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://ty-chen.github.io/linux-kernel-IO-optimization/</loc>
-    
-    <lastmod>2020-10-08T15:09:20.687Z</lastmod>
     
   </url>
   
