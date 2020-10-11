@@ -87,7 +87,7 @@
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;本文是性能优化系列的最后一篇，将分析磁盘I&#x2F;O的性能指标、测试方法、常见问题的优化套路等内容。">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/cf/8d/cff31e715af51c9cb8085ce1bb48318d.png">
 <meta property="article:published_time" content="2020-09-26T08:06:36.000Z">
-<meta property="article:modified_time" content="2020-10-10T15:07:06.123Z">
+<meta property="article:modified_time" content="2020-10-11T16:04:40.051Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -308,8 +308,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-10-10T23:07:06+08:00" content="2020-10-10">
-                2020-10-10
+              <time itemprop="dateUpdated" datetime="2020-10-12T00:04:40+08:00" content="2020-10-12">
+                2020-10-12
               </time>
             </span>
           
@@ -441,7 +441,7 @@
 <p>&emsp;&emsp;<code>/proc/slabinfo</code> 的列比较多，具体含义你可以查询 <code>man slabinfo</code>。在实际性能分析中，我们更常使用 <code>slabtop</code> ，来找到占用内存最多的缓存类型。</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 按下c按照缓存大小排序，按下a按照活跃对象数排序 </span></span><br><span class="line"><span class="meta">$</span><span class="bash"> slabtop </span></span><br><span class="line">Active / Total Objects (% used)    : 277970 / 358914 (77.4%) </span><br><span class="line">Active / Total Slabs (% used)      : 12414 / 12414 (100.0%) </span><br><span class="line">Active / Total Caches (% used)     : 83 / 135 (61.5%) </span><br><span class="line">Active / Total Size (% used)       : 57816.88K / 73307.70K (78.9%) </span><br><span class="line">Minimum / Average / Maximum Object : 0.01K / 0.20K / 22.88K </span><br><span class="line"></span><br><span class="line">  OBJS ACTIVE  USE OBJ SIZE  SLABS OBJ/SLAB CACHE SIZE NAME </span><br><span class="line">69804  23094   0%    0.19K   3324       21     13296K dentry </span><br><span class="line">16380  15854   0%    0.59K   1260       13     10080K inode_cache </span><br><span class="line">58260  55397   0%    0.13K   1942       30      7768K kernfs_node_cache </span><br><span class="line">   485    413   0%    5.69K     97        5      3104K task_struct </span><br><span class="line">  1472   1397   0%    2.00K     92       16      2944K kmalloc-2048</span><br></pre></td></tr></table></figure>
 
-<h3 id="2-4-进程I-O检测"><a href="#2-4-进程I-O检测" class="headerlink" title="2.4 进程I/O检测"></a>2.4 进程I/O检测</h3><p>&emsp;&emsp;<code>iostat</code> 只提供磁盘整体的 I/O 性能数据，缺点在于并不能知道具体是哪些进程在进行磁盘读写。要观察进程的 I/O 情况，可以使用 <code>pidstat</code> 和 <code>iotop</code> 这两个工具。</p>
+<h3 id="2-4-进程I-O检测"><a href="#2-4-进程I-O检测" class="headerlink" title="2.4 进程I/O检测"></a>2.4 进程I/O检测</h3><p>&emsp;&emsp;<code>iostat</code> 只提供磁盘整体的 I/O 性能数据，缺点在于并不能知道具体是哪些进程在进行磁盘读写。要观察进程的 I/O 情况，可以使用 <code>pidstat</code> 和 <code>iotop</code> 这两个工具进行检测。</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> pidstat -d 1 </span></span><br><span class="line">13:39:51      UID       PID   kB_rd/s   kB_wr/s kB_ccwr/s iodelay  Command </span><br><span class="line">13:39:52      102       916      0.00      4.00      0.00       0  rsyslogd</span><br></pre></td></tr></table></figure>
 
 <p>&emsp;&emsp;<code>iotop</code>是一个类似于 top 的工具，可以按照 I/O 大小对进程排序，然后找到 I/O 较大的那些进程。</p>
