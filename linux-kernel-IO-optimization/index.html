@@ -87,7 +87,7 @@
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;本文是性能优化系列的最后一篇，将分析磁盘I&#x2F;O的性能指标、测试方法、常见问题的优化套路等内容。">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/cf/8d/cff31e715af51c9cb8085ce1bb48318d.png">
 <meta property="article:published_time" content="2020-09-26T08:06:36.000Z">
-<meta property="article:modified_time" content="2020-10-12T15:37:33.957Z">
+<meta property="article:modified_time" content="2020-10-13T15:10:40.682Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -308,8 +308,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-10-12T23:37:33+08:00" content="2020-10-12">
-                2020-10-12
+              <time itemprop="dateUpdated" datetime="2020-10-13T23:10:40+08:00" content="2020-10-13">
+                2020-10-13
               </time>
             </span>
           
@@ -372,7 +372,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1.7k
+                  2k
                 </span>
               
 
@@ -388,7 +388,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  7
+                  9
                 </span>
               
             </div>
@@ -452,6 +452,12 @@
 
 <h3 id="2-6-进程I-O文件使用"><a href="#2-6-进程I-O文件使用" class="headerlink" title="2.6 进程I/O文件使用"></a>2.6 进程I/O文件使用</h3><p>&emsp;&emsp;通过<code>lsof</code>工具，我们可以查看指定进程打开了哪些文件</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> lsof -p 18940 </span></span><br><span class="line">COMMAND   PID USER   FD   TYPE DEVICE  SIZE/OFF    NODE NAME </span><br><span class="line">python  18940 root  cwd    DIR   0,50      4096 1549389 / </span><br><span class="line">python  18940 root  rtd    DIR   0,50      4096 1549389 / </span><br><span class="line">… </span><br><span class="line">python  18940 root    2u   CHR  136,0       0t0       3 /dev/pts/0 </span><br><span class="line">python  18940 root    3w   REG    8,1 117944320     303 /tmp/logtest.txt</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-7-内核读写检测工具"><a href="#2-7-内核读写检测工具" class="headerlink" title="2.7 内核读写检测工具"></a>2.7 内核读写检测工具</h3><p>&emsp;&emsp;<code>filetop</code>基于 Linux 内核的 eBPF机制，主要跟踪内核中文件的读写情况，并输出线程 ID（TID）、读写大小、读写类型以及文件名称。filetop 输出了 8 列内容，分别是线程 ID、线程命令行、读写次数、读写的大小（单位 KB）、文件类型以及读写的文件名称。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 切换到工具目录 </span></span><br><span class="line"><span class="meta">$</span><span class="bash"> <span class="built_in">cd</span> /usr/share/bcc/tools </span></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> -C 选项表示输出新内容时不清空屏幕 </span></span><br><span class="line"><span class="meta">$</span><span class="bash"> ./filetop -C </span></span><br><span class="line"></span><br><span class="line">TID    COMM             READS  WRITES R_Kb    W_Kb    T FILE </span><br><span class="line">514    python           0      1      0       2832    R 669.txt </span><br><span class="line">514    python           0      1      0       2490    R 667.txt </span><br><span class="line">514    python           0      1      0       2685    R 671.txt </span><br><span class="line">514    python           0      1      0       2392    R 670.txt </span><br><span class="line">514    python           0      1      0       2050    R 672.txt </span><br><span class="line"></span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">TID    COMM             READS  WRITES R_Kb    W_Kb    T FILE </span><br><span class="line">514    python           2      0      5957    0       R 651.txt </span><br><span class="line">514    python           2      0      5371    0       R 112.txt </span><br><span class="line">514    python           2      0      4785    0       R 861.txt </span><br><span class="line">514    python           2      0      4736    0       R 213.txt </span><br><span class="line">514    python           2      0      4443    0       R 45.txt</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-8-open系统调用内核追踪"><a href="#2-8-open系统调用内核追踪" class="headerlink" title="2.8 open系统调用内核追踪"></a>2.8 open系统调用内核追踪</h3><p>&emsp;&emsp;<code>opensnoop</code> 同属于 bcc 软件包，可以动态跟踪内核中的 open 系统调用。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ opensnoop </span><br><span class="line">12280  python              6   0 &#x2F;tmp&#x2F;9046db9e-fe25-11e8-b13f-0242ac110002&#x2F;650.txt </span><br><span class="line">12280  python              6   0 &#x2F;tmp&#x2F;9046db9e-fe25-11e8-b13f-0242ac110002&#x2F;651.txt </span><br><span class="line">12280  python              6   0 &#x2F;tmp&#x2F;9046db9e-fe25-11e8-b13f-0242ac110002&#x2F;652.txt</span><br></pre></td></tr></table></figure>
 
 
 
@@ -761,7 +767,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-I-O性能指标及查询工具"><span class="nav-text">二. I&#x2F;O性能指标及查询工具</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-磁盘I-O性能观测"><span class="nav-text">2.1 磁盘I&#x2F;O性能观测</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2df命令"><span class="nav-text">2.2df命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-slabtop"><span class="nav-text">2.3 slabtop</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-进程I-O检测"><span class="nav-text">2.4 进程I&#x2F;O检测</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-进程追踪"><span class="nav-text">2.5 进程追踪</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-6-进程I-O文件使用"><span class="nav-text">2.6 进程I&#x2F;O文件使用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-I-O性能测试工具"><span class="nav-text">三. I&#x2F;O性能测试工具</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-I-O性能指标及查询工具"><span class="nav-text">二. I&#x2F;O性能指标及查询工具</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-磁盘I-O性能观测"><span class="nav-text">2.1 磁盘I&#x2F;O性能观测</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2df命令"><span class="nav-text">2.2df命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-slabtop"><span class="nav-text">2.3 slabtop</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-进程I-O检测"><span class="nav-text">2.4 进程I&#x2F;O检测</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-进程追踪"><span class="nav-text">2.5 进程追踪</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-6-进程I-O文件使用"><span class="nav-text">2.6 进程I&#x2F;O文件使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-7-内核读写检测工具"><span class="nav-text">2.7 内核读写检测工具</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-8-open系统调用内核追踪"><span class="nav-text">2.8 open系统调用内核追踪</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-I-O性能测试工具"><span class="nav-text">三. I&#x2F;O性能测试工具</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
@@ -795,7 +801,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">146.6k</span>
+    <span title="Site words total count">146.9k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
