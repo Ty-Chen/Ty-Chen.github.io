@@ -86,8 +86,10 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;本文是性能优化系列的最后一篇，将分析磁盘I&#x2F;O的性能指标、测试方法、常见问题的优化套路等内容。">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/cf/8d/cff31e715af51c9cb8085ce1bb48318d.png">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/6f/98/6f26fa18a73458764fcda00212006698.png">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/18/8a/1802a35475ee2755fb45aec55ed2d98a.png">
 <meta property="article:published_time" content="2020-09-26T08:06:36.000Z">
-<meta property="article:modified_time" content="2020-10-16T16:17:01.610Z">
+<meta property="article:modified_time" content="2020-10-17T16:05:03.210Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -308,8 +310,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-10-17T00:17:01+08:00" content="2020-10-17">
-                2020-10-17
+              <time itemprop="dateUpdated" datetime="2020-10-18T00:05:03+08:00" content="2020-10-18">
+                2020-10-18
               </time>
             </span>
           
@@ -372,7 +374,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  2.2k
+                  2.3k
                 </span>
               
 
@@ -462,9 +464,17 @@
 <h3 id="2-9-nsenter容器追踪工具"><a href="#2-9-nsenter容器追踪工具" class="headerlink" title="2.9 nsenter容器追踪工具"></a>2.9 <code>nsenter</code>容器追踪工具</h3><p>&emsp;&emsp;<code>nsenter</code>和以上I/O工具配合，可以可以进入容器命名空间内部观测其I/O使用情况</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 由于这两个容器共享同一个网络命名空间，所以我们只需要进入app的网络命名空间即可</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> PID=$(docker inspect --format &#123;&#123;.State.Pid&#125;&#125; app)</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> -i表示显示网络套接字信息</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> nsenter --target <span class="variable">$PID</span> --net -- lsof -i</span></span><br><span class="line">COMMAND    PID            USER   FD   TYPE   DEVICE SIZE/OFF NODE NAME</span><br><span class="line">redis-ser 9085 systemd-network    6u  IPv4 15447972      0t0  TCP localhost:6379 (LISTEN)</span><br><span class="line">redis-ser 9085 systemd-network    8u  IPv4 15448709      0t0  TCP localhost:6379-&gt;localhost:32996 (ESTABLISHED)</span><br><span class="line">python    9181            root    3u  IPv4 15448677      0t0  TCP *:http (LISTEN)</span><br><span class="line">python    9181            root    5u  IPv4 15449632      0t0  TCP localhost:32996-&gt;localhost:6379 (ESTABLISHED)</span><br></pre></td></tr></table></figure>
 
+<img src="https://static001.geekbang.org/resource/image/6f/98/6f26fa18a73458764fcda00212006698.png" alt="img" style="zoom:33%;" />
 
-
-<h2 id="三-I-O性能测试工具"><a href="#三-I-O性能测试工具" class="headerlink" title="三. I/O性能测试工具"></a>三. I/O性能测试工具</h2><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] Linux-insides</p>
+<h2 id="三-I-O性能优化思路"><a href="#三-I-O性能优化思路" class="headerlink" title="三. I/O性能优化思路"></a>三. I/O性能优化思路</h2><p>&emsp;&emsp;从 I/O 角度来分析，最开始的分析思路基本上类似，都是：</p>
+<ul>
+<li>先用 <code>iostat</code> 发现磁盘 I/O 性能瓶颈；</li>
+<li>再借助 <code>pidstat</code> ，定位出导致瓶颈的进程；</li>
+<li>随后分析进程的 I/O 行为；</li>
+<li>最后，结合应用程序的原理，分析这些 I/O 的来源。</li>
+</ul>
+<p><img src="https://static001.geekbang.org/resource/image/18/8a/1802a35475ee2755fb45aec55ed2d98a.png" alt="img"></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] Linux-insides</p>
 <p>[2] 深入理解Linux内核</p>
 <p>[3] Linux内核设计的艺术</p>
 <p>[4] 深入理解计算机系统</p>
@@ -770,7 +780,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-I-O性能指标及查询工具"><span class="nav-text">二. I&#x2F;O性能指标及查询工具</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-磁盘I-O性能观测"><span class="nav-text">2.1 磁盘I&#x2F;O性能观测</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2df命令"><span class="nav-text">2.2df命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-slabtop"><span class="nav-text">2.3 slabtop</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-进程I-O检测"><span class="nav-text">2.4 进程I&#x2F;O检测</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-进程追踪"><span class="nav-text">2.5 进程追踪</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-6-进程I-O文件使用"><span class="nav-text">2.6 进程I&#x2F;O文件使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-7-内核读写检测工具"><span class="nav-text">2.7 内核读写检测工具</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-8-open系统调用内核追踪"><span class="nav-text">2.8 open系统调用内核追踪</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-9-nsenter容器追踪工具"><span class="nav-text">2.9 nsenter容器追踪工具</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-I-O性能测试工具"><span class="nav-text">三. I&#x2F;O性能测试工具</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-I-O性能指标及查询工具"><span class="nav-text">二. I&#x2F;O性能指标及查询工具</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-磁盘I-O性能观测"><span class="nav-text">2.1 磁盘I&#x2F;O性能观测</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2df命令"><span class="nav-text">2.2df命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-slabtop"><span class="nav-text">2.3 slabtop</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-进程I-O检测"><span class="nav-text">2.4 进程I&#x2F;O检测</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-进程追踪"><span class="nav-text">2.5 进程追踪</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-6-进程I-O文件使用"><span class="nav-text">2.6 进程I&#x2F;O文件使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-7-内核读写检测工具"><span class="nav-text">2.7 内核读写检测工具</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-8-open系统调用内核追踪"><span class="nav-text">2.8 open系统调用内核追踪</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-9-nsenter容器追踪工具"><span class="nav-text">2.9 nsenter容器追踪工具</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-I-O性能优化思路"><span class="nav-text">三. I&#x2F;O性能优化思路</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
@@ -804,7 +814,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">147.1k</span>
+    <span title="Site words total count">147.2k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
