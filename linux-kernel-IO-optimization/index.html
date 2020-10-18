@@ -89,7 +89,7 @@
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/6f/98/6f26fa18a73458764fcda00212006698.png">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/18/8a/1802a35475ee2755fb45aec55ed2d98a.png">
 <meta property="article:published_time" content="2020-09-26T08:06:36.000Z">
-<meta property="article:modified_time" content="2020-10-17T16:05:03.210Z">
+<meta property="article:modified_time" content="2020-10-18T15:22:54.542Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -310,7 +310,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-10-18T00:05:03+08:00" content="2020-10-18">
+              <time itemprop="dateUpdated" datetime="2020-10-18T23:22:54+08:00" content="2020-10-18">
                 2020-10-18
               </time>
             </span>
@@ -374,7 +374,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  2.3k
+                  4.2k
                 </span>
               
 
@@ -390,7 +390,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  10
+                  18
                 </span>
               
             </div>
@@ -466,7 +466,21 @@
 
 <img src="https://static001.geekbang.org/resource/image/6f/98/6f26fa18a73458764fcda00212006698.png" alt="img" style="zoom:33%;" />
 
-<h2 id="三-I-O性能优化思路"><a href="#三-I-O性能优化思路" class="headerlink" title="三. I/O性能优化思路"></a>三. I/O性能优化思路</h2><p>&emsp;&emsp;从 I/O 角度来分析，最开始的分析思路基本上类似，都是：</p>
+<h2 id="三-I-O压测工具"><a href="#三-I-O压测工具" class="headerlink" title="三. I/O压测工具"></a>三. I/O压测工具</h2><p>&emsp;&emsp;<code>fio</code>（Flexible I/O Tester）是最常用的文件系统和磁盘 I/O 性能基准测试工具。它提供了大量的可定制化选项，可以用来测试，裸盘或者文件系统在各种场景下的 I/O 性能，包括了不同块大小、不同 I/O 引擎以及是否使用缓存等场景。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 随机读</span></span><br><span class="line">fio -name=randread -direct=1 -iodepth=64 -rw=randread -ioengine=libaio -bs=4k -size=1G -numjobs=1 -runtime=1000 -group_reporting -filename=/dev/sdb</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 随机写</span></span><br><span class="line">fio -name=randwrite -direct=1 -iodepth=64 -rw=randwrite -ioengine=libaio -bs=4k -size=1G -numjobs=1 -runtime=1000 -group_reporting -filename=/dev/sdb</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 顺序读</span></span><br><span class="line">fio -name=read -direct=1 -iodepth=64 -rw=read -ioengine=libaio -bs=4k -size=1G -numjobs=1 -runtime=1000 -group_reporting -filename=/dev/sdb</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 顺序写</span></span><br><span class="line">fio -name=write -direct=1 -iodepth=64 -rw=write -ioengine=libaio -bs=4k -size=1G -numjobs=1 -runtime=1000 -group_reporting -filename=/dev/sdb</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>direct</code>，表示是否跳过系统缓存。上面示例中，我设置的 1 ，就表示跳过系统缓存。</li>
+<li><code>iodepth</code>，表示使用异步 I/O（asynchronous I/O，简称 AIO）时，同时发出的 I/O 请求上限。在上面的示例中设置的是 64。</li>
+<li><code>rw</code>，表示 I/O 模式。示例中， <code>read/write</code> 分别表示顺序读 / 写，而 <code>randread/randwrite</code> 则分别表示随机读 / 写。</li>
+<li><code>ioengine</code>，表示 I/O 引擎，它支持同步（sync）、异步（<code>libaio</code>）、内存映射（<code>mmap</code>）、网络（<code>net</code>）等各种 I/O 引擎。上面示例中设置的 <code>libaio</code> 表示使用异步 I/O。</li>
+<li><code>bs</code>，表示 I/O 的大小。示例中设置成了 4K（这也是默认值）。</li>
+<li><code>filename</code>，表示文件路径，当然，它可以是磁盘路径（测试磁盘性能），也可以是文件路径（测试文件系统性能）。示例中设置成了磁盘 <code>/dev/sdb</code>。不过注意，用磁盘路径测试写，会破坏这个磁盘中的文件系统，所以在使用前一定要事先做好数据备份。</li>
+</ul>
+<p>&emsp;&emsp;通常情况下，应用程序的 I/O 都是读写并行的，而且每次的 I/O 大小也不一定相同。所以，刚刚说的这几种场景，并不能精确模拟应用程序的 I/O 模式。那怎么才能精确模拟应用程序的 I/O 模式呢？幸运的是，<code>fio</code> 支持 I/O 的重放。借助前面提到过的 <code>blktrace</code>，再配合上 <code>fio</code>，就可以实现对应用程序 I/O 模式的基准测试。先用 <code>blktrace</code> ，记录磁盘设备的 I/O 访问情况；然后使用 <code>fio</code> ，重放 <code>blktrace</code> 的记录。这样就通过 <code>blktrace + fio</code> 的组合使用，得到了应用程序 I/O 模式的基准测试报告。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 使用blktrace跟踪磁盘I/O，注意指定应用程序正在操作的磁盘</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> blktrace /dev/sdb</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看blktrace记录的结果</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> ls</span></span><br><span class="line">sdb.blktrace.0  sdb.blktrace.1</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 将结果转化为二进制文件</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> blkparse sdb -d sdb.bin</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 使用fio重放日志</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> fio --name=replay --filename=/dev/sdb --direct=1 --read_iolog=sdb.bin</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="四-I-O性能优化思路"><a href="#四-I-O性能优化思路" class="headerlink" title="四.  I/O性能优化思路"></a>四.  I/O性能优化思路</h2><p>&emsp;&emsp;从 I/O 角度来分析，最开始的分析思路基本上类似，都是：</p>
 <ul>
 <li>先用 <code>iostat</code> 发现磁盘 I/O 性能瓶颈；</li>
 <li>再借助 <code>pidstat</code> ，定位出导致瓶颈的进程；</li>
@@ -474,7 +488,37 @@
 <li>最后，结合应用程序的原理，分析这些 I/O 的来源。</li>
 </ul>
 <p><img src="https://static001.geekbang.org/resource/image/18/8a/1802a35475ee2755fb45aec55ed2d98a.png" alt="img"></p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] Linux-insides</p>
+<h3 id="4-1-应用层优化"><a href="#4-1-应用层优化" class="headerlink" title="4.1 应用层优化"></a>4.1 应用层优化</h3><p>&emsp;&emsp;应用层主要有以下常见优化点：</p>
+<ul>
+<li>用追加写代替随机写，减少寻址开销，加快 I/O 写的速度</li>
+<li>借助缓存 I/O ，充分利用系统缓存，降低实际 I/O 的次数</li>
+<li>在应用程序内部构建自己的缓存，或者用 <code>Redis</code> 这类外部缓存系统。这样，一方面，能在应用程序内部，控制缓存的数据和生命周期；另一方面，也能降低其他应用程序使用缓存对自身的影响。</li>
+<li>在需要频繁读写同一块磁盘空间时，可以用 <code>mmap</code> 代替 read/write，减少内存的拷贝次数</li>
+<li>在需要同步写的场景中，尽量将写请求合并，而不是让每个请求都同步写入磁盘，即可以用 <code>fsync()</code> 取代 <code>O_SYNC</code></li>
+<li>在多个应用程序共享相同磁盘时，为了保证 I/O 不被某个应用完全占用，推荐使用 <code>cgroups</code> 的 I/O 子系统，来限制进程 / 进程组的 IOPS 以及吞吐量</li>
+<li>在使用 CFQ 调度器时，可以用 <code>ionice</code> 来调整进程的 I/O 调度优先级，特别是提高核心应用的 I/O 优先级。<code>ionice</code> 支持三个优先级类：Idle、Best-effort 和 Realtime。其中， Best-effort 和 Realtime 还分别支持 0-7 的级别，数值越小，则表示优先级别越高。</li>
+</ul>
+<h3 id="4-2-文件系统优化"><a href="#4-2-文件系统优化" class="headerlink" title="4.2 文件系统优化"></a>4.2 文件系统优化</h3><p>&emsp;&emsp;文件系统主要存在以下优化点：</p>
+<ul>
+<li>根据实际负载场景的不同，选择最适合的文件系统。比如 Ubuntu 默认使用 ext4 文件系统，而 CentOS 7 默认使用 <code>xfs</code> 文件系统。相比于 ext4 ，<code>xfs</code> 支持更大的磁盘分区和更大的文件数量，如 <code>xfs</code> 支持大于 16TB 的磁盘。但是 <code>xfs</code> 文件系统的缺点在于无法收缩，而 ext4 则可以。</li>
+<li>选好文件系统后，还可以进一步优化文件系统的配置选项，包括文件系统的特性（如 <code>ext_attr</code>、<code>dir_index</code>）、日志模式（如 <code>journal</code>、<code>ordered</code>、<code>writeback</code>）、挂载选项（如 <code>noatime</code>）等等。</li>
+<li>优化文件系统的缓存。比如可以优化 <code>pdflush</code> 脏页的刷新频率（比如设置 <code>dirty_expire_centisecs</code> 和 <code>dirty_writeback_centisecs</code>）以及脏页的限额（比如调整 <code>dirty_background_ratio</code> 和 <code>dirty_ratio</code> 等）。再如还可以优化内核回收目录项缓存和索引节点缓存的倾向，即调整 <code>vfs_cache_pressure</code>（<code>/proc/sys/vm/vfs_cache_pressure</code>，默认值 100），数值越大，就表示越容易回收。最后，在不需要持久化时还可以用内存文件系统 <code>tmpfs</code>以获得更好的 I/O 性能 。<code>tmpfs</code> 把数据直接保存在内存中，而不是磁盘中。比如 <code>/dev/shm/</code> ，就是大多数 Linux 默认配置的一个内存文件系统，它的大小默认为总内存的一半。</li>
+</ul>
+<h3 id="4-3-磁盘优化"><a href="#4-3-磁盘优化" class="headerlink" title="4.3 磁盘优化"></a>4.3 磁盘优化</h3><p>&emsp;&emsp;磁盘是整个 I/O 栈的最底层。从磁盘角度出发，自然也有很多有效的性能优化方法。</p>
+<ul>
+<li>使用 RAID ，把多块磁盘组合成一个逻辑磁盘，构成冗余独立磁盘阵列。这样做既可以提高数据的可靠性，又可以提升数据的访问性能。</li>
+<li>针对磁盘和应用程序 I/O 模式的特征可以选择最适合的 I/O 调度算法。比方说，SSD 和虚拟机中的磁盘，通常用的是 <code>noop</code> 调度算法。而数据库应用，我更推荐使用 <code>deadline</code> 算法。</li>
+<li>对应用程序的数据，进行磁盘级别的隔离。比如可以为日志、数据库等 I/O 压力比较重的应用，配置单独的磁盘。</li>
+<li>在顺序读比较多的场景中可以增大磁盘的预读数据，比如可以通过下面两种方法，调整 <code>/dev/sdb</code> 的预读大小。<ul>
+<li>调整内核选项 <code>/sys/block/sdb/queue/read_ahead_kb</code>，默认大小是 128 KB，单位为 KB。</li>
+<li>使用 <code>blockdev</code> 工具设置，比如 <code>blockdev --setra 8192 /dev/sdb</code>，注意这里的单位是 512B（0.5KB），所以它的数值总是 <code>read_ahead_kb</code> 的两倍。</li>
+</ul>
+</li>
+<li>优化内核块设备 I/O 的选项。比如，可以调整磁盘队列的长度 <code>/sys/block/sdb/queue/nr_requests</code>，适当增大队列长度，可以提升磁盘的吞吐量（当然也会导致 I/O 延迟增大）。</li>
+<li>磁盘本身出现硬件错误，也会导致 I/O 性能急剧下降，所以发现磁盘性能急剧下降时还需要确认，磁盘本身是不是出现了硬件错误。比如可以查看 <code>dmesg</code> 中是否有硬件 I/O 故障的日志。 还可以使用 <code>badblocks</code>、<code>smartctl</code> 等工具，检测磁盘的硬件问题，或用 <code>e2fsck</code> 等来检测文件系统的错误。如果发现问题，可以使用 <code>fsck</code> 等工具来修复。</li>
+</ul>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>&emsp;&emsp;本文大致总结了磁盘I/O相关的性能指标、检测工具、压测工具以及优化思路。</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] Linux-insides</p>
 <p>[2] 深入理解Linux内核</p>
 <p>[3] Linux内核设计的艺术</p>
 <p>[4] 深入理解计算机系统</p>
@@ -780,7 +824,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-I-O性能指标及查询工具"><span class="nav-text">二. I&#x2F;O性能指标及查询工具</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-磁盘I-O性能观测"><span class="nav-text">2.1 磁盘I&#x2F;O性能观测</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2df命令"><span class="nav-text">2.2df命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-slabtop"><span class="nav-text">2.3 slabtop</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-进程I-O检测"><span class="nav-text">2.4 进程I&#x2F;O检测</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-进程追踪"><span class="nav-text">2.5 进程追踪</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-6-进程I-O文件使用"><span class="nav-text">2.6 进程I&#x2F;O文件使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-7-内核读写检测工具"><span class="nav-text">2.7 内核读写检测工具</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-8-open系统调用内核追踪"><span class="nav-text">2.8 open系统调用内核追踪</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-9-nsenter容器追踪工具"><span class="nav-text">2.9 nsenter容器追踪工具</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-I-O性能优化思路"><span class="nav-text">三. I&#x2F;O性能优化思路</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-I-O性能指标及查询工具"><span class="nav-text">二. I&#x2F;O性能指标及查询工具</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-磁盘I-O性能观测"><span class="nav-text">2.1 磁盘I&#x2F;O性能观测</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2df命令"><span class="nav-text">2.2df命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-slabtop"><span class="nav-text">2.3 slabtop</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-进程I-O检测"><span class="nav-text">2.4 进程I&#x2F;O检测</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-进程追踪"><span class="nav-text">2.5 进程追踪</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-6-进程I-O文件使用"><span class="nav-text">2.6 进程I&#x2F;O文件使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-7-内核读写检测工具"><span class="nav-text">2.7 内核读写检测工具</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-8-open系统调用内核追踪"><span class="nav-text">2.8 open系统调用内核追踪</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-9-nsenter容器追踪工具"><span class="nav-text">2.9 nsenter容器追踪工具</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-I-O压测工具"><span class="nav-text">三. I&#x2F;O压测工具</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-I-O性能优化思路"><span class="nav-text">四.  I&#x2F;O性能优化思路</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-应用层优化"><span class="nav-text">4.1 应用层优化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-文件系统优化"><span class="nav-text">4.2 文件系统优化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-磁盘优化"><span class="nav-text">4.3 磁盘优化</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
@@ -814,7 +858,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">147.2k</span>
+    <span title="Site words total count">149.2k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
