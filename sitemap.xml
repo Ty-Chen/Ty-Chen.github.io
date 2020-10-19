@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://ty-chen.github.io/linux-kernel-network-optimization/</loc>
+    
+    <lastmod>2020-10-19T14:42:46.149Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://ty-chen.github.io/linux-kernel-IO-optimization/</loc>
     
     <lastmod>2020-10-18T15:22:54.542Z</lastmod>
@@ -40,13 +47,6 @@
     <loc>https://ty-chen.github.io/linux-kernel-mmstruct/</loc>
     
     <lastmod>2020-09-20T12:07:08.434Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://ty-chen.github.io/linux-kernel-network-optimization/</loc>
-    
-    <lastmod>2020-09-17T15:39:54.835Z</lastmod>
     
   </url>
   
