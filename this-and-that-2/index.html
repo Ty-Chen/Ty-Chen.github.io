@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="随笔,网络优化,MMORPG,计算拆分," />
+  <meta name="keywords" content="导师,code review,代码规范," />
 
 
 
@@ -79,19 +79,18 @@
 
 
 
-<meta name="description" content="一. 引子&amp;emsp;&amp;emsp;本人是重度游戏爱好者，MMORPG当然也体验过很多，从早期的传奇、奇迹到冒险岛，从天下三、剑网三到天刀、逆水寒，其中有一个共同的问题：人一多就卡。拿剑网三举例，大攻防小攻防简直不要太卡，尤其是一波对冲，如果你不屏蔽人物、不降低画质，那简直就是在作死的边缘试探。为此，本文试分析如何解决MMORPG中多人对战造成的卡顿问题。 &amp;emsp;&amp;emsp;卡顿分为个人电脑卡">
+<meta name="description" content="一. 前言&amp;emsp;&amp;emsp;本文有感于大佬不厌其烦多次的code review，确实让人受益良多，颇多感激难以言语表达，只能默默记在心里。本文将从写代码和帮别人过代码两个角度来记录感悟，希望对大家都能有所帮助。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="关于MMORPG多人对战中热点问题的解决思路讨论">
-<meta property="og:url" content="https://ty-chen.github.io/%E5%85%B3%E4%BA%8EMMORPG%E5%A4%9A%E4%BA%BA%E5%AF%B9%E6%88%98%E4%B8%AD%E7%83%AD%E7%82%B9%E9%97%AE%E9%A2%98%E7%9A%84%E8%A7%A3%E5%86%B3%E6%80%9D%E8%B7%AF%E8%AE%A8%E8%AE%BA/index.html">
+<meta property="og:title" content="杂谈之code review">
+<meta property="og:url" content="https://ty-chen.github.io/this-and-that-2/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
-<meta property="og:description" content="一. 引子&amp;emsp;&amp;emsp;本人是重度游戏爱好者，MMORPG当然也体验过很多，从早期的传奇、奇迹到冒险岛，从天下三、剑网三到天刀、逆水寒，其中有一个共同的问题：人一多就卡。拿剑网三举例，大攻防小攻防简直不要太卡，尤其是一波对冲，如果你不屏蔽人物、不降低画质，那简直就是在作死的边缘试探。为此，本文试分析如何解决MMORPG中多人对战造成的卡顿问题。 &amp;emsp;&amp;emsp;卡顿分为个人电脑卡">
-<meta property="article:published_time" content="2020-04-19T14:18:33.000Z">
-<meta property="article:modified_time" content="2020-05-26T15:31:53.042Z">
+<meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;本文有感于大佬不厌其烦多次的code review，确实让人受益良多，颇多感激难以言语表达，只能默默记在心里。本文将从写代码和帮别人过代码两个角度来记录感悟，希望对大家都能有所帮助。">
+<meta property="article:published_time" content="2020-10-22T16:12:04.000Z">
+<meta property="article:modified_time" content="2020-10-22T16:12:55.229Z">
 <meta property="article:author" content="Ty Chen">
-<meta property="article:tag" content="随笔">
-<meta property="article:tag" content="网络优化">
-<meta property="article:tag" content="MMORPG">
-<meta property="article:tag" content="计算拆分">
+<meta property="article:tag" content="导师">
+<meta property="article:tag" content="code review">
+<meta property="article:tag" content="代码规范">
 <meta name="twitter:card" content="summary">
 
 
@@ -122,13 +121,13 @@
 
 
 
-  <link rel="canonical" href="https://ty-chen.github.io/关于MMORPG多人对战中热点问题的解决思路讨论/"/>
+  <link rel="canonical" href="https://ty-chen.github.io/this-and-that-2/"/>
 
 
 
 
 
-  <title>关于MMORPG多人对战中热点问题的解决思路讨论 | Ty-Chen's Home</title>
+  <title>杂谈之code review | Ty-Chen's Home</title>
   
 
 
@@ -265,7 +264,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://ty-chen.github.io/%E5%85%B3%E4%BA%8EMMORPG%E5%A4%9A%E4%BA%BA%E5%AF%B9%E6%88%98%E4%B8%AD%E7%83%AD%E7%82%B9%E9%97%AE%E9%A2%98%E7%9A%84%E8%A7%A3%E5%86%B3%E6%80%9D%E8%B7%AF%E8%AE%A8%E8%AE%BA/">
+    <link itemprop="mainEntityOfPage" href="https://ty-chen.github.io/this-and-that-2/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Ty Chen">
@@ -282,7 +281,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">关于MMORPG多人对战中热点问题的解决思路讨论</h1>
+          <h1 class="post-title" itemprop="name headline">杂谈之code review</h1>
         
 
         <div class="post-meta">
@@ -294,8 +293,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-04-19T22:18:33+08:00">
-                2020-04-19
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-10-23T00:12:04+08:00">
+                2020-10-23
               </time>
             
 
@@ -306,8 +305,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-05-26T23:31:53+08:00" content="2020-05-26">
-                2020-05-26
+              <time itemprop="dateUpdated" datetime="2020-10-23T00:12:55+08:00" content="2020-10-23">
+                2020-10-23
               </time>
             </span>
           
@@ -324,8 +323,8 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%BD%91%E7%BB%9C%E4%BC%98%E5%8C%96/" itemprop="url" rel="index">
-                    <span itemprop="name">网络优化</span>
+                  <a href="/categories/%E6%9D%82%E8%B0%88/" itemprop="url" rel="index">
+                    <span itemprop="name">杂谈</span>
                   </a>
                 </span>
 
@@ -342,8 +341,8 @@
                 <span class="post-meta-item-icon">
                   <i class="fa fa-comment-o"></i>
                 </span>
-                <a href="/%E5%85%B3%E4%BA%8EMMORPG%E5%A4%9A%E4%BA%BA%E5%AF%B9%E6%88%98%E4%B8%AD%E7%83%AD%E7%82%B9%E9%97%AE%E9%A2%98%E7%9A%84%E8%A7%A3%E5%86%B3%E6%80%9D%E8%B7%AF%E8%AE%A8%E8%AE%BA/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count valine-comment-count" data-xid="/%E5%85%B3%E4%BA%8EMMORPG%E5%A4%9A%E4%BA%BA%E5%AF%B9%E6%88%98%E4%B8%AD%E7%83%AD%E7%82%B9%E9%97%AE%E9%A2%98%E7%9A%84%E8%A7%A3%E5%86%B3%E6%80%9D%E8%B7%AF%E8%AE%A8%E8%AE%BA/" itemprop="commentCount"></span>
+                <a href="/this-and-that-2/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/this-and-that-2/" itemprop="commentCount"></span>
                 </a>
               </span>
             
@@ -370,7 +369,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  2.3k
+                  1.2k
                 </span>
               
 
@@ -386,7 +385,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  7
+                  4
                 </span>
               
             </div>
@@ -407,36 +406,47 @@
       
 
       
-        <h3 id="一-引子"><a href="#一-引子" class="headerlink" title="一. 引子"></a>一. 引子</h3><p>&emsp;&emsp;本人是重度游戏爱好者，MMORPG当然也体验过很多，从早期的传奇、奇迹到冒险岛，从天下三、剑网三到天刀、逆水寒，其中有一个共同的问题：人一多就卡。拿剑网三举例，大攻防小攻防简直不要太卡，尤其是一波对冲，如果你不屏蔽人物、不降低画质，那简直就是在作死的边缘试探。为此，本文试分析如何解决MMORPG中多人对战造成的卡顿问题。</p>
-<p>&emsp;&emsp;卡顿分为个人电脑卡顿和服务器卡顿两种。其中个人卡顿可能是由于显卡性能不够（引擎优化不够）、内存不足（客户端优化不够）、网络延迟高（大多数是因为网太垃圾了，也有可能是客户端服务端优化不足）等原因导致。<strong>这些不在本文的讨论范围内，因为每一个展开都会是极多极难的问题，本文仅专注于讨论大攻防时由于人多导致的服务器卡顿问题，即如何做到一个玩家在进行大规模对战时游戏体验和JJC以及战场体验接近或者相同的问题。</strong></p>
+        <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;本文有感于大佬不厌其烦多次的code review，确实让人受益良多，颇多感激难以言语表达，只能默默记在心里。本文将从写代码和帮别人过代码两个角度来记录感悟，希望对大家都能有所帮助。</p>
 <a id="more"></a>
 
-<h3 id="二-热点问题的由来和解决的痛点"><a href="#二-热点问题的由来和解决的痛点" class="headerlink" title="二. 热点问题的由来和解决的痛点"></a>二. 热点问题的由来和解决的痛点</h3><p>&emsp;&emsp;游戏发展到现在，对服务器来说瓶颈其实并不在于网速，而是在于当几百人对战时，一般会集中在一个很小的区域范围内攻击BOSS或者双方互相攻击。而这种情况下，每个人的技能、移动都需要计算，每个人受到的技能、别人的位置信息也需要实时更新，这些数据计算难以拆分、CPU也难以快速计算完成，因此造成了一个计算带来的延迟。这个延迟导致了逻辑帧帧率的下降，并因此导致了渲染帧的减少。为了追帧，就不得不做一些处理，因此在玩家严重就表现为大家突然静止，然后突然瞬移，或者产生快速移动现象。</p>
-<p>&emsp;&emsp;由上，不难看出主要的问题在于单位时间内的计算量可谓是不低。以剑网三为例，在一次大攻防里，400对400人的战斗，还要考虑到特殊门派如五毒的宝宝、长歌的影子，可以假设是1000对1000，即每秒需要完成百万数量的技能计算。</p>
-<p>&emsp;&emsp;有人会说，多开几个服务器不行吗？多几个电脑（CPU）一起算不就好了吗？这里不得不说，更糟糕的是，玩家释放技能会造成玩家之间有着强依赖关系，拆分起来有很多问题需要讨论。如A发出向B的攻击，B发出了向C的攻击。如果A的伤害足够击杀了B，则B对C的伤害如果在击杀之后则应该无效。如果将A、B、C拆分在不同的服务器上计算，那如何保证如例子中一般取消B对C的攻击伤害呢？如果通过服务器间通信来保证消息的一致性，通信的延时损耗和完成逻辑判断需要的开销会不会比拆分得到的收益更多呢？</p>
-<p>&emsp;&emsp;因此，我们不可以将每个玩家都拆分出来单独计算，因为需要考虑玩家之前的强关联性，同时还要考虑拆分后为保证数据一致性的通信时延损耗。</p>
-<p>&emsp;&emsp;对此，我觉得可以从以下两个角度着手考虑如何解决该问题。</p>
+<h2 id="二-Show-leader-the-code"><a href="#二-Show-leader-the-code" class="headerlink" title="二. Show leader the code"></a>二. Show leader the code</h2><p>&emsp;&emsp;对程序员来说，代码就是自己的名片，也是自己的最好证明，所以一定要对代码有所追求。套用某部YY小说里的一句台词：“世界上没有纯净的铁，只有发现不了杂质的人”，追求代码的完美是毕生的事。</p>
 <ul>
-<li>从分级合理拆分的角度考虑解决该问题</li>
-<li>从优化流程的角度考虑解决该问题</li>
+<li><p>关于代码规范，该部分属于程序员基本素养，但是绝大多数人做的都不算好。细谈代码规范其实可以包括以下部分</p>
+<ul>
+<li><strong>代码风格、空行、命名规范</strong>等基本代码规范。该部分应该和项目组保持一致，每写一行代码都需要严格遵守，刻入肌肉记忆之中</li>
+<li><strong>代码架构、代码组织方式、模块间调用</strong>。该部分首先应和项目组保持一致，其次应该注意一些基本原则，如高内聚低耦合，KISS等。该部分涉及到了设计模式、软件架构等的相关知识，比较好的推荐书籍有《代码整洁之道》，比较好的网络课程推荐极客时间的《设计模式之美》和《许式伟的架构课》。</li>
+<li><strong>代码性能</strong>。有人说代码性能不算代码规范，但是实际上追求低时间、空间复杂度是程序员的基本素养，在自己力所能及的范围内，应该努力提升代码的性能，将其作为基本功而不是炫技或者高级技巧。</li>
 </ul>
-<h3 id="三-分级合理拆分"><a href="#三-分级合理拆分" class="headerlink" title="三. 分级合理拆分"></a>三. 分级合理拆分</h3><ul>
-<li><p>逻辑时间管理<br>&emsp;&emsp;拆分一大关键问题是同步问题，因此这里可以采用一个类似于lamport clock的自增逻辑时间来标记每秒内收到的所有玩家操作顺序，并以此顺序来作为后续拆分后一些先后顺序的判断：比如玩家释放的技能和玩家死亡时间的先后顺序。</p>
 </li>
-<li><p>拆分技能<br>&emsp;&emsp;在MMORPG游戏里技能一般分为两种：AOE技能和单体技能。为了减小计算量，我们可以将AOE技能单独拆出来而不作为玩家间关联的依据，而是判断玩家所处的坐标内是否有该技能效果。这里需要考虑伤害发起玩家如果死亡则伤害停止。</p>
+<li><p>关于如何跟老大做好code review</p>
+<ul>
+<li>首先代码<strong>自己自测完毕功能正常是基本要求</strong></li>
+<li>其次在过代码之前应该<strong>把一些简单的问题自己解决掉</strong>，如基本代码规范、不需要的参数、多于的LOG打印等。这些如果等到review的时候再发现，一方面浪费了双方宝贵的时间，另一方面也容易留下不好的印象。</li>
+<li>对代码的时候可以按照版本控制工具的差异逐个排查，也可以按照流程进行。重点在于自己要清楚所有的思路，<strong>自己改过的地方所有相关的东西都要弄清楚，不要留下含糊不清的地方，要有责任感</strong>。</li>
+<li>最后<strong>做好标签和记录</strong>，方便对完代码之后修改，也方便自己从中汲取营养努力成长</li>
+</ul>
 </li>
-<li><p>热点中的热点单独计算<br>&emsp;&emsp;在大型对人对战中，看似玩家间的攻击杂乱无章法，但是实际上大多数时候是有序的，如<br>（1）大攻防中的大小经营BOSS<br>（2）小攻防中的箭塔、战车、大旗<br>（3）被指挥标记的集火单位<br>&emsp;&emsp;这些单位存在一个共同特点：被大量单位集火，因此可以作为热点中的热点，单独进行计算。我们将该热点收到的技能伤害以逻辑时间为顺序列出，以哈希表 + 链表或者跳表的形式存储（空间换时间）。等待其他玩家是否有死亡信息发生在其释放技能之前的事件通知，若有则将其从该表中剔除，最终生成计算结果。</p>
+<li><p>关于多人配合完成功能</p>
+<ul>
+<li>最基本的要求是了解他人的工作内容，知道他做了些什么</li>
+<li>一个优秀的程序员要有主人翁意识，<strong>做事不要分是不是自己的，别人的代码如果来不及完成、没办法游戏的完成，需要想办法帮助其完成或者自己帮忙完成</strong>。</li>
+</ul>
 </li>
-<li><p>邻接表拆分关联玩家<br>&emsp;&emsp;这里可以模拟Trie树的思想，从一个dummy根开始，以邻接链表的方式将玩家进行分类，然后对dummy根的儿子们进行拆分计算。这些儿子的计算结果可以直接发送给对应玩家，同时发送一份死亡通知给3中的热点用以计算。</p>
+<li><p>关于review后续跟进</p>
+<ul>
+<li>review中<strong>发现的错误应及时处理</strong></li>
+<li>处理完之后<strong>再次自测</strong>，自测完之后如果有空可以再次review，确认没有问题      </li>
+<li>最后的最后，<strong>犯过的错误一定不要犯第二次，这是态度问题</strong>。<h2 id="三-Show-me-the-code"><a href="#三-Show-me-the-code" class="headerlink" title="三. Show me the code"></a>三. Show me the code</h2>&emsp;&emsp;在和老大讨论代码的过程中，也汲取到了一些如何给别人进行code review的技能。</li>
+</ul>
+</li>
+<li><p>强大自己。<strong>只有自己精通代码规范、代码架构，才能够称职的帮别人做code review</strong>。这需要丰富的经验和知识，而这一切来源于平时的积累。每一次对代码、每一次做需求，都需要多想想为什么，而不是简简单单完成任务即可。要多思考如何写出更优秀的代码，现有代码是否还有可提升空间。</p>
+</li>
+<li><p>细心谨慎。对代码的时候<strong>不要繁衍了事，而是应该认认真真的把好关</strong>，这是一个leader的责任感，帮别人对代码需要把当成自己的代码一样爱惜，每行每句的认真分析、认真优化，努力提高代码质量。</p>
+</li>
+<li><p><strong>每一次的指导都是学习</strong>。在指导别人的过程中，自己首先可以加深对代码规范的理解，其次可以加深对相关项目、源码的了解，有时候还能从别人的代码里学到一些新的东西。求知若愚，不放过每一分每一秒的成长机会。</p>
 </li>
 </ul>
-<h3 id="四-计算流程的优化"><a href="#四-计算流程的优化" class="headerlink" title="四. 计算流程的优化"></a>四. 计算流程的优化</h3><ul>
-<li><p>优化技能和判断逻辑<br>&emsp;&emsp;这里的优化技能逻辑其实是针对开发流程中的策划来说的。在大型MMORPG团队中，一般技能等的释放、判断逻辑会交由策划通过编写脚本来完成，如python或者lua等等。这里其实可能存在两个问题<br>（1）策划一般不会精通算法，写出来的逻辑可能复杂度很高，每一处的高复杂度叠加后就会产生极大的不必要延迟<br>（2）脚本和C/C++的调用会产生时间成本<br>&emsp;&emsp;这里可能的优化方法有<br>（1）类似于 C++的stl，写一个基础库供以策划调用，避免了策划写出垃圾代码和大量低级BUG的问题<br>（2）做一个脚本编译转成C/C++的中间工具，解决问题（2）</p>
-</li>
-<li><p>服务器流程优化<br>&emsp;&emsp;最近在学习的时候了解到了一个近几年比较有新意的东西：DPDK(Data Plane Development Kit)。详细说明可见其<a href="https://software.intel.com/en-us/networking/dpdk" target="_blank" rel="noopener">官方说明</a>，另外这里有篇<a href="https://cloud.tencent.com/developer/article/1198333" target="_blank" rel="noopener">中文文献</a>写的也不错。<br>&emsp;&emsp;处理数据包的传统方式是CPU中断方式，即网卡驱动接收到数据包后通过中断通知CPU处理，然后由CPU拷贝数据并交给协议栈。在数据量大时，这种方式会产生大量CPU中断，导致CPU无法运行其他程序。而DPDK则采用轮询方式实现数据包处理过程：DPDK重载了网卡驱动，该驱动在收到数据包后不中断通知CPU，而是将数据包通过零拷贝技术存入内存，这时应用层程序就可以通过DPDK提供的接口，直接从内存读取数据包。<br>&emsp;&emsp;这种处理方式节省了CPU中断时间、内存拷贝时间，并向应用层提供了简单易行且高效的数据包处理方式，使得网络应用的开发更加方便。但同时，由于需要重载网卡驱动，因此该开发包目前只能用在部分采用Intel网络处理芯片的网卡中。<br>&emsp;&emsp;对于玩家来说，总体感知的时间是发包+处理数据+收包的过程。因此对任意部分如果可以进行一些比较显著的优化都会对整体效果起到比较好的表现。DPDK在收发包、数据处理方面都有着较多的优化，该部分如果有比较成熟的生态系统我相信对提高服务器表现绝对大有裨益。</p>
-</li>
-</ul>
-<h3 id="五-总结"><a href="#五-总结" class="headerlink" title="五. 总结"></a>五. 总结</h3><p>&emsp;&emsp;由于本人缺乏很多方面的实际开发经验，本文仅从一个游戏玩家的角度进行分析，一定有很多有失偏颇或者过于天真的妄想之处，也可能因为自身知识能力的关系视野狭隘没有看清各大游戏厂商的设计思维。所以还请多多包涵指点，聊以娱乐。</p>
+<h2 id="最后的话"><a href="#最后的话" class="headerlink" title="最后的话"></a>最后的话</h2><p>&emsp;&emsp;作为一名靠代码吃饭的“打工人”，对代码还是要有点追求的。像热爱生命一样的热爱代码，追求卓越，成功就会和你不期而遇。All is well。</p>
 
       
     </div>
@@ -486,7 +496,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="https://ty-chen.github.io/%E5%85%B3%E4%BA%8EMMORPG%E5%A4%9A%E4%BA%BA%E5%AF%B9%E6%88%98%E4%B8%AD%E7%83%AD%E7%82%B9%E9%97%AE%E9%A2%98%E7%9A%84%E8%A7%A3%E5%86%B3%E6%80%9D%E8%B7%AF%E8%AE%A8%E8%AE%BA/" title="关于MMORPG多人对战中热点问题的解决思路讨论">https://ty-chen.github.io/%E5%85%B3%E4%BA%8EMMORPG%E5%A4%9A%E4%BA%BA%E5%AF%B9%E6%88%98%E4%B8%AD%E7%83%AD%E7%82%B9%E9%97%AE%E9%A2%98%E7%9A%84%E8%A7%A3%E5%86%B3%E6%80%9D%E8%B7%AF%E8%AE%A8%E8%AE%BA/</a>
+    <a href="https://ty-chen.github.io/this-and-that-2/" title="杂谈之code review">https://ty-chen.github.io/this-and-that-2/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>
@@ -501,13 +511,11 @@
       
         <div class="post-tags">
           
-            <a href="/tags/%E9%9A%8F%E7%AC%94/" rel="tag"># 随笔</a>
+            <a href="/tags/%E5%AF%BC%E5%B8%88/" rel="tag"># 导师</a>
           
-            <a href="/tags/%E7%BD%91%E7%BB%9C%E4%BC%98%E5%8C%96/" rel="tag"># 网络优化</a>
+            <a href="/tags/code-review/" rel="tag"># code review</a>
           
-            <a href="/tags/MMORPG/" rel="tag"># MMORPG</a>
-          
-            <a href="/tags/%E8%AE%A1%E7%AE%97%E6%8B%86%E5%88%86/" rel="tag"># 计算拆分</a>
+            <a href="/tags/%E4%BB%A3%E7%A0%81%E8%A7%84%E8%8C%83/" rel="tag"># 代码规范</a>
           
         </div>
       
@@ -520,8 +528,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/NS%E3%80%8A%E9%9B%86%E5%90%88%E5%95%A6%E5%8A%A8%E7%89%A9%E6%A3%AE%E5%8F%8B%E4%BC%9A%E3%80%8B%E8%81%94%E6%9C%BA%E7%B3%BB%E7%BB%9F%E7%A1%AC%E6%A0%B8%E5%88%86%E6%9E%90%E5%8F%8A%E4%BC%98%E5%8C%96%E8%AE%A8%E8%AE%BA/" rel="next" title="NS《集合啦动物森友会》联机系统硬核分析及优化讨论">
-                <i class="fa fa-chevron-left"></i> NS《集合啦动物森友会》联机系统硬核分析及优化讨论
+              <a href="/this-and-that-1/" rel="next" title="杂谈之新人和导师">
+                <i class="fa fa-chevron-left"></i> 杂谈之新人和导师
               </a>
             
           </div>
@@ -529,10 +537,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/paradigms/" rel="prev" title="编程范式学习记录">
-                编程范式学习记录 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -739,7 +743,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一-引子"><span class="nav-text">一. 引子</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二-热点问题的由来和解决的痛点"><span class="nav-text">二. 热点问题的由来和解决的痛点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三-分级合理拆分"><span class="nav-text">三. 分级合理拆分</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#四-计算流程的优化"><span class="nav-text">四. 计算流程的优化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#五-总结"><span class="nav-text">五. 总结</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-Show-leader-the-code"><span class="nav-text">二. Show leader the code</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-Show-me-the-code"><span class="nav-text">三. Show me the code</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#最后的话"><span class="nav-text">最后的话</span></a></li></ol></div>
             
 
           </div>
