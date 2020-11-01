@@ -79,19 +79,23 @@
 
 
 
-<meta name="description" content="一. 前言&amp;emsp;&amp;emsp;在前面一些文章中多多少少有提到一些CPU的结构以及对应的寄存器等，但是总觉得不够透彻，所以单开一文详细叙述CPU的各种知识，从而加深对操作系统和性能的理解。">
+<meta name="description" content="一. 前言&amp;emsp;&amp;emsp;在前面一些文章中多多少少有提到一些CPU的结构以及对应的寄存器等，但是总觉得不够透彻，所以单开一文详细叙述CPU的各种知识，从而加深对操作系统和性能的理解。本文从最基本的加法器和乘法器切入，随后介绍CPU的基本架构和实现原理，接着介绍各个核心模块的实现细节，最后介绍CPU的一些高级黑科技。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux操作系统学习笔记（二十八）深入理解CPU">
 <meta property="og:url" content="https://ty-chen.github.io/linux-kernel-cpu/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
-<meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;在前面一些文章中多多少少有提到一些CPU的结构以及对应的寄存器等，但是总觉得不够透彻，所以单开一文详细叙述CPU的各种知识，从而加深对操作系统和性能的理解。">
+<meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;在前面一些文章中多多少少有提到一些CPU的结构以及对应的寄存器等，但是总觉得不够透彻，所以单开一文详细叙述CPU的各种知识，从而加深对操作系统和性能的理解。本文从最基本的加法器和乘法器切入，随后介绍CPU的基本架构和实现原理，接着介绍各个核心模块的实现细节，最后介绍CPU的一些高级黑科技。">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/94/f6/94194480bcfd3b5366e4649ee80de4f6.jpg">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/58/1e/5860fd8c4ace079b40e66b9568d2b81e.jpg">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/3f/2a/3f11f278ba8f24209a56fb3ee1ca9e2a.jpg">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/68/a1/68cd38910f526c149d232720b82b6ca1.jpeg">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/cb/e9/cb809de19088d08767279715f07482e9.jpg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/66/98/6646b90ea563c6b87dc20bbd81c54b98.jpeg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/6e/a8/6e9f630389c566d72f57f5b196a711a8.jpeg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/1a/48/1a7d2d6cf7cb78a8f48775268f452e48.jpeg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/bd/67/bde3548a4789ba49cab74c8c1ab02a67.jpeg">
 <meta property="article:published_time" content="2020-10-30T13:09:04.000Z">
-<meta property="article:modified_time" content="2020-10-31T17:19:55.532Z">
+<meta property="article:modified_time" content="2020-11-01T16:06:58.843Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -312,8 +316,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-11-01T01:19:55+08:00" content="2020-11-01">
-                2020-11-01
+              <time itemprop="dateUpdated" datetime="2020-11-02T00:06:58+08:00" content="2020-11-02">
+                2020-11-02
               </time>
             </span>
           
@@ -376,7 +380,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  831
+                  2.5k
                 </span>
               
 
@@ -392,7 +396,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  2
+                  8
                 </span>
               
             </div>
@@ -413,7 +417,7 @@
       
 
       
-        <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;在前面一些文章中多多少少有提到一些CPU的结构以及对应的寄存器等，但是总觉得不够透彻，所以单开一文详细叙述CPU的各种知识，从而加深对操作系统和性能的理解。</p>
+        <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;在前面一些文章中多多少少有提到一些CPU的结构以及对应的寄存器等，但是总觉得不够透彻，所以单开一文详细叙述CPU的各种知识，从而加深对操作系统和性能的理解。本文从最基本的加法器和乘法器切入，随后介绍CPU的基本架构和实现原理，接着介绍各个核心模块的实现细节，最后介绍CPU的一些高级黑科技。</p>
 <a id="more"></a>
 
 <h2 id="二-加法器和乘法器"><a href="#二-加法器和乘法器" class="headerlink" title="二. 加法器和乘法器"></a>二. 加法器和乘法器</h2><h3 id="2-1-门电路和半加器"><a href="#2-1-门电路和半加器" class="headerlink" title="2.1 门电路和半加器"></a>2.1 门电路和半加器</h3><p>&emsp;&emsp;如果从二极管如何形成高低电平说起，那怕是要说完大部分《模拟电路设计》和《数字电路设计》的知识了，有兴趣的同学可以回顾一下自行研究，我们就从各种基本门电路开始谈起。如下所示为常见的门电路。</p>
@@ -437,10 +441,50 @@
 
 <p>&emsp;&emsp;多个全加器串联，就构成了最基本的加法器。对于这个全加器，在个位，我们只需要用一个半加器，或者让全加器的进位输入始终是 0。因为个位没有来自更右侧的进位。而最左侧的一位输出的进位信号，表示的并不是再进一位，而是表示我们的加法是否溢出了。该位电信号实际会被计算机接收到并做判断是否接受溢出操作，如果不接受则会出现异常中断。</p>
 <p><img src="https://static001.geekbang.org/resource/image/68/a1/68cd38910f526c149d232720b82b6ca1.jpeg" alt="img"></p>
-<h3 id="2-3-乘法器"><a href="#2-3-乘法器" class="headerlink" title="2.3 乘法器"></a>2.3 乘法器</h3><p>&emsp;&emsp;二进制的乘法实际上是多次加法的移位运算，乘数是0则不加，是1则左移被乘数一位并相加，最终结构如下所示。</p>
+<h3 id="2-3-基本乘法器"><a href="#2-3-基本乘法器" class="headerlink" title="2.3 基本乘法器"></a>2.3 基本乘法器</h3><p>&emsp;&emsp;二进制的乘法实际上是多次加法的移位运算，乘数是0则不加，是1则左移被乘数一位并相加，最终结构如下所示。这里的控制测试，其实就是通过一个时钟信号，来控制左移、右移以及重新计算乘法和加法的时机。</p>
 <img src="https://static001.geekbang.org/resource/image/cb/e9/cb809de19088d08767279715f07482e9.jpg" alt="img" style="zoom:33%;" />
 
-<h2 id="三-CPU的指令和运算"><a href="#三-CPU的指令和运算" class="headerlink" title="三. CPU的指令和运算"></a>三. CPU的指令和运算</h2><h2 id="四-CPU的寄存器"><a href="#四-CPU的寄存器" class="headerlink" title="四. CPU的寄存器"></a>四. CPU的寄存器</h2><h2 id="五-分支预测"><a href="#五-分支预测" class="headerlink" title="五. 分支预测"></a>五. 分支预测</h2><h2 id="六-高级架构"><a href="#六-高级架构" class="headerlink" title="六. 高级架构"></a>六. 高级架构</h2><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2>
+<h3 id="2-3-并行乘法器"><a href="#2-3-并行乘法器" class="headerlink" title="2.3 并行乘法器"></a>2.3 并行乘法器</h3><p>&emsp;&emsp;在这个乘法器的实现过程里，我们其实就是把乘法展开，变成了“加法 + 位移”来实现。因为下一组的加法要依赖上一组的加法后的计算结果，下一组的位移也要依赖上一组的位移的结果。这样，整个算法是“顺序”的，每一组加法或者位移的运算都需要O(N)的时间。为了减小时间复杂度到O(N)，CPU采取了类似于分治的思想，将时间复杂度减小至O(logN)，如下图所示。</p>
+<img src="https://static001.geekbang.org/resource/image/66/98/6646b90ea563c6b87dc20bbd81c54b98.jpeg" alt="img" style="zoom:33%;" />
+
+<p>&emsp;&emsp;除此之外，还有个更厉害的方法：<strong>不用让计算机模拟人脑的思考方式来连结线路</strong>，把进位部分的电路完全展开就好了。我们的半加器到全加器，再到加法器，都是用最基础的门电路组合而成的。门电路的计算逻辑，可以像我们做数学里面的多项式乘法一样完全展开。在展开之后呢，我们可以把原来需要较少的，但是有较多层前后计算依赖关系的门电路，展开成需要较多的，但是依赖关系更少的门电路。如果我们完全展开电路，高位的进位和计算结果，可以和低位的计算结果同时获得。这个的核心原因是电路是天然并行的，一个输入信号，可以同时传播到所有接通的线路当中。</p>
+<img src="https://static001.geekbang.org/resource/image/6e/a8/6e9f630389c566d72f57f5b196a711a8.jpeg" alt="img" style="zoom:25%;" />
+
+<p>&emsp;&emsp;有了加法器、乘法器，也就有了CPU的最基本组成单位之一：<a href="https://whatis.techtarget.com/definition/arithmetic-logic-unit-ALU#:~:text=An%20arithmetic%2Dlogic%20unit%20(ALU,a%20logic%20unit%20(LU)." target="_blank" rel="noopener">ALU(Arithmetic-Logic Unit )</a>。</p>
+<h2 id="三-CPU基本结构"><a href="#三-CPU基本结构" class="headerlink" title="三. CPU基本结构"></a>三. CPU基本结构</h2><p>&emsp;&emsp;CPU的核心是指令和运算。指令即我们撰写的代码，是怎么变成一条条的机器能够理解的指令的，以及是按照什么样的顺序运行的。而运算，即上面介绍的ALU。只有把“指令”和“计算”这两部分功能连通起来，我们才能构成一个真正完整的 CPU。</p>
+<h3 id="3-1-指令周期、机器周期和时钟周期"><a href="#3-1-指令周期、机器周期和时钟周期" class="headerlink" title="3.1 指令周期、机器周期和时钟周期"></a>3.1 指令周期、机器周期和时钟周期</h3><p>&emsp;&emsp;CPU的运行包括以下几部分：取指令(Fetch)、译码(Decode)、执行(Execute)，三个步骤的重复循环进行称之为指令周期（Instruction Cycle）。</p>
+<ul>
+<li><p>Fetch（取得指令），也就是从 PC 寄存器里找到对应的指令地址，根据指令地址从内存里把具体的指令，加载到指令寄存器中，然后把 PC 寄存器自增，好在未来执行下一条指令。</p>
+</li>
+<li><p>Decode（指令译码），也就是根据指令寄存器里面的指令，解析成要进行什么样的操作，是 R、I、J 中的哪一种指令，具体要操作哪些寄存器、数据或者内存地址。</p>
+</li>
+<li><p>Execute（执行指令），也就是实际运行对应的 R、I、J 这些特定的指令，进行算术逻辑操作、数据传输或者直接的地址跳转。</p>
+</li>
+</ul>
+<p>&emsp;&emsp;我们一般把从内存里面读取一条指令的最短时间，称为 CPU 周期（又称Machine Cycle，机器周期）。对于一个指令周期来说，我们取出一条指令，然后执行它，至少需要两个 CPU 周期：取出指令至少需要一个 CPU 周期，执行至少也需要一个 CPU 周期，复杂的指令则需要更多的 CPU 周期。而时钟周期（Clock Cycle），也就是我们机器的主频。一个 CPU 周期，通常会由几个时钟周期累积起来。一个 CPU 周期的时间，就是这几个 Clock Cycle 的总和。三者关系可用下图表示。</p>
+<p><img src="https://static001.geekbang.org/resource/image/1a/48/1a7d2d6cf7cb78a8f48775268f452e48.jpeg" alt="img"></p>
+<h3 id="3-2-基本结构"><a href="#3-2-基本结构" class="headerlink" title="3.2 基本结构"></a>3.2 基本结构</h3><p>&emsp;&emsp;要想完成CPU的指令周期，我们需要以下部分：</p>
+<ul>
+<li>存储部分，保存程序员编写的众多指令，即存储元件，也有叫状态元件（State Element），比如我们在计算过程中需要用到的寄存器，无论是通用寄存器还是状态寄存器，其实都是存储元件。</li>
+<li>控制部分，控制指令周期的执行，即控制单元（Control Unit）。</li>
+<li>计算部分，完成实际的指令计算操作，即计算单元（ALU），又称操作元件，也叫组合逻辑元件（Combinational Element），它们的功能就是在特定的输入下，根据组合电路的逻辑，生成特定的输出。</li>
+</ul>
+<img src="https://static001.geekbang.org/resource/image/bd/67/bde3548a4789ba49cab74c8c1ab02a67.jpeg" alt="img" style="zoom:33%;" />
+
+<p>&emsp;&emsp;三者结合工作，即可完成CPU的功能。</p>
+<h3 id="3-3-基本硬件电路"><a href="#3-3-基本硬件电路" class="headerlink" title="3.3 基本硬件电路"></a>3.3 基本硬件电路</h3><p>&emsp;&emsp;为了完成上述CPU的基本功能，我们至少需要以下四种电路：</p>
+<ul>
+<li><p>ALU ，实际就是一个没有状态的根据输入计算输出结果的第一个电路。</p>
+</li>
+<li><p>锁存器（Latch），以及 D 触发器（Data/Delay Flip-flop）。这两种电路可以存储到上一次的计算结果。这个计算结果并不一定要立刻拿到电路的下游去使用，但是可以在需要的时候拿出来用，从而达到状态存储的效果。</p>
+</li>
+<li><p>随时间自动变换的程序计数器。我们需要有一个“自动”的电路，按照固定的周期，不停地实现 PC 寄存器自增，自动地去执行“Fetch - Decode - Execute“的步骤。我们看似写了各种复杂的高级程序进行各种函数调用、条件跳转。其实只是修改 PC 寄存器里面的地址。PC 寄存器里面的地址一修改，计算机就可以加载一条指令新指令，往下运行。</p>
+</li>
+<li><p>译码器。无论是对于指令进行 decode，还是对于拿到的内存地址去获取对应的数据或者指令，我们都需要通过一个电路找到对应的数据。这个对应的自然就是“译码器”的电路了。</p>
+</li>
+</ul>
+<p>&emsp;&emsp;把这四类电路通过各种方式组合在一起，就能最终组成功能强大的 CPU 了。但是，要实现这四种电路中的中间两种，我们还需要时钟电路的配合，这就是时序逻辑电路。</p>
+<h2 id="四-寄存器"><a href="#四-寄存器" class="headerlink" title="四. 寄存器"></a>四. 寄存器</h2><h2 id="五-控制单元"><a href="#五-控制单元" class="headerlink" title="五. 控制单元"></a>五. 控制单元</h2><h2 id="六-分支预测"><a href="#六-分支预测" class="headerlink" title="六. 分支预测"></a>六. 分支预测</h2><h2 id="七-高级架构"><a href="#七-高级架构" class="headerlink" title="七. 高级架构"></a>七. 高级架构</h2><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2>
       
     </div>
     
@@ -738,7 +782,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-加法器和乘法器"><span class="nav-text">二. 加法器和乘法器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-门电路和半加器"><span class="nav-text">2.1 门电路和半加器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-半加器到全加器"><span class="nav-text">2.2 半加器到全加器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-乘法器"><span class="nav-text">2.3 乘法器</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-CPU的指令和运算"><span class="nav-text">三. CPU的指令和运算</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-CPU的寄存器"><span class="nav-text">四. CPU的寄存器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-分支预测"><span class="nav-text">五. 分支预测</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#六-高级架构"><span class="nav-text">六. 高级架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-加法器和乘法器"><span class="nav-text">二. 加法器和乘法器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-门电路和半加器"><span class="nav-text">2.1 门电路和半加器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-半加器到全加器"><span class="nav-text">2.2 半加器到全加器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-基本乘法器"><span class="nav-text">2.3 基本乘法器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-并行乘法器"><span class="nav-text">2.3 并行乘法器</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-CPU基本结构"><span class="nav-text">三. CPU基本结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-指令周期、机器周期和时钟周期"><span class="nav-text">3.1 指令周期、机器周期和时钟周期</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-基本结构"><span class="nav-text">3.2 基本结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-基本硬件电路"><span class="nav-text">3.3 基本硬件电路</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-寄存器"><span class="nav-text">四. 寄存器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-控制单元"><span class="nav-text">五. 控制单元</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#六-分支预测"><span class="nav-text">六. 分支预测</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#七-高级架构"><span class="nav-text">七. 高级架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
@@ -772,7 +816,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">152.3k</span>
+    <span title="Site words total count">153.9k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
