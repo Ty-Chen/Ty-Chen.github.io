@@ -94,8 +94,14 @@
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/6e/a8/6e9f630389c566d72f57f5b196a711a8.jpeg">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/1a/48/1a7d2d6cf7cb78a8f48775268f452e48.jpeg">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/bd/67/bde3548a4789ba49cab74c8c1ab02a67.jpeg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/68/71/6863e10fc635791878d1ecd57618b871.jpeg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/d2/ca/d205493f6ff1aeba7a849575285bbeca.jpg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/6d/93/6dd534a167513c865dfe1921ebb6ae93.jpeg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/dc/de/dc6dcce612b2fd51939d7ec44b3fe1de.jpeg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/d7/bb/d749acce21756d89c35ee19545cfebbb.jpeg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/1e/4c/1ed21092022057ed192a7d9aff76144c.jpg">
 <meta property="article:published_time" content="2020-10-30T13:09:04.000Z">
-<meta property="article:modified_time" content="2020-11-01T16:06:58.843Z">
+<meta property="article:modified_time" content="2020-11-02T16:10:20.534Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -316,8 +322,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-11-02T00:06:58+08:00" content="2020-11-02">
-                2020-11-02
+              <time itemprop="dateUpdated" datetime="2020-11-03T00:10:20+08:00" content="2020-11-03">
+                2020-11-03
               </time>
             </span>
           
@@ -380,7 +386,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  2.5k
+                  3.2k
                 </span>
               
 
@@ -396,7 +402,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  8
+                  11
                 </span>
               
             </div>
@@ -474,16 +480,27 @@
 <p>&emsp;&emsp;三者结合工作，即可完成CPU的功能。</p>
 <h3 id="3-3-基本硬件电路"><a href="#3-3-基本硬件电路" class="headerlink" title="3.3 基本硬件电路"></a>3.3 基本硬件电路</h3><p>&emsp;&emsp;为了完成上述CPU的基本功能，我们至少需要以下四种电路：</p>
 <ul>
-<li><p>ALU ，实际就是一个没有状态的根据输入计算输出结果的第一个电路。</p>
-</li>
-<li><p>锁存器（Latch），以及 D 触发器（Data/Delay Flip-flop）。这两种电路可以存储到上一次的计算结果。这个计算结果并不一定要立刻拿到电路的下游去使用，但是可以在需要的时候拿出来用，从而达到状态存储的效果。</p>
-</li>
-<li><p>随时间自动变换的程序计数器。我们需要有一个“自动”的电路，按照固定的周期，不停地实现 PC 寄存器自增，自动地去执行“Fetch - Decode - Execute“的步骤。我们看似写了各种复杂的高级程序进行各种函数调用、条件跳转。其实只是修改 PC 寄存器里面的地址。PC 寄存器里面的地址一修改，计算机就可以加载一条指令新指令，往下运行。</p>
-</li>
-<li><p>译码器。无论是对于指令进行 decode，还是对于拿到的内存地址去获取对应的数据或者指令，我们都需要通过一个电路找到对应的数据。这个对应的自然就是“译码器”的电路了。</p>
-</li>
+<li>ALU ，实际就是一个没有状态的根据输入计算输出结果的第一个电路。</li>
+<li>锁存器（Latch），以及 D 触发器（Data/Delay Flip-flop）。这两种电路可以存储到上一次的计算结果。这个计算结果并不一定要立刻拿到电路的下游去使用，但是可以在需要的时候拿出来用，从而达到状态存储的效果。</li>
+<li>随时间自动变换的程序计数器。我们需要有一个“自动”的电路，按照固定的周期，不停地实现 PC 寄存器自增，自动地去执行“Fetch - Decode - Execute“的步骤。我们看似写了各种复杂的高级程序进行各种函数调用、条件跳转。其实只是修改 PC 寄存器里面的地址。PC 寄存器里面的地址一修改，计算机就可以加载一条指令新指令，往下运行。</li>
+<li>译码器。无论是对于指令进行 decode，还是对于拿到的内存地址去获取对应的数据或者指令，我们都需要通过一个电路找到对应的数据。这个对应的自然就是“译码器”的电路了。</li>
 </ul>
-<p>&emsp;&emsp;把这四类电路通过各种方式组合在一起，就能最终组成功能强大的 CPU 了。但是，要实现这四种电路中的中间两种，我们还需要时钟电路的配合，这就是时序逻辑电路。</p>
+<p><img src="https://static001.geekbang.org/resource/image/68/71/6863e10fc635791878d1ecd57618b871.jpeg" alt="img"></p>
+<p>&emsp;&emsp;把这四类电路通过各种方式组合在一起，就能最终组成功能强大的 CPU 了。但是，要实现这四种电路中的中间两种，我们还需要时钟电路的配合，这就是时序逻辑电路。时序电路解决了自动运行、存储和时序协调的问题，是CPU电路核心所在。</p>
+<h3 id="3-4-D触发器"><a href="#3-4-D触发器" class="headerlink" title="3.4 D触发器"></a>3.4 D触发器</h3><p>&emsp;&emsp;首先，我们需要时钟。CPU 的主频是由一个晶体振荡器来实现的，而这个晶体振荡器生成的电路信号，就是我们的时钟信号。时钟信号的原理无外乎利用电磁感应或者反相器实现一个开启后会关闭、关闭后又会开启的效果，如下图所示</p>
+<p><img src="https://static001.geekbang.org/resource/image/d2/ca/d205493f6ff1aeba7a849575285bbeca.jpg" alt="img"></p>
+<p>&emsp;&emsp;这种不断开开关关的过程就会形成如下所示的高低电平的交错，这就是我们需要的周期性时钟信号。</p>
+<img src="https://static001.geekbang.org/resource/image/6d/93/6dd534a167513c865dfe1921ebb6ae93.jpeg" alt="img" style="zoom:33%;" />
+
+<p>&emsp;&emsp;有了时钟信号，RS触发器就可以构造出一个存储结构，也即CPU 中用来存储计算结果的寄存器。RS触发器接通开关 R，输出变为 1，即使断开开关，输出还是 1 不变。接通开关 S，输出变为 0，即使断开开关，输出也还是 0。也就是，当两个开关都断开的时候，最终的输出结果，取决于之前动作的输出结果，这个也就是我们说的记忆功能。</p>
+<img src="https://static001.geekbang.org/resource/image/dc/de/dc6dcce612b2fd51939d7ec44b3fe1de.jpeg" alt="img" style="zoom:33%;" />
+
+<p>&emsp;&emsp;RS寄存器还是一个比较简陋的模型，需要控制RS两个开关，我们通过反相器将两个开关合并，同时通过与门接入了时钟信号的控制，也就构成了D触发器。一个 D 型触发器，只能控制 1 个比特的读写，但是如果我们同时拿出多个 D 型触发器并列在一起，并且把用同一个 CLK 信号控制作为所有 D 型触发器的开关，这就变成了一个 N 位的 D 型触发器，也就可以同时控制 N 位的读写。</p>
+<img src="https://static001.geekbang.org/resource/image/d7/bb/d749acce21756d89c35ee19545cfebbb.jpeg" alt="img" style="zoom:33%;" />
+
+<h3 id="3-5-程序计数器"><a href="#3-5-程序计数器" class="headerlink" title="3.5 程序计数器"></a>3.5 程序计数器</h3><p>&emsp;&emsp;程序计数器和译码器均由D触发器构造而来。程序计数器，又叫PC寄存器，由D触发器和加法器构成。通过时钟信号的定时输入，我们可以每个时钟周期调用一次加法器自增，接着保存在D触发器里。每次自增之后，我们可以去对应的 D 型触发器里面取值，这也是我们下一条需要运行指令的地址。由此我们实现了顺序访问指令地址的功能。为保证D触发器不会出现时钟周期结束时指令操作未结束从而数据错乱的情况，需要在一个时钟周期里，确保执行完一条最复杂的 CPU 指令，也就是耗时最长的一条 CPU 指令。这样的 CPU 设计，我们称之为单指令周期处理器（Single Cycle Processor）。</p>
+<img src="https://static001.geekbang.org/resource/image/1e/4c/1ed21092022057ed192a7d9aff76144c.jpg" alt="img" style="zoom:25%;" />
+
 <h2 id="四-寄存器"><a href="#四-寄存器" class="headerlink" title="四. 寄存器"></a>四. 寄存器</h2><h2 id="五-控制单元"><a href="#五-控制单元" class="headerlink" title="五. 控制单元"></a>五. 控制单元</h2><h2 id="六-分支预测"><a href="#六-分支预测" class="headerlink" title="六. 分支预测"></a>六. 分支预测</h2><h2 id="七-高级架构"><a href="#七-高级架构" class="headerlink" title="七. 高级架构"></a>七. 高级架构</h2><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2>
       
     </div>
@@ -782,7 +799,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-加法器和乘法器"><span class="nav-text">二. 加法器和乘法器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-门电路和半加器"><span class="nav-text">2.1 门电路和半加器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-半加器到全加器"><span class="nav-text">2.2 半加器到全加器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-基本乘法器"><span class="nav-text">2.3 基本乘法器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-并行乘法器"><span class="nav-text">2.3 并行乘法器</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-CPU基本结构"><span class="nav-text">三. CPU基本结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-指令周期、机器周期和时钟周期"><span class="nav-text">3.1 指令周期、机器周期和时钟周期</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-基本结构"><span class="nav-text">3.2 基本结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-基本硬件电路"><span class="nav-text">3.3 基本硬件电路</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-寄存器"><span class="nav-text">四. 寄存器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-控制单元"><span class="nav-text">五. 控制单元</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#六-分支预测"><span class="nav-text">六. 分支预测</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#七-高级架构"><span class="nav-text">七. 高级架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-加法器和乘法器"><span class="nav-text">二. 加法器和乘法器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-门电路和半加器"><span class="nav-text">2.1 门电路和半加器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-半加器到全加器"><span class="nav-text">2.2 半加器到全加器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-基本乘法器"><span class="nav-text">2.3 基本乘法器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-并行乘法器"><span class="nav-text">2.3 并行乘法器</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-CPU基本结构"><span class="nav-text">三. CPU基本结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-指令周期、机器周期和时钟周期"><span class="nav-text">3.1 指令周期、机器周期和时钟周期</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-基本结构"><span class="nav-text">3.2 基本结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-基本硬件电路"><span class="nav-text">3.3 基本硬件电路</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-D触发器"><span class="nav-text">3.4 D触发器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-5-程序计数器"><span class="nav-text">3.5 程序计数器</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-寄存器"><span class="nav-text">四. 寄存器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-控制单元"><span class="nav-text">五. 控制单元</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#六-分支预测"><span class="nav-text">六. 分支预测</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#七-高级架构"><span class="nav-text">七. 高级架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
@@ -816,7 +833,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">153.9k</span>
+    <span title="Site words total count">154.6k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
