@@ -104,8 +104,12 @@
 <meta property="og:image" content="https://img-blog.csdnimg.cn/img_convert/3ef48f063c8203969a1653dd7b53aa93.png">
 <meta property="og:image" content="https://img-blog.csdnimg.cn/img_convert/d12ff2f9b45c04dea0b256ef7c377fb9.png">
 <meta property="og:image" content="https://img-blog.csdnimg.cn/img_convert/771e3fa0459da407e4792785c91874df.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/img_convert/8dbeb38bd218d7ff395f324cd69454c8.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/img_convert/8dc02963489a41d9e8291d587f861680.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/img_convert/ed97e91c5147acf516cc84d60d7fbf8f.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/img_convert/c46dce809b9b2751522afdd3cc2ae478.png">
 <meta property="article:published_time" content="2020-10-30T13:09:04.000Z">
-<meta property="article:modified_time" content="2020-11-09T13:03:39.072Z">
+<meta property="article:modified_time" content="2020-11-09T16:02:52.663Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -326,8 +330,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-11-09T21:03:39+08:00" content="2020-11-09">
-                2020-11-09
+              <time itemprop="dateUpdated" datetime="2020-11-10T00:02:52+08:00" content="2020-11-10">
+                2020-11-10
               </time>
             </span>
           
@@ -390,7 +394,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  4.7k
+                  6.6k
                 </span>
               
 
@@ -406,7 +410,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  16
+                  23
                 </span>
               
             </div>
@@ -580,7 +584,49 @@
 <li><code>WP</code>: 是否开启内存写保护，若开启，对只读页面尝试写入时将触发异常，这一机制常常被用来实现<strong>写时复制</strong>功能</li>
 <li><code>PE</code>: 是否开启保护模式</li>
 </ul>
-<h2 id="五-冒险和预测"><a href="#五-冒险和预测" class="headerlink" title="五. 冒险和预测"></a>五. 冒险和预测</h2><h2 id="六-高级架构"><a href="#六-高级架构" class="headerlink" title="六. 高级架构"></a>六. 高级架构</h2><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2>
+<h3 id="4-6-调试寄存器"><a href="#4-6-调试寄存器" class="headerlink" title="4.6 调试寄存器"></a>4.6 调试寄存器</h3><p>&emsp;&emsp;调试寄存器是实现程序断点调试的必备工具。对于通常的断点，也就是程序执行到某个位置下就停下来，这种断点实现的方式，在x86/x64上是利用了一条<strong>软中断</strong>指令：<strong>int 3</strong>来进行实现的。注意，这里的<strong>int</strong>表示interrupt，即中断的意思，是一条汇编指令，<code>int 3</code>则表示中断向量号为3的中断。其实现流程如下所示：</p>
+<ul>
+<li><p>在我们使用调试器下断点时，调试器将会把对应位置的原来的指令替换为一个<code>int 3</code>指令，机器码为<code>0xCC</code>。这个动作对我们是透明的，我们在调试器中看到的依然是原来的指令，但实际上内存中已经不是原来的指令了。</p>
+</li>
+<li><p>CPU在执行这条<code>int 3</code>指令时，将自动触发中断处理流程。CPU将取出IDTR寄存器指向的中断描述符表IDT的第3项，执行里面的中断处理函数，该部分详情参见<a href="https://ty-chen.github.io/linux-kernel-interrupt/">前文</a>。</p>
+</li>
+<li><p>操作系统会把触发这一事件的进程冻结起来，随后将这一事件发送到调试器，调试器拿到之后就知道目标进程触发断点了。这个时候，就能通过调试器的UI交互界面或者命令行调试接口来调试目标进程，查看堆栈、查看内存、变量。如果我们要继续运行，调试器将会把之前修改的<code>int 3</code>指令给恢复回去，然后告知操作系统，继续执行后续指令。</p>
+</li>
+</ul>
+<p>&emsp;&emsp;但是另一种调试，即指定内存位置断点，则需要调试寄存器来发挥作用了，这种称之为<strong>硬件断点</strong>。在x86架构CPU内部，提供了8个调试寄存器DR0~DR7。</p>
+<ul>
+<li><p><strong>DR0~DR3</strong>：这是四个用于存储地址的寄存器</p>
+</li>
+<li><p><strong>DR4~DR5</strong>：这两个有点特殊，受前面提到的CR4寄存器中的标志位DE位控制，如果CR4的DE位是1，则DR4、DR5是不可访问的，访问将触发异常。如果CR4的DE位是0，则DR4和DR5将会变成DR6和DR7的别名，相当于做了一个软链接。这样做是为了将DR4、DR5保留，以便将来扩展调试功能时使用。</p>
+</li>
+<li><p><strong>DR6</strong>：这个寄存器中存储了硬件断点触发后的一些状态信息</p>
+</li>
+<li><p><strong>DR7</strong>：调试控制寄存器，这里面记录了对DR0-DR3这四个寄存器中存储地址的中断方式（是对地址的读，还是写，还是执行）、数据长度（1/2/4个字节）以及作用范围等信息</p>
+</li>
+</ul>
+<img src="https://img-blog.csdnimg.cn/img_convert/8dbeb38bd218d7ff395f324cd69454c8.png" alt="img" style="zoom:50%;" />
+
+<h3 id="4-7-描述符寄存器"><a href="#4-7-描述符寄存器" class="headerlink" title="4.7 描述符寄存器"></a>4.7 描述符寄存器</h3><p>&emsp;&emsp;在x86/x64系列CPU中，有三个非常重要的描述符寄存器，它们分别存储了三个地址，指向了三个非常重要的描述符表，分别是全局描述符表、局部描述符表和中断描述符表。</p>
+<ul>
+<li><code>GDTR</code>寄存器：全局描述符表寄存器，CPU现在使用的是段+分页结合的内存管理方式，系统的分段存储在一个叫全局描述符表（<strong>GDT</strong>）的表格中，并用<code>GDTR</code>寄存器指向这个表。这个表中的每一项都描述了一个内存段的信息。</li>
+<li><code>LDTR</code>寄存器：局部描述符表寄存器，这个寄存器和上面的<code>GDTR</code>寄存器一样，同样指向的是一个段描述符表（<strong>LDT</strong>）。不同的是，GDT是全局唯一，LDT是局部使用的，可以创建多个，随着任务段切换而切换（下文介绍任务寄存器会提到）。</li>
+<li><code>IDTR</code>寄存器：中断描述符表寄存器，指向了<strong>中断描述符表IDT</strong>，这个表的每一项都是一个中断处理描述符，当CPU执行过程中发生了硬中断、异常、软中断时，将自动从这个表中定位对应的表项，里面记录了发生中断、异常时该去哪里执行处理函数。</li>
+</ul>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/8dc02963489a41d9e8291d587f861680.png" alt="img"></p>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/ed97e91c5147acf516cc84d60d7fbf8f.png" alt="img"></p>
+<p>&emsp;&emsp;IDT中的表项称为<strong>Gate</strong>，中文意思为<strong>门</strong>，因为这是应用程序进入内核的主要入口。虽然表的名字叫中断描述符表，但表中存储的不全是中断描述符，IDT中的表项存在三种类型，对应三种类型的门：</p>
+<ul>
+<li><strong>任务门</strong></li>
+<li><strong>陷阱门</strong></li>
+<li><strong>中断门</strong></li>
+</ul>
+<p>&emsp;&emsp;三种描述符中都存储了处理这个中断/异常/任务时该去哪里处理的地址。三种门用途不一，其中中断门是真正意义上的中断，而像前面提到的调试指令<code>int 3</code>以及老式的系统调用指令int 2e/int 80都属于陷阱门。任务门则用的较少，要了解任务门，先了解下任务寄存器。</p>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/c46dce809b9b2751522afdd3cc2ae478.png" alt="img"></p>
+<h3 id="4-8-任务寄存器"><a href="#4-8-任务寄存器" class="headerlink" title="4.8 任务寄存器"></a>4.8 任务寄存器</h3><p>&emsp;&emsp;x86CPU的构想是每一个任务对应一个TSS，然后由TR寄存器指向当前的任务，执行任务切换时，修改TR寄存器的指向即可，这是硬件层面的多任务切换机制。这个构想其实还是很不错的，然而现实却打了脸，包括Linux和Windows在内的主流操作系统都没有使用这个机制来进行线程切换，而是自己使用软件来实现多线程切换。所以，绝大多数情况下，TR寄存器都是指向固定的，即便线程切换了，TR寄存器仍然不会变化。</p>
+<h3 id="4-9-模型特定寄存器"><a href="#4-9-模型特定寄存器" class="headerlink" title="4.9 模型特定寄存器"></a>4.9 模型特定寄存器</h3><p>&emsp;&emsp;模型特定寄存器，即MSR寄存器，这些寄存器不像上面列出的寄存器是固定的，这些寄存器可能随着不同的版本有所变化。这些寄存器主要用来支持一些新的功能。随着x86CPU不断更新换代，MSR寄存器变的越来越多，但与此同时，有一部分MSR寄存器随着版本迭代，慢慢固化下来，成为了变化中那部分不变的，这部分MSR寄存器，Intel将其称为Architected MSR，这部分MSR寄存器，在命名上，统一加上了<strong>IA32</strong>的前缀。</p>
+<p>&emsp;&emsp;如IA32_SYSENTER_CS，IA32_SYSENTER_ESP和IA32_SYSENTER_EIP，这三个MSR寄存器是用来实现<strong>快速系统调用</strong>。在早期的x86架构CPU上，系统调用依赖于软中断实现，类似于前面调试用到的int 3指令，在Windows上，系统调用用到的是<strong>int 2e</strong>，在Linux上，用的是<strong>int 80</strong>。软中断毕竟还是比较慢的，因为执行软中断就需要内存查表，通过IDTR定位到IDT，再取出函数进行执行。系统调用是一个频繁触发的动作，如此这般势必对性能有所影响。在进入奔腾时代后，就加上了上面的三个MSR寄存器，分别存储了执行系统调用后，内核系统调用入口函数所需要的段寄存器、堆栈栈顶、函数地址，不再需要内存查表。快速系统调用还提供了专门的CPU指令<strong>sysenter/sysexit</strong>用来发起系统调用和退出系统调用。在64位上，这一对指令升级为<strong>syscall/sysret</strong>。</p>
+<h2 id="五-冒险和预测"><a href="#五-冒险和预测" class="headerlink" title="五. 冒险和预测"></a>五. 冒险和预测</h2><p>&emsp;&emsp;了解了CPU的基本结构和底层实现的寄存器后，我们聚焦于多指令CPU流水线模型。其中最关键的，则是流水线设计需要解决的三大冒险：结构冒险（Structural Hazard）、数据冒险（Data Hazard）以及控制冒险（Control Hazard）。</p>
+<h2 id="六-高级架构"><a href="#六-高级架构" class="headerlink" title="六. 高级架构"></a>六. 高级架构</h2><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2>
       
     </div>
     
@@ -878,7 +924,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-加法器和乘法器"><span class="nav-text">二. 加法器和乘法器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-门电路和半加器"><span class="nav-text">2.1 门电路和半加器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-半加器到全加器"><span class="nav-text">2.2 半加器到全加器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-基本乘法器"><span class="nav-text">2.3 基本乘法器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-并行乘法器"><span class="nav-text">2.3 并行乘法器</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-CPU基本结构"><span class="nav-text">三. CPU基本结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-指令周期、机器周期和时钟周期"><span class="nav-text">3.1 指令周期、机器周期和时钟周期</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-基本结构"><span class="nav-text">3.2 基本结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-基本硬件电路"><span class="nav-text">3.3 基本硬件电路</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-D触发器"><span class="nav-text">3.4 D触发器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-5-程序计数器"><span class="nav-text">3.5 程序计数器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-6-多指令模型"><span class="nav-text">3.6 多指令模型</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-寄存器"><span class="nav-text">四. 寄存器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-通用寄存器"><span class="nav-text">4.1 通用寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-标志寄存器"><span class="nav-text">4.2 标志寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-指令寄存器"><span class="nav-text">4.3 指令寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-4-段寄存器"><span class="nav-text">4.4 段寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-5-控制寄存器"><span class="nav-text">4.5 控制寄存器</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-冒险和预测"><span class="nav-text">五. 冒险和预测</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#六-高级架构"><span class="nav-text">六. 高级架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-加法器和乘法器"><span class="nav-text">二. 加法器和乘法器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-门电路和半加器"><span class="nav-text">2.1 门电路和半加器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-半加器到全加器"><span class="nav-text">2.2 半加器到全加器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-基本乘法器"><span class="nav-text">2.3 基本乘法器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-并行乘法器"><span class="nav-text">2.3 并行乘法器</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-CPU基本结构"><span class="nav-text">三. CPU基本结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-指令周期、机器周期和时钟周期"><span class="nav-text">3.1 指令周期、机器周期和时钟周期</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-基本结构"><span class="nav-text">3.2 基本结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-基本硬件电路"><span class="nav-text">3.3 基本硬件电路</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-D触发器"><span class="nav-text">3.4 D触发器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-5-程序计数器"><span class="nav-text">3.5 程序计数器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-6-多指令模型"><span class="nav-text">3.6 多指令模型</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-寄存器"><span class="nav-text">四. 寄存器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-通用寄存器"><span class="nav-text">4.1 通用寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-标志寄存器"><span class="nav-text">4.2 标志寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-指令寄存器"><span class="nav-text">4.3 指令寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-4-段寄存器"><span class="nav-text">4.4 段寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-5-控制寄存器"><span class="nav-text">4.5 控制寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-6-调试寄存器"><span class="nav-text">4.6 调试寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-7-描述符寄存器"><span class="nav-text">4.7 描述符寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-8-任务寄存器"><span class="nav-text">4.8 任务寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-9-模型特定寄存器"><span class="nav-text">4.9 模型特定寄存器</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-冒险和预测"><span class="nav-text">五. 冒险和预测</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#六-高级架构"><span class="nav-text">六. 高级架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
@@ -912,7 +958,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">156.2k</span>
+    <span title="Site words total count">158.1k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
