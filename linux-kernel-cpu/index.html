@@ -101,8 +101,11 @@
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/d7/bb/d749acce21756d89c35ee19545cfebbb.jpeg">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/1e/4c/1ed21092022057ed192a7d9aff76144c.jpg">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/1e/ad/1e880fa8b1eab511583267e68f0541ad.jpeg">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/img_convert/3ef48f063c8203969a1653dd7b53aa93.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/img_convert/d12ff2f9b45c04dea0b256ef7c377fb9.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/img_convert/771e3fa0459da407e4792785c91874df.png">
 <meta property="article:published_time" content="2020-10-30T13:09:04.000Z">
-<meta property="article:modified_time" content="2020-11-08T13:51:36.392Z">
+<meta property="article:modified_time" content="2020-11-09T13:03:39.072Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -323,8 +326,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-11-08T21:51:36+08:00" content="2020-11-08">
-                2020-11-08
+              <time itemprop="dateUpdated" datetime="2020-11-09T21:03:39+08:00" content="2020-11-09">
+                2020-11-09
               </time>
             </span>
           
@@ -387,7 +390,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  3.9k
+                  4.7k
                 </span>
               
 
@@ -403,7 +406,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  13
+                  16
                 </span>
               
             </div>
@@ -518,6 +521,7 @@
 <li>任务寄存器</li>
 <li>MSR寄存器</li>
 </ul>
+<p>&emsp;&emsp;通用寄存器、段寄存器、标志寄存器、指令寄存器，这四组寄存器共同构成了一个基本的指令执行环境，一个线程的上下文也基本上就是这些寄存器，在执行线程切换的时候，就是修改它们的内容。</p>
 <h3 id="4-1-通用寄存器"><a href="#4-1-通用寄存器" class="headerlink" title="4.1 通用寄存器"></a>4.1 通用寄存器</h3><p>&emsp;&emsp;通用寄存器给应用程序存放各种临时数据，32位系统中约定俗成的用法如下所示</p>
 <ul>
 <li><strong>eax</strong>: 用来执行加法及存放函数调用的返回值</li>
@@ -530,7 +534,53 @@
 <li><strong>edi</strong>: 字符串操作时，用于存放目的地址的，和esi两个经常搭配一起使用，执行字符串的复制等操作</li>
 </ul>
 <p>&emsp;&emsp;在64位中，这些寄存器开头字母<code>e</code>改为<code>r</code>，实际用法不变，同时增加了<code>r8</code>到<code>r15</code>这8个新的寄存器。寄存器富裕最大的好处在于可以使用寄存器存储更多的传参，从而加快了函数处理速度。</p>
-<h3 id="4-2-标志寄存器"><a href="#4-2-标志寄存器" class="headerlink" title="4.2 标志寄存器"></a>4.2 标志寄存器</h3><h2 id="五-冒险和预测"><a href="#五-冒险和预测" class="headerlink" title="五. 冒险和预测"></a>五. 冒险和预测</h2><h2 id="六-高级架构"><a href="#六-高级架构" class="headerlink" title="六. 高级架构"></a>六. 高级架构</h2><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2>
+<h3 id="4-2-标志寄存器"><a href="#4-2-标志寄存器" class="headerlink" title="4.2 标志寄存器"></a>4.2 标志寄存器</h3><p>&emsp;&emsp;标志寄存器记录了CPU执行指令过程中的一系列状态，即当前运行线程的一系列关键信息，这些标志大都由CPU自动设置和修改</p>
+<img src="https://img-blog.csdnimg.cn/img_convert/3ef48f063c8203969a1653dd7b53aa93.png" alt="img" style="zoom: 67%;" />
+
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">CF 进位标志</span><br><span class="line">PF 奇偶标志</span><br><span class="line">ZF 零标志</span><br><span class="line">SF 符号标志</span><br><span class="line">OF 补码溢出标志</span><br><span class="line">TF 跟踪标志</span><br><span class="line">IF 中断标志</span><br><span class="line">······</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-3-指令寄存器"><a href="#4-3-指令寄存器" class="headerlink" title="4.3 指令寄存器"></a>4.3 指令寄存器</h3><p>&emsp;&emsp;32位指令寄存器为<code>eip</code>，而64位为<code>rip</code>寄存器。指令寄存器可以说是CPU中最最重要的寄存器了，它指向了下一条要执行的指令所存放的地址，CPU的工作其实就是不断取出它指向的指令，然后执行这条指令，同时指令寄存器继续指向下面一条指令。</p>
+<h3 id="4-4-段寄存器"><a href="#4-4-段寄存器" class="headerlink" title="4.4 段寄存器"></a>4.4 段寄存器</h3><p>&emsp;&emsp;段寄存器用于CPU内存寻址功能，主要包括以下几种</p>
+<ul>
+<li><strong>cs</strong>: 代码段</li>
+<li><strong>ds</strong>: 数据段</li>
+<li><strong>ss</strong>: 栈段</li>
+<li><strong>es</strong>: 扩展段</li>
+<li><strong>fs</strong>: 数据段</li>
+<li><strong>gs</strong>: 数据段</li>
+</ul>
+<p>&emsp;&emsp;段寄存器里面存储的内容与CPU当前工作的内存寻址模式紧密相关。</p>
+<ul>
+<li><p>当CPU处于16位实地址模式下时，段寄存器存储段的基地址，寻址时，将段寄存器内容左移4位（乘以16）得到段基地址+段内偏移得到最终的地址。</p>
+</li>
+<li><p>当CPU工作于保护模式下，段寄存器存储的内容不再是段基址了，此时的段寄存器中存放的是<strong>段选择子</strong>，用来指示当前这个段寄存器“指向”的是哪个分段。</p>
+</li>
+</ul>
+<p>&emsp;&emsp;16个bit长度的段寄存器内容划分了三个字段：</p>
+<ul>
+<li><strong>PRL</strong>: 特权请求级，就是我们常说的ring0-ring3四个特权级。</li>
+<li><strong>TI</strong>: 0表示用的是全局描述符表GDT，1表示使用的是局部描述符表LDT。</li>
+<li><strong>Index</strong>: 这是一个表格中表项的索引值，这个表格叫<strong>内存描述符表</strong>，它的每一个表项都描述了一个内存分段。</li>
+</ul>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/d12ff2f9b45c04dea0b256ef7c377fb9.png" alt="img"></p>
+<h3 id="4-5-控制寄存器"><a href="#4-5-控制寄存器" class="headerlink" title="4.5 控制寄存器"></a>4.5 控制寄存器</h3><p>&emsp;&emsp;控制寄存器保存了CPU运行过程中自身的一些关键信息。32位CPU总共有cr0-cr4共5个控制寄存器，64位增加了cr8。他们各自有不同的功能，如下所示</p>
+<ul>
+<li><strong>cr0</strong>: 存储了CPU控制标记和工作状态</li>
+<li><strong>cr1</strong>: 保留未使用</li>
+<li><strong>cr2</strong>: 页错误出现时保存导致出错的地址</li>
+<li><strong>cr3</strong>: 存储了当前进程的虚拟地址空间的重要信息——<strong>页目录</strong>地址，在进程空间切换的时候，CR3也将同步切换。</li>
+<li><strong>cr4</strong>: 也存储了CPU工作相关以及当前任务的一些信息</li>
+<li><strong>cr8</strong>: 64位新增扩展使用</li>
+</ul>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/771e3fa0459da407e4792785c91874df.png" alt="img"></p>
+<p>其中CR0的各标记位表示</p>
+<ul>
+<li><code>PG</code>: 是否启用内存分页</li>
+<li><code>AM</code>: 是否启用内存对齐自动检查</li>
+<li><code>WP</code>: 是否开启内存写保护，若开启，对只读页面尝试写入时将触发异常，这一机制常常被用来实现<strong>写时复制</strong>功能</li>
+<li><code>PE</code>: 是否开启保护模式</li>
+</ul>
+<h2 id="五-冒险和预测"><a href="#五-冒险和预测" class="headerlink" title="五. 冒险和预测"></a>五. 冒险和预测</h2><h2 id="六-高级架构"><a href="#六-高级架构" class="headerlink" title="六. 高级架构"></a>六. 高级架构</h2><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2>
       
     </div>
     
@@ -828,7 +878,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-加法器和乘法器"><span class="nav-text">二. 加法器和乘法器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-门电路和半加器"><span class="nav-text">2.1 门电路和半加器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-半加器到全加器"><span class="nav-text">2.2 半加器到全加器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-基本乘法器"><span class="nav-text">2.3 基本乘法器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-并行乘法器"><span class="nav-text">2.3 并行乘法器</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-CPU基本结构"><span class="nav-text">三. CPU基本结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-指令周期、机器周期和时钟周期"><span class="nav-text">3.1 指令周期、机器周期和时钟周期</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-基本结构"><span class="nav-text">3.2 基本结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-基本硬件电路"><span class="nav-text">3.3 基本硬件电路</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-D触发器"><span class="nav-text">3.4 D触发器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-5-程序计数器"><span class="nav-text">3.5 程序计数器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-6-多指令模型"><span class="nav-text">3.6 多指令模型</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-寄存器"><span class="nav-text">四. 寄存器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-通用寄存器"><span class="nav-text">4.1 通用寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-标志寄存器"><span class="nav-text">4.2 标志寄存器</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-冒险和预测"><span class="nav-text">五. 冒险和预测</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#六-高级架构"><span class="nav-text">六. 高级架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-加法器和乘法器"><span class="nav-text">二. 加法器和乘法器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-门电路和半加器"><span class="nav-text">2.1 门电路和半加器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-半加器到全加器"><span class="nav-text">2.2 半加器到全加器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-基本乘法器"><span class="nav-text">2.3 基本乘法器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-并行乘法器"><span class="nav-text">2.3 并行乘法器</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-CPU基本结构"><span class="nav-text">三. CPU基本结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-指令周期、机器周期和时钟周期"><span class="nav-text">3.1 指令周期、机器周期和时钟周期</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-基本结构"><span class="nav-text">3.2 基本结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-基本硬件电路"><span class="nav-text">3.3 基本硬件电路</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-D触发器"><span class="nav-text">3.4 D触发器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-5-程序计数器"><span class="nav-text">3.5 程序计数器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-6-多指令模型"><span class="nav-text">3.6 多指令模型</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-寄存器"><span class="nav-text">四. 寄存器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-通用寄存器"><span class="nav-text">4.1 通用寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-标志寄存器"><span class="nav-text">4.2 标志寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-指令寄存器"><span class="nav-text">4.3 指令寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-4-段寄存器"><span class="nav-text">4.4 段寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-5-控制寄存器"><span class="nav-text">4.5 控制寄存器</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-冒险和预测"><span class="nav-text">五. 冒险和预测</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#六-高级架构"><span class="nav-text">六. 高级架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
@@ -862,7 +912,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">155.3k</span>
+    <span title="Site words total count">156.2k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
