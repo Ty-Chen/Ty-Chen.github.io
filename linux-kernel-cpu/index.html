@@ -110,8 +110,11 @@
 <meta property="og:image" content="https://img-blog.csdnimg.cn/img_convert/c46dce809b9b2751522afdd3cc2ae478.png">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/e7/91/e7508cb409d398380753b292b6df8391.jpeg">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/0d/2a/0d762f2ce532d87cfe69c7b167af9c2a.jpeg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/94/69/94dda2330b07c08530540ae11838c569.jpeg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/dc/27/dceadd35c334974d8270052b37d48c27.jpeg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/15/04/153f8d5e4a4363399133e1d7d9052804.jpeg">
 <meta property="article:published_time" content="2020-10-30T13:09:04.000Z">
-<meta property="article:modified_time" content="2020-11-10T15:39:40.172Z">
+<meta property="article:modified_time" content="2020-11-11T15:53:43.759Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -332,8 +335,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-11-10T23:39:40+08:00" content="2020-11-10">
-                2020-11-10
+              <time itemprop="dateUpdated" datetime="2020-11-11T23:53:43+08:00" content="2020-11-11">
+                2020-11-11
               </time>
             </span>
           
@@ -396,7 +399,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  7.1k
+                  9k
                 </span>
               
 
@@ -412,7 +415,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  24
+                  31
                 </span>
               
             </div>
@@ -545,7 +548,8 @@
 
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">CF 进位标志</span><br><span class="line">PF 奇偶标志</span><br><span class="line">ZF 零标志</span><br><span class="line">SF 符号标志</span><br><span class="line">OF 补码溢出标志</span><br><span class="line">TF 跟踪标志</span><br><span class="line">IF 中断标志</span><br><span class="line">······</span><br></pre></td></tr></table></figure>
 
-<h3 id="4-3-指令寄存器"><a href="#4-3-指令寄存器" class="headerlink" title="4.3 指令寄存器"></a>4.3 指令寄存器</h3><p>&emsp;&emsp;32位指令寄存器为<code>eip</code>，而64位为<code>rip</code>寄存器。指令寄存器可以说是CPU中最最重要的寄存器了，它指向了下一条要执行的指令所存放的地址，CPU的工作其实就是不断取出它指向的指令，然后执行这条指令，同时指令寄存器继续指向下面一条指令。</p>
+<h3 id="4-3-指令寄存器和程序计数器"><a href="#4-3-指令寄存器和程序计数器" class="headerlink" title="4.3 指令寄存器和程序计数器"></a>4.3 指令寄存器和程序计数器</h3><p>&emsp;&emsp;32位指令寄存器为<code>eip</code>，而64位为<code>rip</code>寄存器。指令寄存器可以说是CPU中最最重要的寄存器了，它保存当前指令所存放的地址，CPU的工作其实就是不断取出它指向的指令，然后执行这条指令，同时指令寄存器继续指向下面一条指令。当执行一条指令时，先把它从内存取到数据寄存器（DR，Data Register）中，然后再传送至IR。指令划分为操作码和地址码字段，由二进制数字组成。为了执行任何给定的指令，必须对操作码进行测试，以便识别所要求的操作。指令译码器就是做这项工作的。指令寄存器中操作码字段的输出就是指令译码器的输入。操作码一经译码后，即可向操作控制器发出具体操作的特定信号。</p>
+<p>&emsp;&emsp;程序计数器存放的是下一条指令的地址，不断自增，在3.5节已有详细介绍。</p>
 <h3 id="4-4-段寄存器"><a href="#4-4-段寄存器" class="headerlink" title="4.4 段寄存器"></a>4.4 段寄存器</h3><p>&emsp;&emsp;段寄存器用于CPU内存寻址功能，主要包括以下几种</p>
 <ul>
 <li><strong>cs</strong>: 代码段</li>
@@ -637,9 +641,33 @@
 <li>先读后写：同一个寄存器存在先读出、后写入的顺序关系，即反依赖</li>
 <li>写后再写：同一个寄存器需要先后写入两次，即输出依赖</li>
 </ul>
-<p>&emsp;&emsp;解决数据冒险最经典的方法是<a href="https://en.wikipedia.org/wiki/Pipeline_stall" target="_blank" rel="noopener">流水线停顿（Pipeline Stall）</a>，又称流水线冒泡（Pipeline Bubbling）。该方法简言之就是对需要等待的地方插入一个空指令NOP，从而延缓后续的流水线操作。</p>
+<h4 id="5-2-1-流水线冒泡"><a href="#5-2-1-流水线冒泡" class="headerlink" title="5.2.1 流水线冒泡"></a>5.2.1 流水线冒泡</h4><p>&emsp;&emsp;解决数据冒险最经典的方法是<a href="https://en.wikipedia.org/wiki/Pipeline_stall" target="_blank" rel="noopener">流水线停顿（Pipeline Stall）</a>，又称流水线冒泡（Pipeline Bubbling）。该方法简言之就是对需要等待的地方插入一个空指令NOP，从而延缓后续的流水线操作。</p>
 <p><img src="https://static001.geekbang.org/resource/image/0d/2a/0d762f2ce532d87cfe69c7b167af9c2a.jpeg" alt="img"></p>
-<h3 id="5-3-控制冒险"><a href="#5-3-控制冒险" class="headerlink" title="5.3 控制冒险"></a>5.3 控制冒险</h3><h2 id="六-高级架构"><a href="#六-高级架构" class="headerlink" title="六. 高级架构"></a>六. 高级架构</h2><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2>
+<h4 id="5-2-2-操作数前推"><a href="#5-2-2-操作数前推" class="headerlink" title="5.2.2 操作数前推"></a>5.2.2 操作数前推</h4><p>&emsp;&emsp;流水线冒泡毫无疑问可以解决问题，但是也带来了性能的下降，为此CPU后续提出了更精妙的解决方案：操作数前推（Operand Forwarding），或称操作数旁路（Operand Bypassing）。如下所示为先后执行两个ADD指令的情况，其中第二个ADD依赖于第一个ADD的结果。常规做法是先做流水线对齐、插入NOP，然后规避风险停顿一个阶段。而实际上，我们可以将第一个指令执行后的结果直接发送给第二个指令执行，即不从写回的寄存器读取，这就是前推/转发的真谛。</p>
+<p>&emsp;&emsp;转发，其实是这个技术的逻辑含义，也就是在第 1 条指令的执行结果，直接“转发”给了第 2 条指令的 ALU 作为输入。另外一个名字，旁路（Bypassing），则是这个技术的硬件含义。为了能够实现这里的“转发”，我们在 CPU 的硬件里面，需要再单独拉一根信号传输的线路出来，使得 ALU 的计算结果，能够重新回到 ALU 的输入里来。这样的一条线路，就是我们的“旁路”。它越过（Bypass）了写入寄存器，再从寄存器读出的过程，也为我们节省了 2 个时钟周期。</p>
+<img src="https://static001.geekbang.org/resource/image/94/69/94dda2330b07c08530540ae11838c569.jpeg" alt="img" style="zoom:33%;" />
+
+<img src="https://static001.geekbang.org/resource/image/dc/27/dceadd35c334974d8270052b37d48c27.jpeg" alt="img" style="zoom: 35%;" />
+
+<h4 id="5-2-3-乱序执行"><a href="#5-2-3-乱序执行" class="headerlink" title="5.2.3 乱序执行"></a>5.2.3 乱序执行</h4><p>&emsp;&emsp;但是哪怕是操作前推+流水线冒泡，我们还是会存在一些NOP。对此我们还有另一招：乱序执行。如果第三条指令并不依赖于前两条指令的计算结果，则可以在第二条等待的时候，让第三条抢先执行。从今天软件开发的维度来思考，乱序执行好像是在指令的执行阶段，引入了一个“线程池”。</p>
+<img src="https://static001.geekbang.org/resource/image/15/04/153f8d5e4a4363399133e1d7d9052804.jpeg" alt="img" style="zoom: 33%;" />
+
+<ol>
+<li>在取指令和指令译码的时候，乱序执行的 CPU 和其他使用流水线架构的 CPU 是一样的。它会一级一级顺序地进行取指令和指令译码的工作。</li>
+<li>在指令译码完成之后，就不一样了。CPU 不会直接进行指令执行，而是进行一次指令分发，把指令发到一个叫作保留站（Reservation Stations）的地方。</li>
+<li>这些指令不会立刻执行，而要等待它们所依赖的数据，传递给它们之后才会执行。</li>
+<li>一旦指令依赖的数据来齐了，指令就可以交到后面的功能单元（Function Unit，FU），其实就是 ALU，去执行了。我们有很多功能单元可以并行运行，但是不同的功能单元能够支持执行的指令并不相同。</li>
+<li>指令执行的阶段完成之后，我们并不能立刻把结果写回到寄存器里面去，而是把结果再存放到一个叫作重排序缓冲区（Re-Order Buffer，ROB）的地方。</li>
+<li>在重排序缓冲区里，我们的 CPU 会按照取指令的顺序，对指令的计算结果重新排序。只有排在前面的指令都已经完成了，才会提交指令，完成整个指令的运算结果。</li>
+<li>实际的指令的计算结果数据，并不是直接写到内存或者高速缓存里，而是先写入存储缓冲区（Store Buffer ）里面，最终才会写入到高速缓存和内存里。</li>
+</ol>
+<p>&emsp;&emsp;整个乱序执行技术，就好像在指令的执行阶段提供一个“线程池”。指令不再是顺序执行的，而是根据池里所拥有的资源，以及各个任务是否可以进行执行，进行动态调度。在执行完成之后，又重新把结果在一个队列里面，按照指令的分发顺序重新排序。即使内部是“乱序”的，但是在外部看起来，仍然是井井有条地顺序执行。乱序执行，极大地提高了 CPU 的运行效率。</p>
+<h3 id="5-3-控制冒险"><a href="#5-3-控制冒险" class="headerlink" title="5.3 控制冒险"></a>5.3 控制冒险</h3><p>&emsp;&emsp;在程序中，我们存在很多的判断和循环语句，为了确保能取到正确的指令，而不得不进行等待延迟的情况就是控制冒险。</p>
+<h4 id="5-3-1-缩短分支延迟"><a href="#5-3-1-缩短分支延迟" class="headerlink" title="5.3.1 缩短分支延迟"></a>5.3.1 缩短分支延迟</h4><p>&emsp;&emsp;最简单的做法是缩短分支延迟：我们可以将条件判断、地址跳转，都提前到指令译码阶段进行，而不需要放在指令执行阶段。对应的，我们也要在 CPU 里面设计对应的旁路，在指令译码阶段，就提供对应的判断比较的电路。这种方式，本质上和前面数据冒险的操作数前推的解决方案类似，就是在硬件电路层面，把一些计算结果更早地反馈到流水线中。这样反馈变得更快了，后面的指令需要等待的时间就变短了。</p>
+<p>&emsp;&emsp;不过只是改造硬件，并不能彻底解决问题。跳转指令的比较结果，仍然要在指令执行的时候才能知道。在流水线里，第一条指令进行指令译码的时钟周期里，我们其实就要去取下一条指令了。这个时候，我们其实还没有开始指令执行阶段，自然也就不知道比较的结果。</p>
+<h4 id="5-3-2-分支预测"><a href="#5-3-2-分支预测" class="headerlink" title="5.3.2 分支预测"></a>5.3.2 分支预测</h4><p>&emsp;&emsp;最简单的分支预测技术，叫作“假装分支不发生”。顾名思义，自然就是仍然按照顺序，把指令往下执行。其实就是 CPU 预测，条件跳转一定不发生。这样的预测方法，其实也是一种静态预测技术。如果分支预测是正确的，我们自然赚到了。这个意味着，我们节省下来本来需要停顿下来等待的时间。如果分支预测失败了呢？那我们就把后面已经取出指令已经执行的部分，给丢弃掉。这个丢弃的操作，在流水线里面，叫作 Zap 或者 Flush。CPU 不仅要执行后面的指令，对于这些已经在流水线里面执行到一半的指令，我们还需要做对应的清除操作。比如，清空已经使用的寄存器里面的数据等等，这些清除操作，也有一定的开销。所以，CPU 需要提供对应的丢弃指令的功能，通过控制信号清除掉已经在流水线中执行的指令。只要对应的清除开销不要太大，我们就是划得来的。</p>
+<h4 id="5-3-3-动态分支预测"><a href="#5-3-3-动态分支预测" class="headerlink" title="5.3.3 动态分支预测"></a>5.3.3 动态分支预测</h4><p>&emsp;&emsp;静态分支预测的概率不够理想，由此出现了动态分支预测。动态分支预测会根据之前的状态进行一个推算，从而在一定程度上提高预测的成功率。该部分有着众多算法，并且在不断演进，是现代CPU的核心技术之一。</p>
+<h2 id="六-高级架构"><a href="#六-高级架构" class="headerlink" title="六. 高级架构"></a>六. 高级架构</h2><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2>
       
     </div>
     
@@ -937,7 +965,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-加法器和乘法器"><span class="nav-text">二. 加法器和乘法器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-门电路和半加器"><span class="nav-text">2.1 门电路和半加器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-半加器到全加器"><span class="nav-text">2.2 半加器到全加器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-基本乘法器"><span class="nav-text">2.3 基本乘法器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-并行乘法器"><span class="nav-text">2.3 并行乘法器</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-CPU基本结构"><span class="nav-text">三. CPU基本结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-指令周期、机器周期和时钟周期"><span class="nav-text">3.1 指令周期、机器周期和时钟周期</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-基本结构"><span class="nav-text">3.2 基本结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-基本硬件电路"><span class="nav-text">3.3 基本硬件电路</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-D触发器"><span class="nav-text">3.4 D触发器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-5-程序计数器"><span class="nav-text">3.5 程序计数器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-6-多指令模型"><span class="nav-text">3.6 多指令模型</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-寄存器"><span class="nav-text">四. 寄存器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-通用寄存器"><span class="nav-text">4.1 通用寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-标志寄存器"><span class="nav-text">4.2 标志寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-指令寄存器"><span class="nav-text">4.3 指令寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-4-段寄存器"><span class="nav-text">4.4 段寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-5-控制寄存器"><span class="nav-text">4.5 控制寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-6-调试寄存器"><span class="nav-text">4.6 调试寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-7-描述符寄存器"><span class="nav-text">4.7 描述符寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-8-任务寄存器"><span class="nav-text">4.8 任务寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-9-模型特定寄存器"><span class="nav-text">4.9 模型特定寄存器</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-冒险和预测"><span class="nav-text">五. 冒险和预测</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-结构冒险"><span class="nav-text">5.1 结构冒险</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-数据冒险"><span class="nav-text">5.2 数据冒险</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-控制冒险"><span class="nav-text">5.3 控制冒险</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#六-高级架构"><span class="nav-text">六. 高级架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-加法器和乘法器"><span class="nav-text">二. 加法器和乘法器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-门电路和半加器"><span class="nav-text">2.1 门电路和半加器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-半加器到全加器"><span class="nav-text">2.2 半加器到全加器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-基本乘法器"><span class="nav-text">2.3 基本乘法器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-并行乘法器"><span class="nav-text">2.3 并行乘法器</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-CPU基本结构"><span class="nav-text">三. CPU基本结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-指令周期、机器周期和时钟周期"><span class="nav-text">3.1 指令周期、机器周期和时钟周期</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-基本结构"><span class="nav-text">3.2 基本结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-基本硬件电路"><span class="nav-text">3.3 基本硬件电路</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-D触发器"><span class="nav-text">3.4 D触发器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-5-程序计数器"><span class="nav-text">3.5 程序计数器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-6-多指令模型"><span class="nav-text">3.6 多指令模型</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-寄存器"><span class="nav-text">四. 寄存器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-通用寄存器"><span class="nav-text">4.1 通用寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-标志寄存器"><span class="nav-text">4.2 标志寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-指令寄存器和程序计数器"><span class="nav-text">4.3 指令寄存器和程序计数器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-4-段寄存器"><span class="nav-text">4.4 段寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-5-控制寄存器"><span class="nav-text">4.5 控制寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-6-调试寄存器"><span class="nav-text">4.6 调试寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-7-描述符寄存器"><span class="nav-text">4.7 描述符寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-8-任务寄存器"><span class="nav-text">4.8 任务寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-9-模型特定寄存器"><span class="nav-text">4.9 模型特定寄存器</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-冒险和预测"><span class="nav-text">五. 冒险和预测</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-结构冒险"><span class="nav-text">5.1 结构冒险</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-数据冒险"><span class="nav-text">5.2 数据冒险</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#5-2-1-流水线冒泡"><span class="nav-text">5.2.1 流水线冒泡</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-2-2-操作数前推"><span class="nav-text">5.2.2 操作数前推</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-2-3-乱序执行"><span class="nav-text">5.2.3 乱序执行</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-控制冒险"><span class="nav-text">5.3 控制冒险</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#5-3-1-缩短分支延迟"><span class="nav-text">5.3.1 缩短分支延迟</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-3-2-分支预测"><span class="nav-text">5.3.2 分支预测</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-3-3-动态分支预测"><span class="nav-text">5.3.3 动态分支预测</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#六-高级架构"><span class="nav-text">六. 高级架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
@@ -971,7 +999,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">158.5k</span>
+    <span title="Site words total count">160.5k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
