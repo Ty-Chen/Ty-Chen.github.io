@@ -114,7 +114,7 @@
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/dc/27/dceadd35c334974d8270052b37d48c27.jpeg">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/15/04/153f8d5e4a4363399133e1d7d9052804.jpeg">
 <meta property="article:published_time" content="2020-10-30T13:09:04.000Z">
-<meta property="article:modified_time" content="2020-11-11T15:53:43.759Z">
+<meta property="article:modified_time" content="2020-11-12T16:17:21.214Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -335,8 +335,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-11-11T23:53:43+08:00" content="2020-11-11">
-                2020-11-11
+              <time itemprop="dateUpdated" datetime="2020-11-13T00:17:21+08:00" content="2020-11-13">
+                2020-11-13
               </time>
             </span>
           
@@ -399,7 +399,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  9k
+                  9.1k
                 </span>
               
 
@@ -667,7 +667,14 @@
 <p>&emsp;&emsp;不过只是改造硬件，并不能彻底解决问题。跳转指令的比较结果，仍然要在指令执行的时候才能知道。在流水线里，第一条指令进行指令译码的时钟周期里，我们其实就要去取下一条指令了。这个时候，我们其实还没有开始指令执行阶段，自然也就不知道比较的结果。</p>
 <h4 id="5-3-2-分支预测"><a href="#5-3-2-分支预测" class="headerlink" title="5.3.2 分支预测"></a>5.3.2 分支预测</h4><p>&emsp;&emsp;最简单的分支预测技术，叫作“假装分支不发生”。顾名思义，自然就是仍然按照顺序，把指令往下执行。其实就是 CPU 预测，条件跳转一定不发生。这样的预测方法，其实也是一种静态预测技术。如果分支预测是正确的，我们自然赚到了。这个意味着，我们节省下来本来需要停顿下来等待的时间。如果分支预测失败了呢？那我们就把后面已经取出指令已经执行的部分，给丢弃掉。这个丢弃的操作，在流水线里面，叫作 Zap 或者 Flush。CPU 不仅要执行后面的指令，对于这些已经在流水线里面执行到一半的指令，我们还需要做对应的清除操作。比如，清空已经使用的寄存器里面的数据等等，这些清除操作，也有一定的开销。所以，CPU 需要提供对应的丢弃指令的功能，通过控制信号清除掉已经在流水线中执行的指令。只要对应的清除开销不要太大，我们就是划得来的。</p>
 <h4 id="5-3-3-动态分支预测"><a href="#5-3-3-动态分支预测" class="headerlink" title="5.3.3 动态分支预测"></a>5.3.3 动态分支预测</h4><p>&emsp;&emsp;静态分支预测的概率不够理想，由此出现了动态分支预测。动态分支预测会根据之前的状态进行一个推算，从而在一定程度上提高预测的成功率。该部分有着众多算法，并且在不断演进，是现代CPU的核心技术之一。</p>
-<h2 id="六-高级架构"><a href="#六-高级架构" class="headerlink" title="六. 高级架构"></a>六. 高级架构</h2><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2>
+<h2 id="六-高级架构"><a href="#六-高级架构" class="headerlink" title="六. 高级架构"></a>六. 高级架构</h2><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] Linux-insides</p>
+<p>[2] 深入理解Linux内核</p>
+<p>[3] Linux内核设计的艺术</p>
+<p>[4] 深入理解计算机系统</p>
+<p>[5] 深入理解Linux网络技术内幕</p>
+<p>[6] 计算机组成原理</p>
+<p>[7] 极客时间 计算机组成原理</p>
+
       
     </div>
     
