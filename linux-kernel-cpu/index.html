@@ -115,8 +115,13 @@
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/15/04/153f8d5e4a4363399133e1d7d9052804.jpeg">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/85/32/85f15ec667d09fd2d368822904029b32.jpeg">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/96/c8/96aa1220ff27776f55091c55c2eddbc8.jpeg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/27/6d/2724f76ffa4222eae01521cd2dffd16d.jpeg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/da/93/dab4ed01f50995d82e6e5d970b54c693.jpeg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/4c/9d/4c153ac45915fbf3985d24b092894b9d.jpeg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/3d/28/3d7ce9c053815f6a32a6fbf6f7fb9628.jpeg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/c9/b8/c971c34e0456dea9e4a87857880bb5b8.jpeg">
 <meta property="article:published_time" content="2020-10-30T13:09:04.000Z">
-<meta property="article:modified_time" content="2020-11-14T09:33:43.983Z">
+<meta property="article:modified_time" content="2020-11-15T14:22:05.482Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -337,8 +342,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-11-14T17:33:43+08:00" content="2020-11-14">
-                2020-11-14
+              <time itemprop="dateUpdated" datetime="2020-11-15T22:22:05+08:00" content="2020-11-15">
+                2020-11-15
               </time>
             </span>
           
@@ -401,7 +406,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  10.2k
+                  12.6k
                 </span>
               
 
@@ -417,7 +422,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  35
+                  44
                 </span>
               
             </div>
@@ -676,14 +681,48 @@
 <h3 id="6-2-超线程技术"><a href="#6-2-超线程技术" class="headerlink" title="6.2 超线程技术"></a>6.2 超线程技术</h3><p>&emsp;&emsp;超线程技术的思路和多发射类似，就是采取一些方式提高并发量，让不会产生相关性的指令并发执行，从而增加CPU的处理性能。对于传统CPU结构来说，在同一时间点上，一个物理的 CPU 核心只会运行一个线程的指令，所以其实我们并没有真正地做到指令的并行运行。超线程的 CPU，其实是把一个物理层面 CPU 核心，“伪装”成两个逻辑层面的 CPU 核心。这个 CPU，会在硬件层面增加很多电路，使得我们可以在一个 CPU 核心内部，维护两个不同线程的指令的状态信息。比如，在一个物理 CPU 核心内部，会有双份的 PC 寄存器、指令寄存器乃至条件码寄存器。这样，这个 CPU 核心就可以维护两条并行的指令的状态。在外面看起来，似乎有两个逻辑层面的 CPU 在同时运行。所以，超线程技术一般也被叫作同时多线程（Simultaneous Multi-Threading，简称 SMT）技术。</p>
 <p><img src="https://static001.geekbang.org/resource/image/96/c8/96aa1220ff27776f55091c55c2eddbc8.jpeg" alt="img"></p>
 <p>&emsp;&emsp;需要注意的是，超线程技术和多核的区别在于，在 CPU 的其他功能组件上，Intel 可不会提供双份。无论是指令译码器还是 ALU，一个 CPU 核心仍然只有一份。因为超线程并不是真的去同时运行两个指令，那就真的变成物理多核了。超线程的目的，是在一个线程 A 的指令，在流水线里停顿的时候，让另外一个线程去执行指令。因为这个时候，CPU 的译码器和 ALU 就空出来了，那么另外一个线程 B，就可以拿来干自己需要的事情。这个线程 B 可没有对于线程 A 里面指令的关联和依赖。</p>
-<h3 id="6-3-SIMD"><a href="#6-3-SIMD" class="headerlink" title="6.3 SIMD"></a>6.3 SIMD</h3><p>&emsp;&emsp;SIMD，即单指令多数据流（Single Instruction Multiple Data） 。SIMD 在获取数据和执行指令的时候，都做到了并行。一方面，在从内存里面读取数据的时候，SIMD 是一次性读取多个数据。另一方面，多个数据只要不互相依赖，则可以并行单独计算，从而实现了执行的并行。，对于那些在计算层面存在大量“数据并行”（Data Parallelism）的计算中，使用 SIMD 是一个很划算的办法。在这个大量的“数据并行”，其实通常就是实践当中的向量运算或者矩阵运算。在实际的程序开发过程中，过去通常是在进行图片、视频、音频的处理。最近几年则通常是在进行各种机器学习算法的计算。</p>
-<h3 id="6-4-GPU和TPU"><a href="#6-4-GPU和TPU" class="headerlink" title="6.4 GPU和TPU"></a>6.4 GPU和TPU</h3><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] Linux-insides</p>
+<h3 id="6-3-SIMD"><a href="#6-3-SIMD" class="headerlink" title="6.3 SIMD"></a>6.3 SIMD</h3><p>&emsp;&emsp;SIMD，即单指令多数据流（Single Instruction Multiple Data） 。SIMD 在获取数据和执行指令的时候，都做到了并行。一方面，在从内存里面读取数据的时候，SIMD 是一次性读取多个数据。另一方面，多个数据只要不互相依赖，则可以并行单独计算，从而实现了执行的并行。对于那些在计算层面存在大量“数据并行”（Data Parallelism）的计算中，使用 SIMD 是一个很划算的办法。在这个大量的“数据并行”，其实通常就是实践当中的向量运算或者矩阵运算。在实际的程序开发过程中，过去通常是在进行图片、视频、音频的处理。最近几年则通常是在进行各种机器学习算法的计算。</p>
+<h3 id="6-4-GPU"><a href="#6-4-GPU" class="headerlink" title="6.4 GPU"></a>6.4 GPU</h3><p>&emsp;&emsp;GPU的出现和图像学的进步密不可分，而实际还是要感谢游戏的出现和进步。对于图像进行实时渲染的过程，可以被分解成下面这样 5 个步骤：顶点处理（Vertex Processing），图元处理（Primitive Processing），栅格化（Rasterization），片段处理（Fragment Processing），像素操作（Pixel Operations）。</p>
+<ul>
+<li>顶点处理：图形渲染的第一步是顶点处理。构成多边形建模的每一个多边形，都有多个顶点（Vertex）。这些顶点都有一个在三维空间里的坐标。但是我们的屏幕是二维的，所以在确定当前视角的时候，我们需要把这些顶点在三维空间里面的位置，转化到屏幕这个二维空间里面。这个转换的操作，就被叫作顶点处理。<strong>可以想见，我们的建模越精细，需要转换的顶点数量就越多，计算量就越大。而且，这里面每一个顶点位置的转换，互相之间没有依赖，是可以并行独立计算的。</strong></li>
+<li>图元处理：图元处理，其实就是要把顶点处理完成之后的各个顶点连起来，变成多边形。我们针对这些多边形，需要做一个操作，叫剔除和裁剪（Cull and Clip），也就是把不在屏幕里面，或者一部分不在屏幕里面的内容给去掉，减少接下来流程的工作量。</li>
+<li>栅格化：在图元处理完成之后呢，渲染还远远没有完成。我们的屏幕分辨率是有限的。它一般是通过一个个“像素（Pixel）”来显示出内容的。所以，对于做完图元处理的多边形，需要把它们转换成屏幕里面的一个个像素点。这个操作就叫作栅格化。这个栅格化操作，有一个特点和上面的顶点处理是一样的，就是<strong>每一个图元都可以并行独立地栅格化。</strong></li>
+<li>片段处理：在栅格化变成了像素点之后，我们的图还是“黑白”的。我们还需要计算每一个像素的颜色、透明度等信息，给像素点上色。这步操作，就是片段处理。<strong>这步操作，同样也可以每个片段并行、独立进行，和上面的顶点处理和栅格化一样。</strong></li>
+<li>像素操作：把不同的多边形的像素点“混合（Blending）”到一起。可能前面的多边形可能是半透明的，那么前后的颜色就要混合在一起变成一个新的颜色；或者前面的多边形遮挡住了后面的多边形，那么我们只要显示前面多边形的颜色就好了。最终，输出到显示设备。</li>
+</ul>
+<p>&emsp;&emsp;由上可见，图形处理的最大特点在于，<strong>计算量大、计算方法单一、计算之间没有依赖关系</strong>。而这完美规避了CPU复杂运算中可能遇到的冒险，由此我们完全可以做成“简化专用”版CPU，这就是GPU。早期的GPU没有顶点处理步骤，而是依然在CPU中执行。而后续GPU的发展，不仅将整个过程移到了GPU中，并且提供了一定的编程能力供以程序员使用，这就是<strong>可编程管线（Programable Function Pipeline）</strong>。</p>
+<img src="https://static001.geekbang.org/resource/image/27/6d/2724f76ffa4222eae01521cd2dffd16d.jpeg" alt="img" style="zoom: 33%;" />
+
+<p>&emsp;&emsp;上古时代，可编程管线仅限于顶点处理（Vertex Processing）和片段处理（Fragment Processing）部分。这些可以编程的接口，我们称之为 Shader，即着色器。大家很快发现，虽然我们在顶点处理和片段处理上的具体逻辑不太一样，但是里面用到的指令集可以用同一套。而且，虽然把 Vertex Shader 和 Fragment Shader 分开，可以减少硬件设计的复杂程度，但是也带来了一种浪费，有一半 Shader 始终没有被使用。在整个渲染管线里，Vertext Shader 运行的时候，Fragment Shader 停在那里什么也没干。Fragment Shader 在运行的时候，Vertext Shader 也停在那里发呆。于是，<strong>统一着色器架构</strong>（Unified Shader Architecture）就应运而生了，也称为<strong>CUDA</strong>（Compute Unified Device Architecture）。正是因为 Shader 变成一个“通用”的模块，才有了把 GPU 拿来做各种通用计算的用法，也就是 GPGPU（General-Purpose Computing on Graphics Processing Units，通用图形处理器）。而正是因为 GPU 可以拿来做各种通用的计算，才有了过去 10 年深度学习的火热。</p>
+<p><img src="https://static001.geekbang.org/resource/image/da/93/dab4ed01f50995d82e6e5d970b54c693.jpeg" alt="img"></p>
+<p>&emsp;&emsp;现代GPU在此基础上继续优化，并为机器学习和图形渲染提供了充实的硬件基础。首先，我们将CPU中复杂的高速缓存、乱序执行、分支预测等通通去掉，尽可能简化了硬件架构，因为图形处理本身是流式处理，并无太多分支和依赖。</p>
+<img src="https://static001.geekbang.org/resource/image/4c/9d/4c153ac45915fbf3985d24b092894b9d.jpeg" alt="img" style="zoom:33%;" />
+
+<p>&emsp;&emsp;上节提到了SIMD技术，而这种技术在 GPU 的渲染管线里大放异彩。无论是顶点去进行线性变换，还是屏幕上临近像素点的光照和上色，都是在用相同的指令流程进行计算。所以，GPU 就借鉴了 CPU 里面的 SIMD，用了一种叫作<strong>SIMT</strong>（Single Instruction，Multiple Threads）的技术。SIMT 比 SIMD 更加灵活。在 SIMD 里面，CPU 一次性取出了固定长度的多个数据，放到寄存器里面，用一个指令去执行。而 SIMT，可以把多条数据，交给不同的线程去处理。各个线程里面执行的指令流程是一样的，但是可能根据数据的不同，走到不同的条件分支。这样，相同的代码和相同的流程，可能执行不同的具体的指令。这个线程走到的是 if 的条件分支，另外一个线程走到的就是 else 的条件分支了。</p>
+<img src="https://static001.geekbang.org/resource/image/3d/28/3d7ce9c053815f6a32a6fbf6f7fb9628.jpeg" alt="img" style="zoom:33%;" />
+
+<p>&emsp;&emsp;随着CUDA的普及，GPU也难免会出现逻辑判断（尽可能避免之后），所以超线程技术依然可以用于此。</p>
+<p><img src="https://static001.geekbang.org/resource/image/c9/b8/c971c34e0456dea9e4a87857880bb5b8.jpeg" alt="img"></p>
+<p>&emsp;&emsp;于此，现代GPU就成型了。在通过芯片瘦身、SIMT 以及更多的执行上下文，我们就有了一个更擅长并行进行暴力运算的 GPU。这样的芯片，也正适合我们今天的深度学习的使用场景。一方面，GPU 是一个可以进行“通用计算”的框架，我们可以通过编程，在 GPU 上实现不同的算法。另一方面，现在的深度学习计算，都是超大的向量和矩阵，海量的训练样本的计算。整个计算过程中，没有复杂的逻辑和分支，非常适合 GPU 这样并行、计算能力强的架构。</p>
+<h3 id="6-5-TPU"><a href="#6-5-TPU" class="headerlink" title="6.5 TPU"></a>6.5 TPU</h3><p>&emsp;&emsp;TPU是谷歌为深度学习量身定制的计算处理器。深度学习除了大量的矩阵计算以外，还需要进行推断。所谓推断部分，是指我们在完成深度学习训练之后，把训练完成的模型存储下来。这个存储下来的模型，是许许多多个向量组成的参数。然后，我们根据这些参数，去计算输入的数据，最终得到一个计算结果。这个推断过程，可能是在互联网广告领域，去推测某一个用户是否会点击特定的广告；也可能是我们在经过高铁站的时候，扫一下身份证进行一次人脸识别，判断一下是不是你本人。</p>
+<p>&emsp;&emsp;相对于模型训练，模型的推断主要有以下特点：</p>
+<ul>
+<li>深度学习的推断工作更简单，对灵活性的要求也就更低。模型推断的过程，我们只需要去计算一些矩阵的乘法、加法，调用一些 Sigmoid 或者 RELU 这样的激活函数。这样的过程可能需要反复进行很多层，但是也只是这些计算过程的简单组合。</li>
+<li>深度学习的推断的性能，首先要保障响应时间的指标。推断过程，像互联网广告的点击预测，我们往往希望能在几十毫秒乃至几毫秒之内就完成，而人脸识别也不希望会超过几秒钟。很显然，模型训练和推断对于性能的要求是截然不同的。</li>
+<li>深度学习的推断工作，希望在功耗上尽可能少一些。深度学习的训练，对功耗没有那么敏感，只是希望训练速度能够尽可能快，多费点电就多费点儿了。这是因为，深度学习的推断，要 7×24h 地跑在数据中心里面。而且，对应的芯片，要大规模地部署在数据中心。一块芯片减少 5% 的功耗，就能节省大量的电费。</li>
+</ul>
+<p>&emsp;&emsp;由于以上差别，GPU显然不能很好适应深度学习的推断功能，因此才有了TPU的问世。关于TPU的具体架构，在此不做详细展开了，有兴趣可以自行研究。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>&emsp;&emsp;本文较为详细的介绍了CPU的发展过程和各种技术，由此加深我们对CPU的理解，从而写出性能更好的代码。</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] Linux-insides</p>
 <p>[2] 深入理解Linux内核</p>
 <p>[3] Linux内核设计的艺术</p>
 <p>[4] 深入理解计算机系统</p>
 <p>[5] 深入理解Linux网络技术内幕</p>
 <p>[6] 计算机组成原理</p>
-<p>[7] 极客时间 计算机组成原理</p>
+<p>[7] 极客时间 深入浅出计算机组成原理</p>
+<p>[8] 计算机组成与设计：硬件/软件接口</p>
+<p>[9] 编码：隐匿在计算机软硬件背后的语言</p>
+<p>[10] In-Datacenter Performance Analysis of a Tensor Processing Unit</p>
 
       
     </div>
@@ -982,7 +1021,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-加法器和乘法器"><span class="nav-text">二. 加法器和乘法器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-门电路和半加器"><span class="nav-text">2.1 门电路和半加器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-半加器到全加器"><span class="nav-text">2.2 半加器到全加器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-基本乘法器"><span class="nav-text">2.3 基本乘法器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-并行乘法器"><span class="nav-text">2.3 并行乘法器</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-CPU基本结构"><span class="nav-text">三. CPU基本结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-指令周期、机器周期和时钟周期"><span class="nav-text">3.1 指令周期、机器周期和时钟周期</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-基本结构"><span class="nav-text">3.2 基本结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-基本硬件电路"><span class="nav-text">3.3 基本硬件电路</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-D触发器"><span class="nav-text">3.4 D触发器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-5-程序计数器"><span class="nav-text">3.5 程序计数器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-6-多指令模型"><span class="nav-text">3.6 多指令模型</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-寄存器"><span class="nav-text">四. 寄存器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-通用寄存器"><span class="nav-text">4.1 通用寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-标志寄存器"><span class="nav-text">4.2 标志寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-指令寄存器和程序计数器"><span class="nav-text">4.3 指令寄存器和程序计数器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-4-段寄存器"><span class="nav-text">4.4 段寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-5-控制寄存器"><span class="nav-text">4.5 控制寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-6-调试寄存器"><span class="nav-text">4.6 调试寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-7-描述符寄存器"><span class="nav-text">4.7 描述符寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-8-任务寄存器"><span class="nav-text">4.8 任务寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-9-模型特定寄存器"><span class="nav-text">4.9 模型特定寄存器</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-冒险和预测"><span class="nav-text">五. 冒险和预测</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-结构冒险"><span class="nav-text">5.1 结构冒险</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-数据冒险"><span class="nav-text">5.2 数据冒险</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#5-2-1-流水线冒泡"><span class="nav-text">5.2.1 流水线冒泡</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-2-2-操作数前推"><span class="nav-text">5.2.2 操作数前推</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-2-3-乱序执行"><span class="nav-text">5.2.3 乱序执行</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-控制冒险"><span class="nav-text">5.3 控制冒险</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#5-3-1-缩短分支延迟"><span class="nav-text">5.3.1 缩短分支延迟</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-3-2-分支预测"><span class="nav-text">5.3.2 分支预测</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-3-3-动态分支预测"><span class="nav-text">5.3.3 动态分支预测</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#六-高级架构"><span class="nav-text">六. 高级架构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#6-1-多发射和超标量"><span class="nav-text">6.1 多发射和超标量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-2-超线程技术"><span class="nav-text">6.2 超线程技术</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-3-SIMD"><span class="nav-text">6.3 SIMD</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-4-GPU和TPU"><span class="nav-text">6.4 GPU和TPU</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-加法器和乘法器"><span class="nav-text">二. 加法器和乘法器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-门电路和半加器"><span class="nav-text">2.1 门电路和半加器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-半加器到全加器"><span class="nav-text">2.2 半加器到全加器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-基本乘法器"><span class="nav-text">2.3 基本乘法器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-并行乘法器"><span class="nav-text">2.3 并行乘法器</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-CPU基本结构"><span class="nav-text">三. CPU基本结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-指令周期、机器周期和时钟周期"><span class="nav-text">3.1 指令周期、机器周期和时钟周期</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-基本结构"><span class="nav-text">3.2 基本结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-基本硬件电路"><span class="nav-text">3.3 基本硬件电路</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-D触发器"><span class="nav-text">3.4 D触发器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-5-程序计数器"><span class="nav-text">3.5 程序计数器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-6-多指令模型"><span class="nav-text">3.6 多指令模型</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-寄存器"><span class="nav-text">四. 寄存器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-通用寄存器"><span class="nav-text">4.1 通用寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-标志寄存器"><span class="nav-text">4.2 标志寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-指令寄存器和程序计数器"><span class="nav-text">4.3 指令寄存器和程序计数器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-4-段寄存器"><span class="nav-text">4.4 段寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-5-控制寄存器"><span class="nav-text">4.5 控制寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-6-调试寄存器"><span class="nav-text">4.6 调试寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-7-描述符寄存器"><span class="nav-text">4.7 描述符寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-8-任务寄存器"><span class="nav-text">4.8 任务寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-9-模型特定寄存器"><span class="nav-text">4.9 模型特定寄存器</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-冒险和预测"><span class="nav-text">五. 冒险和预测</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-结构冒险"><span class="nav-text">5.1 结构冒险</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-数据冒险"><span class="nav-text">5.2 数据冒险</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#5-2-1-流水线冒泡"><span class="nav-text">5.2.1 流水线冒泡</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-2-2-操作数前推"><span class="nav-text">5.2.2 操作数前推</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-2-3-乱序执行"><span class="nav-text">5.2.3 乱序执行</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-控制冒险"><span class="nav-text">5.3 控制冒险</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#5-3-1-缩短分支延迟"><span class="nav-text">5.3.1 缩短分支延迟</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-3-2-分支预测"><span class="nav-text">5.3.2 分支预测</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-3-3-动态分支预测"><span class="nav-text">5.3.3 动态分支预测</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#六-高级架构"><span class="nav-text">六. 高级架构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#6-1-多发射和超标量"><span class="nav-text">6.1 多发射和超标量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-2-超线程技术"><span class="nav-text">6.2 超线程技术</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-3-SIMD"><span class="nav-text">6.3 SIMD</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-4-GPU"><span class="nav-text">6.4 GPU</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-5-TPU"><span class="nav-text">6.5 TPU</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
@@ -1016,7 +1055,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">161.7k</span>
+    <span title="Site words total count">164.1k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
