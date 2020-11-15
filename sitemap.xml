@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://ty-chen.github.io/linux-kernel-memory/</loc>
+    
+    <lastmod>2020-11-15T14:25:40.878Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://ty-chen.github.io/linux-kernel-cpu/</loc>
     
     <lastmod>2020-11-15T14:22:05.482Z</lastmod>
