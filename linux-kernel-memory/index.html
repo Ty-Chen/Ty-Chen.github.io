@@ -79,14 +79,15 @@
 
 
 
-<meta name="description" content="一. 前言&amp;emsp;&amp;emsp;本文延续上文介绍CPU的基本思路，继续探索计算机的存储器，在深入了解存储器的基础上，我们可以写出性能更为优异的代码。 总结参考文献">
+<meta name="description" content="一. 前言&amp;emsp;&amp;emsp;本文延续上文介绍CPU的基本思路，继续探索计算机的存储器，在深入了解存储器的基础上，我们可以写出性能更为优异的代码。 二. 存储分级    总结参考文献">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux操作系统学习笔记（二十九）深入理解存储器">
 <meta property="og:url" content="https://ty-chen.github.io/linux-kernel-memory/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
-<meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;本文延续上文介绍CPU的基本思路，继续探索计算机的存储器，在深入了解存储器的基础上，我们可以写出性能更为优异的代码。 总结参考文献">
+<meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;本文延续上文介绍CPU的基本思路，继续探索计算机的存储器，在深入了解存储器的基础上，我们可以写出性能更为优异的代码。 二. 存储分级    总结参考文献">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/ab/0a/ab345017c3f662b15e15e97e0ca1db0a.png">
 <meta property="article:published_time" content="2020-11-15T14:23:49.000Z">
-<meta property="article:modified_time" content="2020-11-16T16:04:14.345Z">
+<meta property="article:modified_time" content="2020-11-19T16:01:32.426Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -94,6 +95,7 @@
 <meta property="article:tag" content="寄存器">
 <meta property="article:tag" content="磁盘">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://static001.geekbang.org/resource/image/ab/0a/ab345017c3f662b15e15e97e0ca1db0a.png">
 
 
 
@@ -307,8 +309,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-11-17T00:04:14+08:00" content="2020-11-17">
-                2020-11-17
+              <time itemprop="dateUpdated" datetime="2020-11-20T00:01:32+08:00" content="2020-11-20">
+                2020-11-20
               </time>
             </span>
           
@@ -371,7 +373,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  63
+                  68
                 </span>
               
 
@@ -409,6 +411,10 @@
 
       
         <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;本文延续上文介绍CPU的基本思路，继续探索计算机的存储器，在深入了解存储器的基础上，我们可以写出性能更为优异的代码。</p>
+<h2 id="二-存储分级"><a href="#二-存储分级" class="headerlink" title="二. 存储分级"></a>二. 存储分级</h2><img src="https://static001.geekbang.org/resource/image/ab/0a/ab345017c3f662b15e15e97e0ca1db0a.png" alt="img" style="zoom: 50%;" />
+
+
+
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2>
       
     </div>
@@ -709,7 +715,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-存储分级"><span class="nav-text">二. 存储分级</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
