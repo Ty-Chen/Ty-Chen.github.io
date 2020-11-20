@@ -300,8 +300,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-11-20T00:01:32+08:00" content="2020-11-20">
-                2020-11-20
+              <time itemprop="dateUpdated" datetime="2020-11-21T00:29:14+08:00" content="2020-11-21">
+                2020-11-21
               </time>
             </span>
           
@@ -359,7 +359,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  68
+                  460
                 </span>
               
 
@@ -399,10 +399,11 @@
         
           
             <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;本文延续上文介绍CPU的基本思路，继续探索计算机的存储器，在深入了解存储器的基础上，我们可以写出性能更为优异的代码。</p>
-<h2 id="二-存储分级"><a href="#二-存储分级" class="headerlink" title="二. 存储分级"></a>二. 存储分级</h2><img src="https://static001.geekbang.org/resource/image/ab/0a/ab345017c3f662b15e15e97e0ca1db0a.png" alt="img" style="zoom: 50%;" />
+<h2 id="二-存储分级"><a href="#二-存储分级" class="headerlink" title="二. 存储分级"></a>二. 存储分级</h2><p>&emsp;&emsp;存储分级的根本原因还是性价比，即性能和价格的权衡。最快的当然是SRAM（Static Random-Access Memory，静态随机存取存储器），但是其密度较低、存储数据有限、价格偏高。而DRAM（Dynamic Random Access Memory，动态随机存取存储器）的芯片，比起 SRAM 来说，它的密度更高，有更大的容量，而且它也比 SRAM 芯片便宜不少。由此，我们使用SRAM+DRAM+磁盘，构成了存储分级系统。</p>
+<img src="https://static001.geekbang.org/resource/image/ab/0a/ab345017c3f662b15e15e97e0ca1db0a.png" alt="img" style="zoom: 50%;" />
 
-
-
+<p>&emsp;&emsp;CPU中分为L1, L2, L3三级缓存，其中L1又根据前文所述将指令和数据分开存取，形成了指令缓存和数据缓存。 L1 Cache 不仅昂贵，其访问速度和它到 CPU 的物理距离有关。芯片造得越大，总有部分离 CPU 的距离会变远。电信号的传输速度又受物理原理的限制，没法超过光速。所以想要快，并不是靠多花钱就能解决的。出于此，L2缓存才会设计的更大，但是速度慢于L1。</p>
+<p>&emsp;&emsp;实现存储分级设计的根本方案来自于存储数据的局部性原理，这里包括了时间局部性（temporal locality）和空间局部性（spatial locality）两种策略。时间局部性指的是如果一个数据被访问了，那么它在短时间内还会被再次访问。空间局部性则指的是如果一个数据被访问了，那么和它相邻的数据也很快会被访问。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2>
           
         
@@ -2341,7 +2342,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">164.1k</span>
+    <span title="Site words total count">164.5k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
