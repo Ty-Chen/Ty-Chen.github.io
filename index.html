@@ -257,6 +257,205 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://ty-chen.github.io/volatile/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Ty Chen">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/me.JPG">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ty-Chen's Home">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/volatile/" itemprop="url">volatile硬核剖析</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-11-23T23:57:19+08:00">
+                2020-11-23
+              </time>
+            
+
+            
+
+            
+          </span>
+          
+            <span class="post-updated">
+              &nbsp; | &nbsp; 更新于
+              <time itemprop="dateUpdated" datetime="2020-11-23T23:58:53+08:00" content="2020-11-23">
+                2020-11-23
+              </time>
+            </span>
+          
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/volatile/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/volatile/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  1.3k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  5
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;volatile在JAVA和C/C++中均有使用，而含义不同。不论是前者还是后者，在网上都流传着诸多误解，为此我们抛开一切中文资料，从JAVA、C/C++的文档手册、开发者的博客、stack overflow的高赞问题回复等源头去着手了解，并结合实际代码测试来验证其说法的可靠性。</p>
+<h2 id="二-Cache和内存"><a href="#二-Cache和内存" class="headerlink" title="二. Cache和内存"></a>二. Cache和内存</h2><p>&emsp;&emsp;众所周知，CPU有着高速缓存，而程序执行的时候，首先触发缺页中断加载如物理内存，然后由物理内存映射至CPU缓存，最后予以执行。而对于值保持不变的，我们会直接从缓存中读取，而不需要再去内存中重新读取，从而加快访问速度。而volatile，则是告诉编译器，<strong>该变量最好还是去内存读取，因为可能会被外部改变。</strong> 但是同样的语义，因为JVM和汇编的区别导致了其实现效果存在差异。</p>
+<h2 id="三-JAVA的volatile"><a href="#三-JAVA的volatile" class="headerlink" title="三. JAVA的volatile"></a>三. JAVA的volatile</h2><p>&emsp;&emsp;首先来看一个来自于DZone社区的例子</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">VolatileTest</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Logger LOGGER = MyLoggerFactory.getSimplestLogger();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">volatile</span> <span class="keyword">int</span> MY_INT = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">new</span> ChangeListener().start();</span><br><span class="line">        <span class="keyword">new</span> ChangeMaker().start();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">ChangeListener</span> <span class="keyword">extends</span> <span class="title">Thread</span> </span>&#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">int</span> local_value = MY_INT;</span><br><span class="line">            <span class="keyword">while</span> ( local_value &lt; <span class="number">5</span>)&#123;</span><br><span class="line">                <span class="keyword">if</span>( local_value!= MY_INT)&#123;</span><br><span class="line">                    LOGGER.log(Level.INFO,<span class="string">"Got Change for MY_INT : &#123;0&#125;"</span>, MY_INT);</span><br><span class="line">                     local_value= MY_INT;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">ChangeMaker</span> <span class="keyword">extends</span> <span class="title">Thread</span></span>&#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">int</span> local_value = MY_INT;</span><br><span class="line">            <span class="keyword">while</span> (MY_INT &lt;<span class="number">5</span>)&#123;</span><br><span class="line">                LOGGER.log(Level.INFO, <span class="string">"Incrementing MY_INT to &#123;0&#125;"</span>, local_value+<span class="number">1</span>);</span><br><span class="line">                MY_INT = ++local_value;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    Thread.sleep(<span class="number">500</span>);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123; e.printStackTrace(); &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;其输出如下，不难理解。每次<code>MY_INT</code>的改变会被<code>ChangeListener ()</code>监听并输出。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Incrementing MY_INT to <span class="number">1</span></span><br><span class="line">Got Change <span class="keyword">for</span> MY_INT : <span class="number">1</span></span><br><span class="line">Incrementing MY_INT to <span class="number">2</span></span><br><span class="line">Got Change <span class="keyword">for</span> MY_INT : <span class="number">2</span></span><br><span class="line">Incrementing MY_INT to <span class="number">3</span></span><br><span class="line">Got Change <span class="keyword">for</span> MY_INT : <span class="number">3</span></span><br><span class="line">Incrementing MY_INT to <span class="number">4</span></span><br><span class="line">Got Change <span class="keyword">for</span> MY_INT : <span class="number">4</span></span><br><span class="line">Incrementing MY_INT to <span class="number">5</span></span><br><span class="line">Got Change <span class="keyword">for</span> MY_INT : <span class="number">5</span></span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;而如果我们去掉了<code>volatile</code>，则输出会变成了</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Incrementing MY_INT to <span class="number">1</span></span><br><span class="line">Incrementing MY_INT to <span class="number">2</span></span><br><span class="line">Incrementing MY_INT to <span class="number">3</span></span><br><span class="line">Incrementing MY_INT to <span class="number">4</span></span><br><span class="line">Incrementing MY_INT to <span class="number">5</span></span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;造成该问题的核心点在于，<strong>volatile会告诉JVM，该变量可能会被别的线程修改，因此它会确保我们对于这个变量的读取和写入，都一定会同步到内存里，而不是从CPU的 Cache 里面读取。</strong>如果不加该关键字，则JVM可能会对程序进行一些优化，如从Cache中获取值（尤其是在看起来不会发生变化时），这就导致该线程会一直在死循环中忙忙碌碌。</p>
+<h2 id="四-C-C-的volatile"><a href="#四-C-C-的volatile" class="headerlink" title="四. C/C++的volatile"></a>四. C/C++的volatile</h2><p>&emsp;&emsp;同样的我们先来看一段代码</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// global shared data</span></span><br><span class="line"><span class="keyword">bool</span> flag = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">thread1() &#123;</span><br><span class="line">    flag = <span class="literal">false</span>;</span><br><span class="line">    Type* value = <span class="keyword">new</span> Type(<span class="comment">/* parameters */</span>);</span><br><span class="line">    thread2(value);</span><br><span class="line">    <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (flag == <span class="literal">true</span>) &#123;</span><br><span class="line">            apply(value);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    thread2.join();</span><br><span class="line">    <span class="keyword">if</span> (<span class="literal">nullptr</span> != value) &#123; <span class="keyword">delete</span> value; &#125;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">thread2(Type* value) &#123;</span><br><span class="line">    <span class="comment">// do some evaluations</span></span><br><span class="line">    value-&gt;update(<span class="comment">/* parameters */</span>);</span><br><span class="line">    flag = <span class="literal">true</span>;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;这段代码将 <code>thread1</code> 作为主线程，等待 <code>thread2</code> 准备好 <code>value</code>。因此，<code>thread2</code> 在更新 <code>value</code>之后将<code>flag</code> 置为真，而 <code>thread1</code> 死循环地检测 <code>flag</code>。但是，这段代码是有问题的。</p>
+<ul>
+<li>在 <code>thread1</code> 中，<code>flag = false</code> 赋值之后，在 <code>while</code> 死循环里，没有任何机会修改<code>flag</code> 的值，因此在运行之前，<strong>编译器优化可能会将<code>if (flag == true)</code> 的内容全部优化掉</strong></li>
+<li>在 <code>thread2</code> 中，尽管逻辑上 <code>update()</code> 需要发生在 <code>flag = true</code> 之前，但编译器和 CPU 并不知道；因此编译器优化和 CPU 乱序执行可能会使 <code>flag = true</code> 发生在 <code>update()</code> 完成之前，因此<code>thread1</code> 执行 <code>apply(value)</code> 时可能 <code>value</code> 还未准备好。</li>
+</ul>
+<p>&emsp;&emsp;加上<code>volatile</code>是否可行呢？如果只对<code>flag</code>加上关键词是不够的，虽然<code>if</code>判断不会被优化掉了，但是编译器仍有可能在优化时将<code>thread2</code>中的 <code>update</code> 和对 <code>flag</code> 的赋值交换顺序。</p>
+<p>&emsp;&emsp;如果给<code>value</code>也加上呢？理论上来说是可以的，因为x86 和 AMD64 架构的 CPU（大多数个人机器和服务器使用这两种架构的 CPU）只允许 store-load 乱序，而不会发生 store-store 乱序。但是对于其他架构则无法保证，因此依然存在乱序执行的可能。</p>
+<p>&emsp;&emsp;通过该例子，我们学到了两件事</p>
+<ul>
+<li>C/C++的volatile用于<strong>告诉编译器不要对该变量进行优化，从而避免了一些编译器优化导致的隐性问题。</strong></li>
+<li>C/C++直接面向汇编，因此在多线程中volatile不像JAVA的volatile有JVM兜底，可以保证多线程的准确性。因此<strong>不建议在多线程中采用</strong>。</li>
+</ul>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>&emsp;&emsp;对于JAVA来说，volatile告诉了编译器每次都从内存中读取数值以保证其准确性，可以适当的使用。对于C/C++来说，多线程有太多的更好的选择，volatile的使用场景应局限于嵌入式系统或设备驱动中，需要读/写内存映射硬件设备时，告诉编译器不要将该部分进行了错误优化。</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] <a href="https://dzone.com/articles/java-volatile-keyword-0" target="_blank" rel="noopener">Java Volatile Keyword Explained by Example</a></p>
+<p>[2] <a href="https://www.kernel.org/doc/html/latest/process/volatile-considered-harmful.html" target="_blank" rel="noopener">Why the “volatile” type class should not be used</a></p>
+<p>[3] <a href="http://web.archive.org/web/20180120044239/http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2016.html" target="_blank" rel="noopener">Should volatile Acquire Atomicity and Thread Visibility Semantics?</a></p>
+<p>[4] <a href="https://stackoverflow.com/questions/19923352/whats-the-difference-of-the-usage-of-volatile-between-c-c-and-c-java#:~:text=For%20C#/Java,%20%22%20volatile,scope%20of%20the%20program%20itself.&text=In%20C/C++,%20%22,a%20memory-mapped%20hardware%20device." target="_blank" rel="noopener">What’s the difference of the usage of volatile between C/C++ and C#/Java?</a></p>
+<p>[5] <a href="https://liam.page/2018/01/18/volatile-in-C-and-Cpp/" target="_blank" rel="noopener">谈谈 C/C++ 中的 volatile</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://ty-chen.github.io/linux-kernel-memory/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2010,200 +2209,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://ty-chen.github.io/linux-kernel-tcp-send/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Ty Chen">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/me.JPG">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ty-Chen's Home">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/linux-kernel-tcp-send/" itemprop="url">Linux操作系统学习笔记（二十二）网络通信之发包</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-08-06T22:59:55+08:00">
-                2020-08-06
-              </time>
-            
-
-            
-
-            
-          </span>
-          
-            <span class="post-updated">
-              &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-10-09T23:15:34+08:00" content="2020-10-09">
-                2020-10-09
-              </time>
-            </span>
-          
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%86%85%E6%A0%B8%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index">
-                    <span itemprop="name">Linux操作系统内核学习</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/linux-kernel-tcp-send/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count valine-comment-count" data-xid="/linux-kernel-tcp-send/" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  6k
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">
-                  29
-                </span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h2 id="一-简介"><a href="#一-简介" class="headerlink" title="一. 简介"></a>一. 简介</h2><p>&emsp;&emsp;本文将分析网络协议栈发包的整个流程，根据顺序我们将依次介绍套接字文件系统、传输层、网络层、数据链路层、硬件设备层的相关发包处理流程，内容较多较复杂，主要掌握整个流程即可。</p>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/linux-kernel-tcp-send/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2258,7 +2263,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">35</span>
+                  <span class="site-state-item-count">36</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -2361,7 +2366,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">165.4k</span>
+    <span title="Site words total count">166.7k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
