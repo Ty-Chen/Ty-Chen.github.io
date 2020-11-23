@@ -89,7 +89,7 @@
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/52/22/522eade51bbfad19fd25eb4f3ce80f22.png">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/13/d4/1313fe1e4eb3b5c949284c8b215af8d4.png">
 <meta property="article:published_time" content="2020-11-15T14:23:49.000Z">
-<meta property="article:modified_time" content="2020-11-21T12:48:21.528Z">
+<meta property="article:modified_time" content="2020-11-22T14:37:40.045Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -311,8 +311,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-11-21T20:48:21+08:00" content="2020-11-21">
-                2020-11-21
+              <time itemprop="dateUpdated" datetime="2020-11-22T22:37:40+08:00" content="2020-11-22">
+                2020-11-22
               </time>
             </span>
           
@@ -420,7 +420,7 @@
 <p>&emsp;&emsp;实现存储分级设计的根本方案来自于存储数据的局部性原理，这里包括了时间局部性（temporal locality）和空间局部性（spatial locality）两种策略。时间局部性指的是如果一个数据被访问了，那么它在短时间内还会被再次访问。空间局部性则指的是如果一个数据被访问了，那么和它相邻的数据也很快会被访问。</p>
 <h2 id="三-高速缓存"><a href="#三-高速缓存" class="headerlink" title="三. 高速缓存"></a>三. 高速缓存</h2><p>&emsp;&emsp;内存访问速度年增长只有7%左右，而根据摩尔定律CPU的访问速度则18个月翻一番（现在不一定），由此导致了CPU和内存的性能差异逐渐增大，在今天，CPU 和内存的访问速度已经有了 120 倍的差距。为了弥补两者之间的性能差异，我们能真实地把 CPU 的性能提升用起来，而不是让它在那儿空转，我们在现代 CPU 中引入了高速缓存。</p>
 <p>&emsp;&emsp;运行程序时，内存中的指令、数据，会被加载到 L1-L3 Cache 中，而不是直接由 CPU 访问内存去拿。在 95% 的情况下，CPU 都只需要访问 L1-L3 Cache，从里面读取指令和数据，而无需访问内存。CPU中的高速缓存分为一个个的小块，称之为CPU 缓存块（Cache Line），常见大小为64字节。下面介绍换存款和内存的读/写方法。</p>
-<h3 id="3-1-直接映射"><a href="#3-1-直接映射" class="headerlink" title="3.1 直接映射"></a>3.1 直接映射</h3><p>&emsp;&emsp;CPU 访问内存数据，是一小块一小块数据来读取的。对于读取内存中的数据，我们首先拿到的是数据所在的内存块（Block）的地址。而直接映射 Cache 采用的策略，就是确保任何一个内存块的地址，始终映射到一个固定的 CPU Cache 地址（Cache Line）。而这个映射关系，通常用 mod 运算（求余运算）来实现。实际计算中，有一个小小的技巧，通常我们会把缓存块的数量设置成 2 的 N 次方。这样在计算取模的时候，可以直接取地址的低 N 位，也就是二进制里面的后几位。</p>
+<h3 id="3-1-读缓存"><a href="#3-1-读缓存" class="headerlink" title="3.1 读缓存"></a>3.1 读缓存</h3><p>&emsp;&emsp;CPU 访问内存数据，是一小块一小块数据来读取的。对于读取内存中的数据，我们首先拿到的是数据所在的内存块（Block）的地址。而直接映射 Cache 采用的策略，就是确保任何一个内存块的地址，始终映射到一个固定的 CPU Cache 地址（Cache Line）。而这个映射关系，通常用 mod 运算（求余运算）来实现。实际计算中，有一个小小的技巧，通常我们会把缓存块的数量设置成 2 的 N 次方。这样在计算取模的时候，可以直接取地址的低 N 位，也就是二进制里面的后几位。</p>
 <img src="https://static001.geekbang.org/resource/image/52/22/522eade51bbfad19fd25eb4f3ce80f22.png" alt="img" style="zoom: 67%;" />
 
 <p>&emsp;&emsp;除了取模对应的偏移量外，我们还需要存储组标记（Tag）和有效位（Valid bit）。</p>
@@ -437,7 +437,7 @@
 <li>根据内存地址的 Offset 位，从 Data Block 中，读取希望读取到的字。</li>
 </ul>
 <p>&emsp;&emsp;如果在 2、3 这两个步骤中，CPU 发现，Cache 中的数据并不是要访问的内存地址的数据，那 CPU 就会访问内存，并把对应的 Block Data 更新到 Cache Line 中，同时更新对应的有效位和组标记的数据。除了直接映射 Cache 之外，我们常见的缓存放置策略还有全相连 Cache（Fully Associative Cache）、组相连 Cache（Set Associative Cache）。这几种策略的数据结构都是相似的，只是进行了一些优化而已。</p>
-<h2 id="四-内存"><a href="#四-内存" class="headerlink" title="四. 内存"></a>四. 内存</h2><h2 id="五-磁盘"><a href="#五-磁盘" class="headerlink" title="五. 磁盘"></a>五. 磁盘</h2><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2>
+<h3 id="3-2-写缓存"><a href="#3-2-写缓存" class="headerlink" title="3.2 写缓存"></a>3.2 写缓存</h3><h2 id="四-内存"><a href="#四-内存" class="headerlink" title="四. 内存"></a>四. 内存</h2><h2 id="五-磁盘"><a href="#五-磁盘" class="headerlink" title="五. 磁盘"></a>五. 磁盘</h2><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2>
       
     </div>
     
@@ -737,7 +737,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-存储分级"><span class="nav-text">二. 存储分级</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-高速缓存"><span class="nav-text">三. 高速缓存</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-直接映射"><span class="nav-text">3.1 直接映射</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-内存"><span class="nav-text">四. 内存</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-磁盘"><span class="nav-text">五. 磁盘</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-存储分级"><span class="nav-text">二. 存储分级</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-高速缓存"><span class="nav-text">三. 高速缓存</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-读缓存"><span class="nav-text">3.1 读缓存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-写缓存"><span class="nav-text">3.2 写缓存</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-内存"><span class="nav-text">四. 内存</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-磁盘"><span class="nav-text">五. 磁盘</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
