@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://ty-chen.github.io/linux-kernel-memory/</loc>
+    
+    <lastmod>2020-11-25T14:46:18.112Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://ty-chen.github.io/paradigms/</loc>
     
     <lastmod>2020-11-24T16:36:36.037Z</lastmod>
@@ -12,13 +19,6 @@
     <loc>https://ty-chen.github.io/volatile/</loc>
     
     <lastmod>2020-11-23T15:58:53.637Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://ty-chen.github.io/linux-kernel-memory/</loc>
-    
-    <lastmod>2020-11-22T14:37:40.045Z</lastmod>
     
   </url>
   
