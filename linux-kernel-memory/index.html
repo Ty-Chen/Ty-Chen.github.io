@@ -91,7 +91,7 @@
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/8b/d3/8b9ad674953bf36680e815247de235d3.jpeg">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/67/0d/67053624d6aa2a5c27c295e1fda4890d.jpeg">
 <meta property="article:published_time" content="2020-11-15T14:23:49.000Z">
-<meta property="article:modified_time" content="2020-11-26T16:05:33.402Z">
+<meta property="article:modified_time" content="2020-11-27T16:51:38.187Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -313,8 +313,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-11-27T00:05:33+08:00" content="2020-11-27">
-                2020-11-27
+              <time itemprop="dateUpdated" datetime="2020-11-28T00:51:38+08:00" content="2020-11-28">
+                2020-11-28
               </time>
             </span>
           
@@ -377,7 +377,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1.4k
+                  1.6k
                 </span>
               
 
@@ -440,9 +440,11 @@
 </ul>
 <p>&emsp;&emsp;如果在 2、3 这两个步骤中，CPU 发现，Cache 中的数据并不是要访问的内存地址的数据，那 CPU 就会访问内存，并把对应的 Block Data 更新到 Cache Line 中，同时更新对应的有效位和组标记的数据。除了直接映射 Cache 之外，我们常见的缓存放置策略还有全相连 Cache（Fully Associative Cache）、组相连 Cache（Set Associative Cache）。这几种策略的数据结构都是相似的，只是进行了一些优化而已。</p>
 <h3 id="3-2-写缓存"><a href="#3-2-写缓存" class="headerlink" title="3.2 写缓存"></a>3.2 写缓存</h3><p>&emsp;&emsp;由于缓存速度远快于内存，因此写操作也会优先写缓存。但是这里存在一个问题：我们还需要修改内存保持数据的一致性。为此主要有两种写策略。</p>
-<h4 id="3-2-1-写直达（Write-Through）"><a href="#3-2-1-写直达（Write-Through）" class="headerlink" title="3.2.1 写直达（Write Through）"></a>3.2.1 写直达（Write Through）</h4><img src="https://static001.geekbang.org/resource/image/8b/d3/8b9ad674953bf36680e815247de235d3.jpeg" alt="img" style="zoom:33%;" />
+<h4 id="3-2-1-写直达（Write-Through）"><a href="#3-2-1-写直达（Write-Through）" class="headerlink" title="3.2.1 写直达（Write Through）"></a>3.2.1 写直达（Write Through）</h4><p>&emsp;&emsp;在这个策略里，每一次数据都要写入到主内存里面。在写直达的策略里面，写入前，我们会先去判断数据是否已经在 Cache 里面了。如果数据已经在 Cache 里面了，我们先把数据写入更新到 Cache 里面，再写入到主内存里面；如果数据不在 Cache 里，我们就只更新主内存。写直达的这个策略很直观，但是问题也很明显，那就是这个策略很慢。无论数据是不是在 Cache 里面，我们都需要把数据写到主内存里面。</p>
+<img src="https://static001.geekbang.org/resource/image/8b/d3/8b9ad674953bf36680e815247de235d3.jpeg" alt="img" style="zoom:33%;" />
 
-<h4 id="3-2-2-写回（Write-Back）"><a href="#3-2-2-写回（Write-Back）" class="headerlink" title="3.2.2 写回（Write Back）"></a>3.2.2 写回（Write Back）</h4><img src="https://static001.geekbang.org/resource/image/67/0d/67053624d6aa2a5c27c295e1fda4890d.jpeg" alt="img" style="zoom:33%;" />
+<h4 id="3-2-2-写回（Write-Back）"><a href="#3-2-2-写回（Write-Back）" class="headerlink" title="3.2.2 写回（Write Back）"></a>3.2.2 写回（Write Back）</h4><p>&emsp;&emsp;</p>
+<img src="https://static001.geekbang.org/resource/image/67/0d/67053624d6aa2a5c27c295e1fda4890d.jpeg" alt="img" style="zoom:33%;" />
 
 <h2 id="四-内存"><a href="#四-内存" class="headerlink" title="四. 内存"></a>四. 内存</h2><h2 id="五-磁盘"><a href="#五-磁盘" class="headerlink" title="五. 磁盘"></a>五. 磁盘</h2><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2>
       
@@ -782,7 +784,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">166.9k</span>
+    <span title="Site words total count">167k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
