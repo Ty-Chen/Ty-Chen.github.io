@@ -300,8 +300,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-11-23T23:58:53+08:00" content="2020-11-23">
-                2020-11-23
+              <time itemprop="dateUpdated" datetime="2020-11-29T20:06:23+08:00" content="2020-11-29">
+                2020-11-29
               </time>
             </span>
           
@@ -375,41 +375,14 @@
 
       
         
-          
-            <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;volatile在JAVA和C/C++中均有使用，而含义不同。不论是前者还是后者，在网上都流传着诸多误解，为此我们抛开一切中文资料，从JAVA、C/C++的文档手册、开发者的博客、stack overflow的高赞问题回复等源头去着手了解，并结合实际代码测试来验证其说法的可靠性。</p>
-<h2 id="二-Cache和内存"><a href="#二-Cache和内存" class="headerlink" title="二. Cache和内存"></a>二. Cache和内存</h2><p>&emsp;&emsp;众所周知，CPU有着高速缓存，而程序执行的时候，首先触发缺页中断加载如物理内存，然后由物理内存映射至CPU缓存，最后予以执行。而对于值保持不变的，我们会直接从缓存中读取，而不需要再去内存中重新读取，从而加快访问速度。而volatile，则是告诉编译器，<strong>该变量最好还是去内存读取，因为可能会被外部改变。</strong> 但是同样的语义，因为JVM和汇编的区别导致了其实现效果存在差异。</p>
-<h2 id="三-JAVA的volatile"><a href="#三-JAVA的volatile" class="headerlink" title="三. JAVA的volatile"></a>三. JAVA的volatile</h2><p>&emsp;&emsp;首先来看一个来自于DZone社区的例子</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">VolatileTest</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Logger LOGGER = MyLoggerFactory.getSimplestLogger();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">volatile</span> <span class="keyword">int</span> MY_INT = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">new</span> ChangeListener().start();</span><br><span class="line">        <span class="keyword">new</span> ChangeMaker().start();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">ChangeListener</span> <span class="keyword">extends</span> <span class="title">Thread</span> </span>&#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">int</span> local_value = MY_INT;</span><br><span class="line">            <span class="keyword">while</span> ( local_value &lt; <span class="number">5</span>)&#123;</span><br><span class="line">                <span class="keyword">if</span>( local_value!= MY_INT)&#123;</span><br><span class="line">                    LOGGER.log(Level.INFO,<span class="string">"Got Change for MY_INT : &#123;0&#125;"</span>, MY_INT);</span><br><span class="line">                     local_value= MY_INT;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">ChangeMaker</span> <span class="keyword">extends</span> <span class="title">Thread</span></span>&#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">int</span> local_value = MY_INT;</span><br><span class="line">            <span class="keyword">while</span> (MY_INT &lt;<span class="number">5</span>)&#123;</span><br><span class="line">                LOGGER.log(Level.INFO, <span class="string">"Incrementing MY_INT to &#123;0&#125;"</span>, local_value+<span class="number">1</span>);</span><br><span class="line">                MY_INT = ++local_value;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    Thread.sleep(<span class="number">500</span>);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123; e.printStackTrace(); &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>&emsp;&emsp;其输出如下，不难理解。每次<code>MY_INT</code>的改变会被<code>ChangeListener ()</code>监听并输出。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Incrementing MY_INT to <span class="number">1</span></span><br><span class="line">Got Change <span class="keyword">for</span> MY_INT : <span class="number">1</span></span><br><span class="line">Incrementing MY_INT to <span class="number">2</span></span><br><span class="line">Got Change <span class="keyword">for</span> MY_INT : <span class="number">2</span></span><br><span class="line">Incrementing MY_INT to <span class="number">3</span></span><br><span class="line">Got Change <span class="keyword">for</span> MY_INT : <span class="number">3</span></span><br><span class="line">Incrementing MY_INT to <span class="number">4</span></span><br><span class="line">Got Change <span class="keyword">for</span> MY_INT : <span class="number">4</span></span><br><span class="line">Incrementing MY_INT to <span class="number">5</span></span><br><span class="line">Got Change <span class="keyword">for</span> MY_INT : <span class="number">5</span></span><br></pre></td></tr></table></figure>
-
-<p>&emsp;&emsp;而如果我们去掉了<code>volatile</code>，则输出会变成了</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Incrementing MY_INT to <span class="number">1</span></span><br><span class="line">Incrementing MY_INT to <span class="number">2</span></span><br><span class="line">Incrementing MY_INT to <span class="number">3</span></span><br><span class="line">Incrementing MY_INT to <span class="number">4</span></span><br><span class="line">Incrementing MY_INT to <span class="number">5</span></span><br></pre></td></tr></table></figure>
-
-<p>&emsp;&emsp;造成该问题的核心点在于，<strong>volatile会告诉JVM，该变量可能会被别的线程修改，因此它会确保我们对于这个变量的读取和写入，都一定会同步到内存里，而不是从CPU的 Cache 里面读取。</strong>如果不加该关键字，则JVM可能会对程序进行一些优化，如从Cache中获取值（尤其是在看起来不会发生变化时），这就导致该线程会一直在死循环中忙忙碌碌。</p>
-<h2 id="四-C-C-的volatile"><a href="#四-C-C-的volatile" class="headerlink" title="四. C/C++的volatile"></a>四. C/C++的volatile</h2><p>&emsp;&emsp;同样的我们先来看一段代码</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// global shared data</span></span><br><span class="line"><span class="keyword">bool</span> flag = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">thread1() &#123;</span><br><span class="line">    flag = <span class="literal">false</span>;</span><br><span class="line">    Type* value = <span class="keyword">new</span> Type(<span class="comment">/* parameters */</span>);</span><br><span class="line">    thread2(value);</span><br><span class="line">    <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (flag == <span class="literal">true</span>) &#123;</span><br><span class="line">            apply(value);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    thread2.join();</span><br><span class="line">    <span class="keyword">if</span> (<span class="literal">nullptr</span> != value) &#123; <span class="keyword">delete</span> value; &#125;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">thread2(Type* value) &#123;</span><br><span class="line">    <span class="comment">// do some evaluations</span></span><br><span class="line">    value-&gt;update(<span class="comment">/* parameters */</span>);</span><br><span class="line">    flag = <span class="literal">true</span>;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;这段代码将 <code>thread1</code> 作为主线程，等待 <code>thread2</code> 准备好 <code>value</code>。因此，<code>thread2</code> 在更新 <code>value</code>之后将<code>flag</code> 置为真，而 <code>thread1</code> 死循环地检测 <code>flag</code>。但是，这段代码是有问题的。</p>
-<ul>
-<li>在 <code>thread1</code> 中，<code>flag = false</code> 赋值之后，在 <code>while</code> 死循环里，没有任何机会修改<code>flag</code> 的值，因此在运行之前，<strong>编译器优化可能会将<code>if (flag == true)</code> 的内容全部优化掉</strong></li>
-<li>在 <code>thread2</code> 中，尽管逻辑上 <code>update()</code> 需要发生在 <code>flag = true</code> 之前，但编译器和 CPU 并不知道；因此编译器优化和 CPU 乱序执行可能会使 <code>flag = true</code> 发生在 <code>update()</code> 完成之前，因此<code>thread1</code> 执行 <code>apply(value)</code> 时可能 <code>value</code> 还未准备好。</li>
-</ul>
-<p>&emsp;&emsp;加上<code>volatile</code>是否可行呢？如果只对<code>flag</code>加上关键词是不够的，虽然<code>if</code>判断不会被优化掉了，但是编译器仍有可能在优化时将<code>thread2</code>中的 <code>update</code> 和对 <code>flag</code> 的赋值交换顺序。</p>
-<p>&emsp;&emsp;如果给<code>value</code>也加上呢？理论上来说是可以的，因为x86 和 AMD64 架构的 CPU（大多数个人机器和服务器使用这两种架构的 CPU）只允许 store-load 乱序，而不会发生 store-store 乱序。但是对于其他架构则无法保证，因此依然存在乱序执行的可能。</p>
-<p>&emsp;&emsp;通过该例子，我们学到了两件事</p>
-<ul>
-<li>C/C++的volatile用于<strong>告诉编译器不要对该变量进行优化，从而避免了一些编译器优化导致的隐性问题。</strong></li>
-<li>C/C++直接面向汇编，因此在多线程中volatile不像JAVA的volatile有JVM兜底，可以保证多线程的准确性。因此<strong>不建议在多线程中采用</strong>。</li>
-</ul>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>&emsp;&emsp;对于JAVA来说，volatile告诉了编译器每次都从内存中读取数值以保证其准确性，可以适当的使用。对于C/C++来说，多线程有太多的更好的选择，volatile的使用场景应局限于嵌入式系统或设备驱动中，需要读/写内存映射硬件设备时，告诉编译器不要将该部分进行了错误优化。</p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] <a href="https://dzone.com/articles/java-volatile-keyword-0" target="_blank" rel="noopener">Java Volatile Keyword Explained by Example</a></p>
-<p>[2] <a href="https://www.kernel.org/doc/html/latest/process/volatile-considered-harmful.html" target="_blank" rel="noopener">Why the “volatile” type class should not be used</a></p>
-<p>[3] <a href="http://web.archive.org/web/20180120044239/http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2016.html" target="_blank" rel="noopener">Should volatile Acquire Atomicity and Thread Visibility Semantics?</a></p>
-<p>[4] <a href="https://stackoverflow.com/questions/19923352/whats-the-difference-of-the-usage-of-volatile-between-c-c-and-c-java#:~:text=For%20C#/Java,%20%22%20volatile,scope%20of%20the%20program%20itself.&text=In%20C/C++,%20%22,a%20memory-mapped%20hardware%20device." target="_blank" rel="noopener">What’s the difference of the usage of volatile between C/C++ and C#/Java?</a></p>
-<p>[5] <a href="https://liam.page/2018/01/18/volatile-in-C-and-Cpp/" target="_blank" rel="noopener">谈谈 C/C++ 中的 volatile</a></p>
-
-          
+          <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;volatile在JAVA和C/C++中均有使用，而含义不同。不论是前者还是后者，在网上都流传着诸多误解，为此我们抛开一切中文资料，从JAVA、C/C++的文档手册、开发者的博客、stack overflow的高赞问题回复等源头去着手了解，并结合实际代码测试来验证其说法的可靠性。</p>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/volatile/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -499,7 +472,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-11-29T03:10:13+08:00" content="2020-11-29">
+              <time itemprop="dateUpdated" datetime="2020-11-29T22:15:09+08:00" content="2020-11-29">
                 2020-11-29
               </time>
             </span>
@@ -558,7 +531,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  2k
+                  3.8k
                 </span>
               
 
@@ -574,7 +547,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  7
+                  13
                 </span>
               
             </div>
@@ -596,42 +569,14 @@
 
       
         
-          
-            <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;本文延续上文介绍CPU的基本思路，继续探索计算机的存储器，在深入了解存储器的基础上，我们可以写出性能更为优异的代码。</p>
-<h2 id="二-存储分级"><a href="#二-存储分级" class="headerlink" title="二. 存储分级"></a>二. 存储分级</h2><p>&emsp;&emsp;存储分级的根本原因还是性价比，即性能和价格的权衡。最快的当然是SRAM（Static Random-Access Memory，静态随机存取存储器），但是其密度较低、存储数据有限、价格偏高。而DRAM（Dynamic Random Access Memory，动态随机存取存储器）的芯片，比起 SRAM 来说，它的密度更高，有更大的容量，而且它也比 SRAM 芯片便宜不少。由此，我们使用SRAM+DRAM+磁盘，构成了存储分级系统。</p>
-<img src="https://static001.geekbang.org/resource/image/ab/0a/ab345017c3f662b15e15e97e0ca1db0a.png" alt="img" style="zoom: 50%;" />
-
-<p>&emsp;&emsp;CPU中分为L1, L2, L3三级缓存，其中L1又根据前文所述将指令和数据分开存取，形成了指令缓存和数据缓存。 L1 Cache 不仅昂贵，其访问速度和它到 CPU 的物理距离有关。芯片造得越大，总有部分离 CPU 的距离会变远。电信号的传输速度又受物理原理的限制，没法超过光速。所以想要快，并不是靠多花钱就能解决的。出于此，L2缓存才会设计的更大，但是速度慢于L1。</p>
-<p>&emsp;&emsp;实现存储分级设计的根本方案来自于存储数据的局部性原理，这里包括了时间局部性（temporal locality）和空间局部性（spatial locality）两种策略。时间局部性指的是如果一个数据被访问了，那么它在短时间内还会被再次访问。空间局部性则指的是如果一个数据被访问了，那么和它相邻的数据也很快会被访问。</p>
-<h2 id="三-高速缓存"><a href="#三-高速缓存" class="headerlink" title="三. 高速缓存"></a>三. 高速缓存</h2><p>&emsp;&emsp;内存访问速度年增长只有7%左右，而根据摩尔定律CPU的访问速度则18个月翻一番（现在不一定），由此导致了CPU和内存的性能差异逐渐增大，在今天，CPU 和内存的访问速度已经有了 120 倍的差距。为了弥补两者之间的性能差异，我们能真实地把 CPU 的性能提升用起来，而不是让它在那儿空转，我们在现代 CPU 中引入了高速缓存。</p>
-<p>&emsp;&emsp;运行程序时，内存中的指令、数据，会被加载到 L1-L3 Cache 中，而不是直接由 CPU 访问内存去拿。在 95% 的情况下，CPU 都只需要访问 L1-L3 Cache，从里面读取指令和数据，而无需访问内存。CPU中的高速缓存分为一个个的小块，称之为CPU 缓存块（Cache Line），常见大小为64字节。下面介绍换存款和内存的读/写方法。</p>
-<h3 id="3-1-读缓存"><a href="#3-1-读缓存" class="headerlink" title="3.1 读缓存"></a>3.1 读缓存</h3><p>&emsp;&emsp;CPU 访问内存数据，是一小块一小块数据来读取的。对于读取内存中的数据，我们首先拿到的是数据所在的内存块（Block）的地址。而直接映射 Cache 采用的策略，就是确保任何一个内存块的地址，始终映射到一个固定的 CPU Cache 地址（Cache Line）。而这个映射关系，通常用 mod 运算（求余运算）来实现。实际计算中，有一个小小的技巧，通常我们会把缓存块的数量设置成 2 的 N 次方。这样在计算取模的时候，可以直接取地址的低 N 位，也就是二进制里面的后几位。</p>
-<img src="https://static001.geekbang.org/resource/image/52/22/522eade51bbfad19fd25eb4f3ce80f22.png" alt="img" style="zoom: 67%;" />
-
-<p>&emsp;&emsp;除了取模对应的偏移量外，我们还需要存储组标记（Tag）和有效位（Valid bit）。</p>
-<ul>
-<li>组标记：组标记会记录，当前缓存块内存储的数据对应的内存块，而缓存块本身的地址表示访问地址的低 N 位，因此这里只要记录剩余的高位即可。</li>
-<li>有效位：用来标记对应的缓存块中的数据是否是有效的，确保不是机器刚刚启动时候的空数据。如果有效位是 0，无论其中的组标记和 Cache Line 里的数据内容是什么，CPU 都不会管这些数据，而要直接访问内存，重新加载数据。</li>
-</ul>
-<p><img src="https://static001.geekbang.org/resource/image/13/d4/1313fe1e4eb3b5c949284c8b215af8d4.png" alt="img"></p>
-<p>&emsp;&emsp;如果内存中的数据已经在 CPU Cache 里了，那一个内存地址的访问，就会经历这样 4 个步骤：</p>
-<ul>
-<li>根据内存地址的低位，计算在 Cache 中的索引；</li>
-<li>判断有效位，确认 Cache 中的数据是有效的；</li>
-<li>对比内存访问地址的高位，和 Cache 中的组标记，确认 Cache 中的数据就是我们要访问的内存数据，从 Cache Line 中读取到对应的数据块（Data Block）；</li>
-<li>根据内存地址的 Offset 位，从 Data Block 中，读取希望读取到的字。</li>
-</ul>
-<p>&emsp;&emsp;如果在 2、3 这两个步骤中，CPU 发现，Cache 中的数据并不是要访问的内存地址的数据，那 CPU 就会访问内存，并把对应的 Block Data 更新到 Cache Line 中，同时更新对应的有效位和组标记的数据。除了直接映射 Cache 之外，我们常见的缓存放置策略还有全相连 Cache（Fully Associative Cache）、组相连 Cache（Set Associative Cache）。这几种策略的数据结构都是相似的，只是进行了一些优化而已。</p>
-<h3 id="3-2-写缓存"><a href="#3-2-写缓存" class="headerlink" title="3.2 写缓存"></a>3.2 写缓存</h3><p>&emsp;&emsp;由于缓存速度远快于内存，因此写操作也会优先写缓存。但是这里存在一个问题：我们还需要修改内存保持数据的一致性。为此主要有两种写策略。</p>
-<h4 id="3-2-1-写直达（Write-Through）"><a href="#3-2-1-写直达（Write-Through）" class="headerlink" title="3.2.1 写直达（Write Through）"></a>3.2.1 写直达（Write Through）</h4><p>&emsp;&emsp;在这个策略里，每一次数据都要写入到主内存里面。在写直达的策略里面，写入前，我们会先去判断数据是否已经在 Cache 里面了。如果数据已经在 Cache 里面了，我们先把数据写入更新到 Cache 里面，再写入到主内存里面；如果数据不在 Cache 里，我们就只更新主内存。写直达的这个策略很直观，但是问题也很明显，那就是这个策略很慢。无论数据是不是在 Cache 里面，我们都需要把数据写到主内存里面。</p>
-<img src="https://static001.geekbang.org/resource/image/8b/d3/8b9ad674953bf36680e815247de235d3.jpeg" alt="img" style="zoom:33%;" />
-
-<h4 id="3-2-2-写回（Write-Back）"><a href="#3-2-2-写回（Write-Back）" class="headerlink" title="3.2.2 写回（Write Back）"></a>3.2.2 写回（Write Back）</h4><p>&emsp;&emsp;在 CPU Cache 的写入策略里，还有一种策略就叫作写回（Write-Back）。这个策略里，我们不再是每次都把数据写入到主内存，而是只写到 CPU Cache 里。只有当 CPU Cache 里面的数据要被“替换”的时候，我们才把数据写入到主内存里面去。如果发现我们要写入的数据，就在 CPU Cache 里面，那么我们就只是更新 CPU Cache 里面的数据。同时，我们会标记 CPU Cache 里的这个 Block 是脏（Dirty）的。所谓脏的，就是指这个时候，我们的 CPU Cache 里面的这个 Block 的数据，和主内存是不一致的。如果我们发现，我们要写入的数据所对应的 Cache Block 里，放的是别的内存地址的数据，那么我们就要看一看，那个 Cache Block 里面的数据有没有被标记成脏的。如果是脏的话，我们要先把这个 Cache Block 里面的数据，写入到主内存里面。然后，再把当前要写入的数据，写入到 Cache 里，同时把 Cache Block 标记成脏的。如果 Block 里面的数据没有被标记成脏的，那么我们直接把数据写入到 Cache 里面，然后再把 Cache Block 标记成脏的就好了。如果加载内存里面的数据到 Cache 的时候，发现 Cache Block 里面有脏标记，我们也要先把 Cache Block 里的数据写回到主内存，才能加载数据覆盖掉 Cache。</p>
-<img src="https://static001.geekbang.org/resource/image/67/0d/67053624d6aa2a5c27c295e1fda4890d.jpeg" alt="img" style="zoom:33%;" />
-
-<h3 id="3-3-MESI协议"><a href="#3-3-MESI协议" class="headerlink" title="3.3 MESI协议"></a>3.3 MESI协议</h3><p>&emsp;&emsp;</p>
-<h2 id="四-内存"><a href="#四-内存" class="headerlink" title="四. 内存"></a>四. 内存</h2><h2 id="五-磁盘"><a href="#五-磁盘" class="headerlink" title="五. 磁盘"></a>五. 磁盘</h2><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2>
-          
+          <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;本文延续上文介绍CPU的基本思路，继续探索计算机的存储器，在深入了解存储器的基础上，我们可以写出性能更为优异的代码。</p>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/linux-kernel-memory/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -2374,7 +2319,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">167.4k</span>
+    <span title="Site words total count">169.2k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>

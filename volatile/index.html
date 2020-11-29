@@ -77,14 +77,14 @@
 
 
 
-<meta name="description" content="一. 前言&amp;emsp;&amp;emsp;volatile在JAVA和C&#x2F;C++中均有使用，而含义不同。不论是前者还是后者，在网上都流传着诸多误解，为此我们抛开一切中文资料，从JAVA、C&#x2F;C++的文档手册、开发者的博客、stack overflow的高赞问题回复等源头去着手了解，并结合实际代码测试来验证其说法的可靠性。 二. Cache和内存&amp;emsp;&amp;emsp;众所周知，CPU有着高速缓存，而程序执">
+<meta name="description" content="一. 前言&amp;emsp;&amp;emsp;volatile在JAVA和C&#x2F;C++中均有使用，而含义不同。不论是前者还是后者，在网上都流传着诸多误解，为此我们抛开一切中文资料，从JAVA、C&#x2F;C++的文档手册、开发者的博客、stack overflow的高赞问题回复等源头去着手了解，并结合实际代码测试来验证其说法的可靠性。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="volatile硬核剖析">
 <meta property="og:url" content="https://ty-chen.github.io/volatile/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
-<meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;volatile在JAVA和C&#x2F;C++中均有使用，而含义不同。不论是前者还是后者，在网上都流传着诸多误解，为此我们抛开一切中文资料，从JAVA、C&#x2F;C++的文档手册、开发者的博客、stack overflow的高赞问题回复等源头去着手了解，并结合实际代码测试来验证其说法的可靠性。 二. Cache和内存&amp;emsp;&amp;emsp;众所周知，CPU有着高速缓存，而程序执">
+<meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;volatile在JAVA和C&#x2F;C++中均有使用，而含义不同。不论是前者还是后者，在网上都流传着诸多误解，为此我们抛开一切中文资料，从JAVA、C&#x2F;C++的文档手册、开发者的博客、stack overflow的高赞问题回复等源头去着手了解，并结合实际代码测试来验证其说法的可靠性。">
 <meta property="article:published_time" content="2020-11-23T15:57:19.000Z">
-<meta property="article:modified_time" content="2020-11-23T15:58:53.637Z">
+<meta property="article:modified_time" content="2020-11-29T12:06:23.948Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="for excellence">
 <meta name="twitter:card" content="summary">
@@ -301,8 +301,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-11-23T23:58:53+08:00" content="2020-11-23">
-                2020-11-23
+              <time itemprop="dateUpdated" datetime="2020-11-29T20:06:23+08:00" content="2020-11-29">
+                2020-11-29
               </time>
             </span>
           
@@ -381,6 +381,8 @@
 
       
         <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;volatile在JAVA和C/C++中均有使用，而含义不同。不论是前者还是后者，在网上都流传着诸多误解，为此我们抛开一切中文资料，从JAVA、C/C++的文档手册、开发者的博客、stack overflow的高赞问题回复等源头去着手了解，并结合实际代码测试来验证其说法的可靠性。</p>
+<a id="more"></a>
+
 <h2 id="二-Cache和内存"><a href="#二-Cache和内存" class="headerlink" title="二. Cache和内存"></a>二. Cache和内存</h2><p>&emsp;&emsp;众所周知，CPU有着高速缓存，而程序执行的时候，首先触发缺页中断加载如物理内存，然后由物理内存映射至CPU缓存，最后予以执行。而对于值保持不变的，我们会直接从缓存中读取，而不需要再去内存中重新读取，从而加快访问速度。而volatile，则是告诉编译器，<strong>该变量最好还是去内存读取，因为可能会被外部改变。</strong> 但是同样的语义，因为JVM和汇编的区别导致了其实现效果存在差异。</p>
 <h2 id="三-JAVA的volatile"><a href="#三-JAVA的volatile" class="headerlink" title="三. JAVA的volatile"></a>三. JAVA的volatile</h2><p>&emsp;&emsp;首先来看一个来自于DZone社区的例子</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">VolatileTest</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Logger LOGGER = MyLoggerFactory.getSimplestLogger();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">volatile</span> <span class="keyword">int</span> MY_INT = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">new</span> ChangeListener().start();</span><br><span class="line">        <span class="keyword">new</span> ChangeMaker().start();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">ChangeListener</span> <span class="keyword">extends</span> <span class="title">Thread</span> </span>&#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">int</span> local_value = MY_INT;</span><br><span class="line">            <span class="keyword">while</span> ( local_value &lt; <span class="number">5</span>)&#123;</span><br><span class="line">                <span class="keyword">if</span>( local_value!= MY_INT)&#123;</span><br><span class="line">                    LOGGER.log(Level.INFO,<span class="string">"Got Change for MY_INT : &#123;0&#125;"</span>, MY_INT);</span><br><span class="line">                     local_value= MY_INT;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">ChangeMaker</span> <span class="keyword">extends</span> <span class="title">Thread</span></span>&#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">int</span> local_value = MY_INT;</span><br><span class="line">            <span class="keyword">while</span> (MY_INT &lt;<span class="number">5</span>)&#123;</span><br><span class="line">                LOGGER.log(Level.INFO, <span class="string">"Incrementing MY_INT to &#123;0&#125;"</span>, local_value+<span class="number">1</span>);</span><br><span class="line">                MY_INT = ++local_value;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    Thread.sleep(<span class="number">500</span>);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123; e.printStackTrace(); &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -732,7 +734,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">167.4k</span>
+    <span title="Site words total count">169.2k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
