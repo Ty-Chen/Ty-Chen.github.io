@@ -93,7 +93,7 @@
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/fa/d1/fa98835c78c879ab69fd1f29193e54d1.jpeg">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/43/d9/432050446f68569a37c7699cccda75d9.jpeg">
 <meta property="article:published_time" content="2020-11-15T14:23:49.000Z">
-<meta property="article:modified_time" content="2020-11-29T14:15:09.126Z">
+<meta property="article:modified_time" content="2020-11-30T15:24:07.156Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -315,8 +315,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-11-29T22:15:09+08:00" content="2020-11-29">
-                2020-11-29
+              <time itemprop="dateUpdated" datetime="2020-11-30T23:24:07+08:00" content="2020-11-30">
+                2020-11-30
               </time>
             </span>
           
@@ -477,7 +477,8 @@
 <h3 id="4-2-内存保护"><a href="#4-2-内存保护" class="headerlink" title="4.2 内存保护"></a>4.2 内存保护</h3><p>&emsp;&emsp;内存保护是为了避免恶意程序对CPU进行一些破坏性的写入，执行我们不希望执行的命令。对此常见的做法有可执行空间保护和地址空间布局随机化。</p>
 <p>&emsp;&emsp;可执行空间保护指的是对于一个进程使用的内存，只把其中的指令部分设置成“可执行”的，对于其他部分，比如数据部分，不给予“可执行”的权限。因为无论是指令，还是数据，在我们的 CPU 看来，都是二进制的数据。我们直接把数据部分拿给 CPU，如果这些数据解码后，也能变成一条合理的指令，其实就是可执行的。这种破坏方式常见于SQL指令注入以及PHP命令注入。</p>
 <p>&emsp;&emsp;原先我们一个进程的内存布局空间是固定的，所以任何第三方很容易就能知道指令在哪里，程序栈在哪里，数据在哪里，堆又在哪里。这个其实为想要搞破坏的人创造了很大的便利。而地址空间布局随机化这个机制，就是让这些区域的位置不再固定，在内存空间随机去分配这些进程里不同部分所在的内存空间地址，让破坏者猜不出来。猜不出来呢，自然就没法找到想要修改的内容的位置。如果只是随便做点修改，程序只会 crash 掉，而不会去执行计划之外的代码。</p>
-<h2 id="五-磁盘"><a href="#五-磁盘" class="headerlink" title="五. 磁盘"></a>五. 磁盘</h2><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2>
+<h2 id="五-磁盘"><a href="#五-磁盘" class="headerlink" title="五. 磁盘"></a>五. 磁盘</h2><h3 id="5-1-机械硬盘"><a href="#5-1-机械硬盘" class="headerlink" title="5.1 机械硬盘"></a>5.1 机械硬盘</h3><p>&emsp;&emsp;</p>
+<h3 id="5-2-固态硬盘"><a href="#5-2-固态硬盘" class="headerlink" title="5.2 固态硬盘"></a>5.2 固态硬盘</h3><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2>
       
     </div>
     
@@ -781,7 +782,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-存储分级"><span class="nav-text">二. 存储分级</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-高速缓存"><span class="nav-text">三. 高速缓存</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-读缓存"><span class="nav-text">3.1 读缓存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-写缓存"><span class="nav-text">3.2 写缓存</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-1-写直达（Write-Through）"><span class="nav-text">3.2.1 写直达（Write Through）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-2-写回（Write-Back）"><span class="nav-text">3.2.2 写回（Write Back）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-MESI协议"><span class="nav-text">3.3 MESI协议</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-内存"><span class="nav-text">四. 内存</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-TLB和DMA"><span class="nav-text">4.1 TLB和DMA</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-内存保护"><span class="nav-text">4.2 内存保护</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-磁盘"><span class="nav-text">五. 磁盘</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-存储分级"><span class="nav-text">二. 存储分级</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-高速缓存"><span class="nav-text">三. 高速缓存</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-读缓存"><span class="nav-text">3.1 读缓存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-写缓存"><span class="nav-text">3.2 写缓存</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-1-写直达（Write-Through）"><span class="nav-text">3.2.1 写直达（Write Through）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-2-写回（Write-Back）"><span class="nav-text">3.2.2 写回（Write Back）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-MESI协议"><span class="nav-text">3.3 MESI协议</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-内存"><span class="nav-text">四. 内存</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-TLB和DMA"><span class="nav-text">4.1 TLB和DMA</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-内存保护"><span class="nav-text">4.2 内存保护</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-磁盘"><span class="nav-text">五. 磁盘</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-机械硬盘"><span class="nav-text">5.1 机械硬盘</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-固态硬盘"><span class="nav-text">5.2 固态硬盘</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
