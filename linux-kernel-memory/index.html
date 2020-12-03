@@ -79,12 +79,12 @@
 
 
 
-<meta name="description" content="一. 前言&amp;emsp;&amp;emsp;本文延续上文介绍CPU的基本思路，继续探索计算机的存储器，在深入了解存储器的基础上，我们可以写出性能更为优异的代码。">
+<meta name="description" content="一. 前言&amp;emsp;&amp;emsp;本文延续上文介绍CPU的基本思路，继续探索计算机的存储器，包括寄存器、CPU缓存、内存和硬盘，在深入了解存储器的基础上，我们可以写出性能更为优异的代码。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux操作系统学习笔记（二十九）深入理解存储器">
 <meta property="og:url" content="https://ty-chen.github.io/linux-kernel-memory/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
-<meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;本文延续上文介绍CPU的基本思路，继续探索计算机的存储器，在深入了解存储器的基础上，我们可以写出性能更为优异的代码。">
+<meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;本文延续上文介绍CPU的基本思路，继续探索计算机的存储器，包括寄存器、CPU缓存、内存和硬盘，在深入了解存储器的基础上，我们可以写出性能更为优异的代码。">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/ab/0a/ab345017c3f662b15e15e97e0ca1db0a.png">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/52/22/522eade51bbfad19fd25eb4f3ce80f22.png">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/13/d4/1313fe1e4eb3b5c949284c8b215af8d4.png">
@@ -95,7 +95,7 @@
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/0e/d3/0eee44535a925825b657bcac6afb72d3.jpeg">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/a5/7c/a53e407311293609cb0753c7889a367c.jpeg">
 <meta property="article:published_time" content="2020-11-15T14:23:49.000Z">
-<meta property="article:modified_time" content="2020-12-01T15:03:56.323Z">
+<meta property="article:modified_time" content="2020-12-03T15:34:38.555Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -317,8 +317,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-12-01T23:03:56+08:00" content="2020-12-01">
-                2020-12-01
+              <time itemprop="dateUpdated" datetime="2020-12-03T23:34:38+08:00" content="2020-12-03">
+                2020-12-03
               </time>
             </span>
           
@@ -381,7 +381,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  4.8k
+                  4.9k
                 </span>
               
 
@@ -418,7 +418,7 @@
       
 
       
-        <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;本文延续上文介绍CPU的基本思路，继续探索计算机的存储器，在深入了解存储器的基础上，我们可以写出性能更为优异的代码。</p>
+        <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;本文延续上文介绍CPU的基本思路，继续探索计算机的存储器，包括寄存器、CPU缓存、内存和硬盘，在深入了解存储器的基础上，我们可以写出性能更为优异的代码。</p>
 <a id="more"></a>
 
 <h2 id="二-存储分级"><a href="#二-存储分级" class="headerlink" title="二. 存储分级"></a>二. 存储分级</h2><p>&emsp;&emsp;存储分级的根本原因还是性价比，即性能和价格的权衡。最快的当然是SRAM（Static Random-Access Memory，静态随机存取存储器），但是其密度较低、存储数据有限、价格偏高。而DRAM（Dynamic Random Access Memory，动态随机存取存储器）的芯片，比起 SRAM 来说，它的密度更高，有更大的容量，而且它也比 SRAM 芯片便宜不少。由此，我们使用SRAM+DRAM+磁盘，构成了存储分级系统。</p>
