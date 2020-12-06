@@ -79,14 +79,16 @@
 
 
 
-<meta name="description" content="一. 简介&amp;emsp;&amp;emsp;之前聊天发现很多小伙伴对docker和k8s了解甚少，所以一时起决定分享一下在docker和k8s背后这些年容器发展的故事，以供消遣。">
+<meta name="description" content="一. 简介&amp;emsp;&amp;emsp;之前聊天发现很多小伙伴对docker和k8s了解甚少，所以决定分享一下在docker和k8s背后这些年容器发展的故事，谈不上以史为鉴，但是至少可以从中汲取经验教训，同时也能了解容器及容器编排发展的来龙去脉。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux操作系统学习笔记（三十）docker和k8s的恩怨情仇">
 <meta property="og:url" content="https://ty-chen.github.io/linux-kernel-docker-k8s/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
-<meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;之前聊天发现很多小伙伴对docker和k8s了解甚少，所以一时起决定分享一下在docker和k8s背后这些年容器发展的故事，以供消遣。">
+<meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;之前聊天发现很多小伙伴对docker和k8s了解甚少，所以决定分享一下在docker和k8s背后这些年容器发展的故事，谈不上以史为鉴，但是至少可以从中汲取经验教训，同时也能了解容器及容器编排发展的来龙去脉。">
+<meta property="og:image" content="https://3.bp.blogspot.com/-jlLZWhopFxk/WJQat_JwTnI/AAAAAAAAEqI/fni1vyVpbL4NNFMkaky1qTNMQyPIVZJTACLcB/s1600/SaaS%2B02.png">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/c7/bd/c7ed0043465bccff2efc1a1257e970bd.png">
 <meta property="article:published_time" content="2020-12-05T10:02:24.000Z">
-<meta property="article:modified_time" content="2020-12-05T16:37:33.174Z">
+<meta property="article:modified_time" content="2020-12-06T16:22:48.300Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -95,6 +97,7 @@
 <meta property="article:tag" content="容器">
 <meta property="article:tag" content="容器编排">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://3.bp.blogspot.com/-jlLZWhopFxk/WJQat_JwTnI/AAAAAAAAEqI/fni1vyVpbL4NNFMkaky1qTNMQyPIVZJTACLcB/s1600/SaaS%2B02.png">
 
 
 
@@ -308,8 +311,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-12-06T00:37:33+08:00" content="2020-12-06">
-                2020-12-06
+              <time itemprop="dateUpdated" datetime="2020-12-07T00:22:48+08:00" content="2020-12-07">
+                2020-12-07
               </time>
             </span>
           
@@ -372,7 +375,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  64
+                  3.6k
                 </span>
               
 
@@ -388,7 +391,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  1
+                  12
                 </span>
               
             </div>
@@ -409,11 +412,59 @@
       
 
       
-        <h2 id="一-简介"><a href="#一-简介" class="headerlink" title="一. 简介"></a>一. 简介</h2><p>&emsp;&emsp;之前聊天发现很多小伙伴对docker和k8s了解甚少，所以一时起决定分享一下在docker和k8s背后这些年容器发展的故事，以供消遣。</p>
+        <h2 id="一-简介"><a href="#一-简介" class="headerlink" title="一. 简介"></a>一. 简介</h2><p>&emsp;&emsp;之前聊天发现很多小伙伴对docker和k8s了解甚少，所以决定分享一下在docker和k8s背后这些年容器发展的故事，谈不上以史为鉴，但是至少可以从中汲取经验教训，同时也能了解容器及容器编排发展的来龙去脉。</p>
 <a id="more"></a>
 
-<h2 id="二-容器"><a href="#二-容器" class="headerlink" title="二. 容器"></a>二. 容器</h2><p>&emsp;&emsp;</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2>
+<h2 id="二-PaaS和容器"><a href="#二-PaaS和容器" class="headerlink" title="二.PaaS和容器"></a>二.PaaS和容器</h2><p>&emsp;&emsp;让我们把话题稍稍往前拖一点。在2013年前后，云计算技术已经较为普及，如AWS和盛极一时的OpenStack。而在此时，PasS的观念逐渐深入人心。如下图所示，橙色代表用户自己需要承担的工作，而绿色代表第三方提供的服务，从左到右分别为：</p>
+<ul>
+<li>自建软件：自己完成所有的工作，没有第三方的参与。</li>
+<li>IaaS：基础设施服务，需要自己完成APP、数据库、中间层等的开发，第三方提供底层设备。</li>
+<li>PaaS：平台即服务，只需要关注自己的业务逻辑，不需要关注底层，第三方提供包括运行时库、中间层、操作系统、硬件设备在内的全部服务。</li>
+<li>SaaS：软件即服务，软件的开发、管理、部署都交给第三方，不需要关心技术问题，可以拿来即用。</li>
+</ul>
+<img src="https://3.bp.blogspot.com/-jlLZWhopFxk/WJQat_JwTnI/AAAAAAAAEqI/fni1vyVpbL4NNFMkaky1qTNMQyPIVZJTACLcB/s1600/SaaS%2B02.png" alt="Dinesh's Blog :::: Being Compiled ::::: Is Azure SQL Database a PaaS, DaaS  or SaaS?" style="zoom: 50%;" />
+
+<p>&emsp;&emsp;从一个公司自身的发展来说，为何PaaS会赢得人心呢？一个软件公司的软件工程能力可以体现在以下方面：</p>
+<ul>
+<li>提高服务的SLA，即通过<strong>高可用的系统</strong>和<strong>自动化运维</strong>提供极高的系统可用性。</li>
+<li>重用/复用资源，即软件抽象的能力和软件标准化的能力。如BAT等公司的大量中间件和底层库，高度的重用可以极大提升业务开发的效率。</li>
+<li>过程的自动化，即生产流水线和运维流水线。如育碧的“3A流水线”，通过完善的自动化生产过程可以极大提升开发效率。</li>
+</ul>
+<p>&emsp;&emsp;这些需求，恰好和PaaS的特质吻合：</p>
+<ul>
+<li>服务化是 PaaS 的本质。软件模块重用，服务治理，对外提供能力是 PaaS 的本质。</li>
+<li>分布式是 PaaS 的根本特性。多租户隔离、高可用、服务编排是 PaaS 的基本特性。</li>
+<li>自动化是 PaaS 的灵魂。自动化部署安装运维，自动化伸缩调度是 PaaS 的关键。</li>
+</ul>
+<p>&emsp;&emsp;而PaaS的应用托管能力，即应用的打包和分发机制，就离不开将多个不同的用户的应用进行隔离，为其创建一个“沙盒”，然后在“沙盒”中启动这些应用进程。这样，就实现了把多个用户的应用互不干涉地在虚拟机里批量地、自动地运行起来的目的。这种沙盒，就是所谓的容器。</p>
+<h2 id="三-第一次降维打击"><a href="#三-第一次降维打击" class="headerlink" title="三. 第一次降维打击"></a>三. 第一次降维打击</h2><p>&emsp;&emsp;在Docker横空出世以前，Cloud Foundry是PaaS领域当之无愧的老大哥。正当其度过了艰难的开拓期，一步一步的走向了成功之巅的时候，意外发生了。2013年，一家微不足道的小公司dotCloud，宣布开源自己的容器项目Docker。而该决定宣布之初，并未引起轩然大波。Cloud Foundry的首席产品经理James Bayer在社区分享了Docker和自家产品的详细对比，认为Docker也是利用cgroup和namespace技术实现的沙盒，并无特别之处。</p>
+<p>&emsp;&emsp;然而，打脸总是来得特别快。Docker的一个并未被James Bayer关注的小小创新点却完成了决定性的降维打击：Docker镜像。在当时，Cloud Foundry被人饱受诟病的是其容器对于跨平台打包的支持并不是很好：其支持可执行文件+管理脚本的打包方式可想而知的存在环境依赖的问题，本地应用和远端PaaS的适配远远没有一个简单的<code>push</code>和<code>pull</code>这么轻松。如果没有Docker，想必Cloud Foundry也会在不断地进步、迭代中解决该问题，但是Docker先人一步的Docker镜像则直接抢占了市场，没有给Cloud Foundry任何回旋的余地。Docker镜像的优秀之处在于，它不是简简单单的打包可执行文件和管理脚本，而是将整个完整的操作系统文件和目录一起打包。这样即可完成容器在任意设备上，均有着一模一样的表现，无需任何多余配置。</p>
+<p>&emsp;&emsp;除了镜像超前的优越性，开源更是对广大开发者极为友好。简洁的UI、易于上手的指引文档、高效的打包使得各个公司、开发者们纷纷推出基于Docker的各种项目，极大的丰富了以Docker为核心的生态圈，容器和PaaS的发展也进入了崭新的时代。</p>
+<h2 id="四-话语权和市场"><a href="#四-话语权和市场" class="headerlink" title="四. 话语权和市场"></a>四. 话语权和市场</h2><h2 id="五-第二次降维打击"><a href="#五-第二次降维打击" class="headerlink" title="五. 第二次降维打击"></a>五. 第二次降维打击</h2><h2 id="六-妥协和尾声"><a href="#六-妥协和尾声" class="headerlink" title="六. 妥协和尾声"></a>六. 妥协和尾声</h2><h2 id="四-容器编排"><a href="#四-容器编排" class="headerlink" title="四. 容器编排"></a>四. 容器编排</h2><p>&emsp;&emsp;2013年底，dotCloud公司改名Docker公司。2014年，Docker公司宣布推出Swarm项目。Docker公司的这一步举措可谓野心勃勃：正如上文所述，容器技术是PaaS的基石，但是真正其决定意义的，还是在于如何去管理、运维大规模集群的容器，这也是PaaS真正的核心技术，即容器编排。“编排”（Orchestration）在云计算行业里不算是新词汇，它主要是指用户如何通过某些工具或者配置来完成一组虚拟机以及关联资源的定义、配置、创建、删除等工作，然后由云计算平台按照这些指定的逻辑来完成的过程。容器编排，顾名思义就是对多个容器进行一系列的创建、配置和管理。</p>
+<p>&emsp;&emsp;Docker公司的Swarm项目最大的优势在于和Docker天生的亲和性，但这并不意味着Swarm可以独占整个市场。Mesosphere公司就依赖于其超大规模集群的管理经验，从另一个角度另辟蹊径，其产品Marathon成为了Swarm的有力竞争者。Mesosphere 公司不失时机地提出了一个名叫“DC/OS”（数据中心操作系统）的口号和产品，旨在使用户能够像管理一台机器那样管理一个万级别的物理机集群，并且使用 Docker 容器在这个集群里自由地部署应用。而这，对很多大型企业来说具有着非同寻常的吸引力。</p>
+<p>&emsp;&emsp;于此同时，一些别的老牌公司的日子却没这么好过了。CoreOS公司的rkt容器和Fleet集群鲜有问津，RedHat公司仅有的OpenShift和Cloud Foundry一样缺乏竞争力。Docker公司一时间占据了容器化浪潮的话语权，可谓风生水起。Swarm项目也在容器编排领域占据强有力的竞争力，未来可期。但是，就在这时，谷歌公司突然发力，正式宣告了Kubernetes项目的诞生。该项目和当年的Docker一样，横空出世，再次改变了整个市场的格局。</p>
+<h2 id="五-第二次降维打击-1"><a href="#五-第二次降维打击-1" class="headerlink" title="五. 第二次降维打击"></a>五. 第二次降维打击</h2><p>&emsp;&emsp;让我们把目光从Docker的时间线转移到另一个大佬，Google的身上来。谷歌这家公司一直有个为人诟病的特点：自己拥有的超前技术一般会在内部使用5-10年之久才会对外公开，并且会对其中的一些关键点有所保留，从而实现了自己的技术壁垒。在大数据领域，谷歌提出了三家马车：Big Table，Map Reduce，和Google File System。这三家马车直接引领了大数据领域的发展，如Hadoop生态圈的诞生和完善。但是归根结底，Hadoop始终没有达到谷歌的性能水准，大家都在疑惑，到底是为什么呢？没错，就是因为容器及容器编排技术。</p>
+<p>&emsp;&emsp;谷歌内部在很早就意识到了PaaS中容器化的重要性，下图为2015年谷歌公开的架构图，可见其中Borg和Omega基石般的核心地位。也正是由于其重要性，才使得谷歌一直不愿意公开，以至于使得Docker公司的Docker和Swarm抢先占据了市场。在这种情况下，谷歌终于忍不住了，脱胎于Borg的Kubernetes于2014年问世。</p>
+<img src="https://static001.geekbang.org/resource/image/c7/bd/c7ed0043465bccff2efc1a1257e970bd.png" alt="img" style="zoom: 50%;" />
+
+<p>&emsp;&emsp;有着数十年容器编排的经验、有着众多大数据项目的检测，谷歌的容器编排技术相较于其他可谓超前太多了。这一次的降维打击过于致命，众多开发者纷纷感慨其设计之伟大，而其他竞争对手在对比之下黯然失色。</p>
+<h2 id="六-逐鹿"><a href="#六-逐鹿" class="headerlink" title="六. 逐鹿"></a>六. 逐鹿</h2><p>&emsp;&emsp;实际上哪怕是Docker公司一家独大之时，谷歌也曾想过通过合作而不是暴露自家核心技术的方式引领市场：Google 公司向 Docker 公司表示了合作的愿望，希望和 Docker 公司共同推进一个中立的容器运行时（container runtime）库作为 Docker 项目的核心依赖。然而Docker公司十分享受自己独占话语权的江湖地位，毫不犹豫的拒绝了合作，同时匆忙推出自己的容器运行时库Libcontainer。该运行时库其实并不算十分成熟，而是因为商业竞争被迫推出，存在着代码可读性差、维护性差等问题。</p>
+<p>&emsp;&emsp;2015年，Docker公司牵头，和CoreOS、Google、RedHat 等公司共同宣布，Docker 公司将 Libcontainer 捐出，并改名为 RunC 项目，交由一个完全中立的基金会管理，然后以 RunC 为依据，大家共同制定一套容器和镜像的标准和规范。这套标准和规范，就是 OCI（ Open Container Initiative ）。OCI 的提出，意在将容器运行时和镜像的实现从 Docker 项目中完全剥离出来。这样做，一方面可以改善 Docker 公司在容器技术上一家独大的现状，另一方面也为其他玩家不依赖于 Docker 项目构建各自的平台层能力提供了可能。OCI的提出是众多公司角力的产物，而由于其对Docker公司的削弱，使得Docker公司不可能去积极维护OCI组织，这也就从一开始奠定了该组织不会对市场格局产生本质上的变化。</p>
+<p>&emsp;&emsp;2015年同年，Google、RedHat 等开源基础设施领域玩家们共同牵头发起了一个名为 CNCF（Cloud Native Computing Foundation）的基金会。这个基金会的目的其实很容易理解：它希望以 Kubernetes 项目为基础，建立一个由开源基础设施领域厂商主导的、按照独立基金会方式运营的平台级社区，来对抗以 Docker 公司为核心的容器商业生态。正如上文所述，Kubernetes带来的第二次降维打击无情的摧毁了Swarm的梦想，CNCF的影响力也随之急剧扩大，Docker公司一时间溃不成军。</p>
+<p>&emsp;&emsp;往往危机时刻，正是需要冷静思考解决方案，找到破局之法。而Docker公司的反应则相当令人失望：Docker公司宣布放弃现有的 Swarm 项目，将容器编排和集群管理功能全部内置到 Docker 项目当中。其实冷静思考就知道，这种做法是不利的：内置容器编排、集群管理和负载均衡能力，固然可以使得 Docker 项目的边界直接扩大到一个完整的 PaaS 项目的范畴，但这种变更带来的技术复杂度和维护难度，长远来看对 Docker 项目是不利的。</p>
+<p>&emsp;&emsp;另一方面，Kubernetes则表现的如当年的Docker一样：拥抱开源、拥抱开发者，从 API 到容器运行时的每一层，Kubernetes 项目都为开发者暴露出了可以扩展的插件机制，鼓励用户通过代码的方式介入 Kubernetes 项目的每一个阶段。在这种鼓励二次创新的整体氛围当中，Kubernetes 社区在 2016 年之后得到了空前的发展。更重要的是，不同于之前局限于“打包、发布”这样的 PaaS 化路线，这一次容器社区的繁荣，是一次完全以 Kubernetes 项目为核心的“百家争鸣”。</p>
+<h2 id="七-尾声"><a href="#七-尾声" class="headerlink" title="七. 尾声"></a>七. 尾声</h2><p>&emsp;&emsp;2017年，Docker公司宣布捐赠Containerd项目组给CNCF社区，紧接着又宣布，将在自己的主打产品 Docker 企业版中内置 Kubernetes 项目，这标志着持续了近两年之久的“编排之争”至此落下帷幕。2018 年 3 月 ，Docker 公司的 CTO Solomon Hykes 宣布辞职，曾经纷纷扰扰的容器技术圈子，到此尘埃落定。</p>
+<p>&emsp;&emsp;如果故事到这里结束，Kubernetes和Docker共同构建了容器及容器编排的生态圈，也算是一个共赢的稳定局面。但是正如经济学和博弈论所言，人性都是自私的，没有哪家公司不想独占市场。2020年12月初，谷歌在沉寂数年后，突然宣布Kubernetes不再支持Docker，而是改用containerd和CRI-O。其中containerd来自于docker公司的捐赠（多么讽刺），而CRI-O来自于Red Hat的OpenShift。一切仿佛又回到了当初谷歌公司希望和Docker公司合作开发运行时库的时候，但是角色互换，这次是谷歌冷酷的抛开了Docker，独占市场。不得不让人感慨三十年河东，三十年河西，时代变了。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>&emsp;&emsp;在数年动荡间，即有超前技术带来的降维打击，也有无情的商业运作、合纵连横。不难看出，保持创新、拥抱开源、精准为用户服务才是王道，谁做的更好，谁就能成功占据鳌头。容器化的故事仍未完结，精彩还在继续，容我们拭目以待。</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] <a href="https://medium.com/devsecopscommunity/what-are-saas-paas-and-iaas-what-are-the-differences-between-9b7051018e45" target="_blank" rel="noopener">What are SaaS, PaaS, and IaaS? What are the differences between them?</a></p>
+<p>[2] <a href="https://thenewstack.io/kubernetes-vs-docker-swarm-whats-the-difference/" target="_blank" rel="noopener">Kubernetes vs. Docker Swarm: What’s the Difference?</a></p>
+<p>[3] <a href="https://www.infoworld.com/article/2607966/4-reasons-why-docker-s-libcontainer-is-a-big-deal.html" target="_blank" rel="noopener">4 reasons why Docker’s libcontainer is a big deal</a></p>
+<p>[4] <a href="http://malteschwarzkopf.de/research/assets/google-stack.pdf" target="_blank" rel="noopener">Operating system support for warehouse-scale computing</a></p>
+<p>[5] <a href="https://kubernetes.io/blog/2020/12/02/dont-panic-kubernetes-and-docker/" target="_blank" rel="noopener">Don’t Panic: Kubernetes and Docker</a></p>
+<p>[6] CoolShell</p>
+<p>[7] 极客时间《左耳听风》</p>
+<p>[8] 极客时间《深入剖析Kubernetes》</p>
+
       
     </div>
     
@@ -715,7 +766,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-容器"><span class="nav-text">二. 容器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-PaaS和容器"><span class="nav-text">二.PaaS和容器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-第一次降维打击"><span class="nav-text">三. 第一次降维打击</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-话语权和市场"><span class="nav-text">四. 话语权和市场</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-第二次降维打击"><span class="nav-text">五. 第二次降维打击</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#六-妥协和尾声"><span class="nav-text">六. 妥协和尾声</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-容器编排"><span class="nav-text">四. 容器编排</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-第二次降维打击-1"><span class="nav-text">五. 第二次降维打击</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#六-逐鹿"><span class="nav-text">六. 逐鹿</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#七-尾声"><span class="nav-text">七. 尾声</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
@@ -749,7 +800,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">170.3k</span>
+    <span title="Site words total count">173.9k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
