@@ -88,7 +88,7 @@
 <meta property="og:image" content="https://3.bp.blogspot.com/-jlLZWhopFxk/WJQat_JwTnI/AAAAAAAAEqI/fni1vyVpbL4NNFMkaky1qTNMQyPIVZJTACLcB/s1600/SaaS%2B02.png">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/c7/bd/c7ed0043465bccff2efc1a1257e970bd.png">
 <meta property="article:published_time" content="2020-12-05T10:02:24.000Z">
-<meta property="article:modified_time" content="2020-12-06T16:22:48.300Z">
+<meta property="article:modified_time" content="2020-12-06T16:30:40.051Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -311,7 +311,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-12-07T00:22:48+08:00" content="2020-12-07">
+              <time itemprop="dateUpdated" datetime="2020-12-07T00:30:40+08:00" content="2020-12-07">
                 2020-12-07
               </time>
             </span>
@@ -440,10 +440,10 @@
 <h2 id="三-第一次降维打击"><a href="#三-第一次降维打击" class="headerlink" title="三. 第一次降维打击"></a>三. 第一次降维打击</h2><p>&emsp;&emsp;在Docker横空出世以前，Cloud Foundry是PaaS领域当之无愧的老大哥。正当其度过了艰难的开拓期，一步一步的走向了成功之巅的时候，意外发生了。2013年，一家微不足道的小公司dotCloud，宣布开源自己的容器项目Docker。而该决定宣布之初，并未引起轩然大波。Cloud Foundry的首席产品经理James Bayer在社区分享了Docker和自家产品的详细对比，认为Docker也是利用cgroup和namespace技术实现的沙盒，并无特别之处。</p>
 <p>&emsp;&emsp;然而，打脸总是来得特别快。Docker的一个并未被James Bayer关注的小小创新点却完成了决定性的降维打击：Docker镜像。在当时，Cloud Foundry被人饱受诟病的是其容器对于跨平台打包的支持并不是很好：其支持可执行文件+管理脚本的打包方式可想而知的存在环境依赖的问题，本地应用和远端PaaS的适配远远没有一个简单的<code>push</code>和<code>pull</code>这么轻松。如果没有Docker，想必Cloud Foundry也会在不断地进步、迭代中解决该问题，但是Docker先人一步的Docker镜像则直接抢占了市场，没有给Cloud Foundry任何回旋的余地。Docker镜像的优秀之处在于，它不是简简单单的打包可执行文件和管理脚本，而是将整个完整的操作系统文件和目录一起打包。这样即可完成容器在任意设备上，均有着一模一样的表现，无需任何多余配置。</p>
 <p>&emsp;&emsp;除了镜像超前的优越性，开源更是对广大开发者极为友好。简洁的UI、易于上手的指引文档、高效的打包使得各个公司、开发者们纷纷推出基于Docker的各种项目，极大的丰富了以Docker为核心的生态圈，容器和PaaS的发展也进入了崭新的时代。</p>
-<h2 id="四-话语权和市场"><a href="#四-话语权和市场" class="headerlink" title="四. 话语权和市场"></a>四. 话语权和市场</h2><h2 id="五-第二次降维打击"><a href="#五-第二次降维打击" class="headerlink" title="五. 第二次降维打击"></a>五. 第二次降维打击</h2><h2 id="六-妥协和尾声"><a href="#六-妥协和尾声" class="headerlink" title="六. 妥协和尾声"></a>六. 妥协和尾声</h2><h2 id="四-容器编排"><a href="#四-容器编排" class="headerlink" title="四. 容器编排"></a>四. 容器编排</h2><p>&emsp;&emsp;2013年底，dotCloud公司改名Docker公司。2014年，Docker公司宣布推出Swarm项目。Docker公司的这一步举措可谓野心勃勃：正如上文所述，容器技术是PaaS的基石，但是真正其决定意义的，还是在于如何去管理、运维大规模集群的容器，这也是PaaS真正的核心技术，即容器编排。“编排”（Orchestration）在云计算行业里不算是新词汇，它主要是指用户如何通过某些工具或者配置来完成一组虚拟机以及关联资源的定义、配置、创建、删除等工作，然后由云计算平台按照这些指定的逻辑来完成的过程。容器编排，顾名思义就是对多个容器进行一系列的创建、配置和管理。</p>
+<h2 id="四-容器编排"><a href="#四-容器编排" class="headerlink" title="四. 容器编排"></a>四. 容器编排</h2><p>&emsp;&emsp;2013年底，dotCloud公司改名Docker公司。2014年，Docker公司宣布推出Swarm项目。Docker公司的这一步举措可谓野心勃勃：正如上文所述，容器技术是PaaS的基石，但是真正其决定意义的，还是在于如何去管理、运维大规模集群的容器，这也是PaaS真正的核心技术，即容器编排。“编排”（Orchestration）在云计算行业里不算是新词汇，它主要是指用户如何通过某些工具或者配置来完成一组虚拟机以及关联资源的定义、配置、创建、删除等工作，然后由云计算平台按照这些指定的逻辑来完成的过程。容器编排，顾名思义就是对多个容器进行一系列的创建、配置和管理。</p>
 <p>&emsp;&emsp;Docker公司的Swarm项目最大的优势在于和Docker天生的亲和性，但这并不意味着Swarm可以独占整个市场。Mesosphere公司就依赖于其超大规模集群的管理经验，从另一个角度另辟蹊径，其产品Marathon成为了Swarm的有力竞争者。Mesosphere 公司不失时机地提出了一个名叫“DC/OS”（数据中心操作系统）的口号和产品，旨在使用户能够像管理一台机器那样管理一个万级别的物理机集群，并且使用 Docker 容器在这个集群里自由地部署应用。而这，对很多大型企业来说具有着非同寻常的吸引力。</p>
 <p>&emsp;&emsp;于此同时，一些别的老牌公司的日子却没这么好过了。CoreOS公司的rkt容器和Fleet集群鲜有问津，RedHat公司仅有的OpenShift和Cloud Foundry一样缺乏竞争力。Docker公司一时间占据了容器化浪潮的话语权，可谓风生水起。Swarm项目也在容器编排领域占据强有力的竞争力，未来可期。但是，就在这时，谷歌公司突然发力，正式宣告了Kubernetes项目的诞生。该项目和当年的Docker一样，横空出世，再次改变了整个市场的格局。</p>
-<h2 id="五-第二次降维打击-1"><a href="#五-第二次降维打击-1" class="headerlink" title="五. 第二次降维打击"></a>五. 第二次降维打击</h2><p>&emsp;&emsp;让我们把目光从Docker的时间线转移到另一个大佬，Google的身上来。谷歌这家公司一直有个为人诟病的特点：自己拥有的超前技术一般会在内部使用5-10年之久才会对外公开，并且会对其中的一些关键点有所保留，从而实现了自己的技术壁垒。在大数据领域，谷歌提出了三家马车：Big Table，Map Reduce，和Google File System。这三家马车直接引领了大数据领域的发展，如Hadoop生态圈的诞生和完善。但是归根结底，Hadoop始终没有达到谷歌的性能水准，大家都在疑惑，到底是为什么呢？没错，就是因为容器及容器编排技术。</p>
+<h2 id="五-第二次降维打击"><a href="#五-第二次降维打击" class="headerlink" title="五. 第二次降维打击"></a>五. 第二次降维打击</h2><p>&emsp;&emsp;让我们把目光从Docker的时间线转移到另一个大佬，Google的身上来。谷歌这家公司一直有个为人诟病的特点：自己拥有的超前技术一般会在内部使用5-10年之久才会对外公开，并且会对其中的一些关键点有所保留，从而实现了自己的技术壁垒。在大数据领域，谷歌提出了三家马车：Big Table，Map Reduce，和Google File System。这三家马车直接引领了大数据领域的发展，如Hadoop生态圈的诞生和完善。但是归根结底，Hadoop始终没有达到谷歌的性能水准，大家都在疑惑，到底是为什么呢？没错，就是因为容器及容器编排技术。</p>
 <p>&emsp;&emsp;谷歌内部在很早就意识到了PaaS中容器化的重要性，下图为2015年谷歌公开的架构图，可见其中Borg和Omega基石般的核心地位。也正是由于其重要性，才使得谷歌一直不愿意公开，以至于使得Docker公司的Docker和Swarm抢先占据了市场。在这种情况下，谷歌终于忍不住了，脱胎于Borg的Kubernetes于2014年问世。</p>
 <img src="https://static001.geekbang.org/resource/image/c7/bd/c7ed0043465bccff2efc1a1257e970bd.png" alt="img" style="zoom: 50%;" />
 
@@ -766,7 +766,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-PaaS和容器"><span class="nav-text">二.PaaS和容器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-第一次降维打击"><span class="nav-text">三. 第一次降维打击</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-话语权和市场"><span class="nav-text">四. 话语权和市场</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-第二次降维打击"><span class="nav-text">五. 第二次降维打击</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#六-妥协和尾声"><span class="nav-text">六. 妥协和尾声</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-容器编排"><span class="nav-text">四. 容器编排</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-第二次降维打击-1"><span class="nav-text">五. 第二次降维打击</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#六-逐鹿"><span class="nav-text">六. 逐鹿</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#七-尾声"><span class="nav-text">七. 尾声</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-PaaS和容器"><span class="nav-text">二.PaaS和容器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-第一次降维打击"><span class="nav-text">三. 第一次降维打击</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-容器编排"><span class="nav-text">四. 容器编排</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-第二次降维打击"><span class="nav-text">五. 第二次降维打击</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#六-逐鹿"><span class="nav-text">六. 逐鹿</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#七-尾声"><span class="nav-text">七. 尾声</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
