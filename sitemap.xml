@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://ty-chen.github.io/linux-kernel-cpu/</loc>
+    
+    <lastmod>2020-12-12T15:45:21.020Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://ty-chen.github.io/linux-kernel-docker/</loc>
     
     <lastmod>2020-12-11T15:23:05.793Z</lastmod>
@@ -54,13 +61,6 @@
     <loc>https://ty-chen.github.io/paradigms/</loc>
     
     <lastmod>2020-11-24T16:36:36.037Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://ty-chen.github.io/linux-kernel-cpu/</loc>
-    
-    <lastmod>2020-11-15T14:22:05.482Z</lastmod>
     
   </url>
   
