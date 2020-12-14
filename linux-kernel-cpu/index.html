@@ -121,7 +121,7 @@
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/3d/28/3d7ce9c053815f6a32a6fbf6f7fb9628.jpeg">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/c9/b8/c971c34e0456dea9e4a87857880bb5b8.jpeg">
 <meta property="article:published_time" content="2020-10-30T13:09:04.000Z">
-<meta property="article:modified_time" content="2020-12-12T16:29:44.579Z">
+<meta property="article:modified_time" content="2020-12-14T16:07:56.045Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -342,8 +342,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-12-13T00:29:44+08:00" content="2020-12-13">
-                2020-12-13
+              <time itemprop="dateUpdated" datetime="2020-12-15T00:07:56+08:00" content="2020-12-15">
+                2020-12-15
               </time>
             </span>
           
@@ -406,7 +406,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  12.7k
+                  12.8k
                 </span>
               
 
@@ -422,7 +422,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  44
+                  45
                 </span>
               
             </div>
@@ -536,9 +536,11 @@
 <li>描述符寄存器</li>
 <li>任务寄存器</li>
 <li>MSR寄存器</li>
+<li>存储寄存器</li>
+<li>累积寄存器</li>
 </ul>
 <p>&emsp;&emsp;通用寄存器、段寄存器、标志寄存器、指令寄存器，这四组寄存器共同构成了一个基本的指令执行环境，一个线程的上下文也基本上就是这些寄存器，在执行线程切换的时候，就是修改它们的内容。</p>
-<h3 id="4-1-通用寄存器"><a href="#4-1-通用寄存器" class="headerlink" title="4.1 通用寄存器"></a>4.1 通用寄存器</h3><p>&emsp;&emsp;通用寄存器给应用程序存放各种临时数据，32位系统中约定俗成的用法如下所示</p>
+<h3 id="4-1-通用寄存器（General-Purpose-Register）"><a href="#4-1-通用寄存器（General-Purpose-Register）" class="headerlink" title="4.1 通用寄存器（General Purpose Register）"></a>4.1 通用寄存器（General Purpose Register）</h3><p>&emsp;&emsp;通用寄存器给应用程序存放各种临时数据，32位系统中约定俗成的用法如下所示</p>
 <ul>
 <li><strong>eax</strong>: 用来执行加法及存放函数调用的返回值</li>
 <li><strong>ebx</strong>: 数据存取，被调用者保存</li>
@@ -550,14 +552,14 @@
 <li><strong>edi</strong>: 传参第一个参数，或字符串操作时，用于存放目的地址的，和esi两个经常搭配一起使用，执行字符串的复制等操作</li>
 </ul>
 <p>&emsp;&emsp;在64位中，这些寄存器开头字母<code>e</code>改为<code>r</code>，实际用法不变，同时增加了<code>r8</code>到<code>r15</code>这8个新的寄存器。寄存器富裕最大的好处在于可以使用寄存器存储更多的传参，从而加快了函数处理速度。值得一提的是其中<code>r8</code>和<code>r9</code>用来保存第五个和第六个传参。</p>
-<h3 id="4-2-标志寄存器"><a href="#4-2-标志寄存器" class="headerlink" title="4.2 标志寄存器"></a>4.2 标志寄存器</h3><p>&emsp;&emsp;标志寄存器记录了CPU执行指令过程中的一系列状态，即当前运行线程的一系列关键信息，这些标志大都由CPU自动设置和修改</p>
+<h3 id="4-2-标志寄存器（Flags-Register"><a href="#4-2-标志寄存器（Flags-Register" class="headerlink" title="4.2 标志寄存器（Flags Register)"></a>4.2 标志寄存器（Flags Register)</h3><p>&emsp;&emsp;标志寄存器记录了CPU执行指令过程中的一系列状态，即当前运行线程的一系列关键信息，这些标志大都由CPU自动设置和修改</p>
 <img src="https://img-blog.csdnimg.cn/img_convert/3ef48f063c8203969a1653dd7b53aa93.png" alt="img" style="zoom: 67%;" />
 
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">CF 进位标志</span><br><span class="line">PF 奇偶标志</span><br><span class="line">ZF 零标志</span><br><span class="line">SF 符号标志</span><br><span class="line">OF 补码溢出标志</span><br><span class="line">TF 跟踪标志</span><br><span class="line">IF 中断标志</span><br><span class="line">······</span><br></pre></td></tr></table></figure>
 
-<h3 id="4-3-指令寄存器和程序计数器"><a href="#4-3-指令寄存器和程序计数器" class="headerlink" title="4.3 指令寄存器和程序计数器"></a>4.3 指令寄存器和程序计数器</h3><p>&emsp;&emsp;32位指令寄存器为<code>eip</code>，而64位为<code>rip</code>寄存器。指令寄存器可以说是CPU中最最重要的寄存器了，它保存当前指令所存放的地址，CPU的工作其实就是不断取出它指向的指令，然后执行这条指令，同时指令寄存器继续指向下面一条指令。当执行一条指令时，先把它从内存取到数据寄存器（DR，Data Register）中，然后再传送至IR。指令划分为操作码和地址码字段，由二进制数字组成。为了执行任何给定的指令，必须对操作码进行测试，以便识别所要求的操作。指令译码器就是做这项工作的。指令寄存器中操作码字段的输出就是指令译码器的输入。操作码一经译码后，即可向操作控制器发出具体操作的特定信号。</p>
+<h3 id="4-3-指令寄存器和程序计数器（Instrunction-Pointer-Register-amp-Program-Counter-Register）"><a href="#4-3-指令寄存器和程序计数器（Instrunction-Pointer-Register-amp-Program-Counter-Register）" class="headerlink" title="4.3 指令寄存器和程序计数器（Instrunction Pointer Register &amp; Program Counter Register）"></a>4.3 指令寄存器和程序计数器（Instrunction Pointer Register &amp; Program Counter Register）</h3><p>&emsp;&emsp;32位指令寄存器为<code>eip</code>，而64位为<code>rip</code>寄存器。指令寄存器可以说是CPU中最最重要的寄存器了，它保存当前指令所存放的地址，CPU的工作其实就是不断取出它指向的指令，然后执行这条指令，同时指令寄存器继续指向下面一条指令。当执行一条指令时，先把它从内存取到数据寄存器（DR，Data Register）中，然后再传送至IR。指令划分为操作码和地址码字段，由二进制数字组成。为了执行任何给定的指令，必须对操作码进行测试，以便识别所要求的操作。指令译码器就是做这项工作的。指令寄存器中操作码字段的输出就是指令译码器的输入。操作码一经译码后，即可向操作控制器发出具体操作的特定信号。</p>
 <p>&emsp;&emsp;程序计数器存放的是下一条指令的地址，不断自增，在3.5节已有详细介绍。</p>
-<h3 id="4-4-段寄存器"><a href="#4-4-段寄存器" class="headerlink" title="4.4 段寄存器"></a>4.4 段寄存器</h3><p>&emsp;&emsp;段寄存器用于CPU内存寻址功能，主要包括以下几种</p>
+<h3 id="4-4-段寄存器（Segment-Register）"><a href="#4-4-段寄存器（Segment-Register）" class="headerlink" title="4.4 段寄存器（Segment Register）"></a>4.4 段寄存器（Segment Register）</h3><p>&emsp;&emsp;段寄存器用于CPU内存寻址功能，主要包括以下几种</p>
 <ul>
 <li><strong>cs</strong>: 代码段</li>
 <li><strong>ds</strong>: 数据段</li>
@@ -580,7 +582,7 @@
 <li><strong>Index</strong>: 这是一个表格中表项的索引值，这个表格叫<strong>内存描述符表</strong>，它的每一个表项都描述了一个内存分段。</li>
 </ul>
 <p><img src="https://img-blog.csdnimg.cn/img_convert/d12ff2f9b45c04dea0b256ef7c377fb9.png" alt="img"></p>
-<h3 id="4-5-控制寄存器"><a href="#4-5-控制寄存器" class="headerlink" title="4.5 控制寄存器"></a>4.5 控制寄存器</h3><p>&emsp;&emsp;控制寄存器保存了CPU运行过程中自身的一些关键信息。32位CPU总共有cr0-cr4共5个控制寄存器，64位增加了cr8。他们各自有不同的功能，如下所示</p>
+<h3 id="4-5-控制寄存器（Control-Register）"><a href="#4-5-控制寄存器（Control-Register）" class="headerlink" title="4.5 控制寄存器（Control Register）"></a>4.5 控制寄存器（Control Register）</h3><p>&emsp;&emsp;控制寄存器保存了CPU运行过程中自身的一些关键信息。32位CPU总共有cr0-cr4共5个控制寄存器，64位增加了cr8。他们各自有不同的功能，如下所示</p>
 <ul>
 <li><strong>cr0</strong>: 存储了CPU控制标记和工作状态</li>
 <li><strong>cr1</strong>: 保留未使用</li>
@@ -619,7 +621,7 @@
 </ul>
 <img src="https://img-blog.csdnimg.cn/img_convert/8dbeb38bd218d7ff395f324cd69454c8.png" alt="img" style="zoom:50%;" />
 
-<h3 id="4-7-描述符寄存器"><a href="#4-7-描述符寄存器" class="headerlink" title="4.7 描述符寄存器"></a>4.7 描述符寄存器</h3><p>&emsp;&emsp;在x86/x64系列CPU中，有三个非常重要的描述符寄存器，它们分别存储了三个地址，指向了三个非常重要的描述符表，分别是全局描述符表、局部描述符表和中断描述符表。</p>
+<h3 id="4-7-描述符寄存器（Descriptor-Register）"><a href="#4-7-描述符寄存器（Descriptor-Register）" class="headerlink" title="4.7 描述符寄存器（Descriptor Register）"></a>4.7 描述符寄存器（Descriptor Register）</h3><p>&emsp;&emsp;在x86/x64系列CPU中，有三个非常重要的描述符寄存器，它们分别存储了三个地址，指向了三个非常重要的描述符表，分别是全局描述符表、局部描述符表和中断描述符表。</p>
 <ul>
 <li><code>GDTR</code>寄存器：全局描述符表寄存器，CPU现在使用的是段+分页结合的内存管理方式，系统的分段存储在一个叫全局描述符表（<strong>GDT</strong>）的表格中，并用<code>GDTR</code>寄存器指向这个表。这个表中的每一项都描述了一个内存段的信息。</li>
 <li><code>LDTR</code>寄存器：局部描述符表寄存器，这个寄存器和上面的<code>GDTR</code>寄存器一样，同样指向的是一个段描述符表（<strong>LDT</strong>）。不同的是，GDT是全局唯一，LDT是局部使用的，可以创建多个，随着任务段切换而切换（下文介绍任务寄存器会提到）。</li>
@@ -635,9 +637,11 @@
 </ul>
 <p>&emsp;&emsp;三种描述符中都存储了处理这个中断/异常/任务时该去哪里处理的地址。三种门用途不一，其中中断门是真正意义上的中断，而像前面提到的调试指令<code>int 3</code>以及老式的系统调用指令int 2e/int 80都属于陷阱门。任务门则用的较少，要了解任务门，先了解下任务寄存器。</p>
 <p><img src="https://img-blog.csdnimg.cn/img_convert/c46dce809b9b2751522afdd3cc2ae478.png" alt="img"></p>
-<h3 id="4-8-任务寄存器"><a href="#4-8-任务寄存器" class="headerlink" title="4.8 任务寄存器"></a>4.8 任务寄存器</h3><p>&emsp;&emsp;x86CPU的构想是每一个任务对应一个TSS，然后由TR寄存器指向当前的任务，执行任务切换时，修改TR寄存器的指向即可，这是硬件层面的多任务切换机制。这个构想其实还是很不错的，然而现实却打了脸，包括Linux和Windows在内的主流操作系统都没有使用这个机制来进行线程切换，而是自己使用软件来实现多线程切换。所以，绝大多数情况下，TR寄存器都是指向固定的，即便线程切换了，TR寄存器仍然不会变化。</p>
-<h3 id="4-9-模型特定寄存器"><a href="#4-9-模型特定寄存器" class="headerlink" title="4.9 模型特定寄存器"></a>4.9 模型特定寄存器</h3><p>&emsp;&emsp;模型特定寄存器，即MSR寄存器，这些寄存器不像上面列出的寄存器是固定的，这些寄存器可能随着不同的版本有所变化。这些寄存器主要用来支持一些新的功能。随着x86CPU不断更新换代，MSR寄存器变的越来越多，但与此同时，有一部分MSR寄存器随着版本迭代，慢慢固化下来，成为了变化中那部分不变的，这部分MSR寄存器，Intel将其称为Architected MSR，这部分MSR寄存器，在命名上，统一加上了<strong>IA32</strong>的前缀。</p>
+<h3 id="4-8-任务寄存器（Task-Register）"><a href="#4-8-任务寄存器（Task-Register）" class="headerlink" title="4.8 任务寄存器（Task Register）"></a>4.8 任务寄存器（Task Register）</h3><p>&emsp;&emsp;x86CPU的构想是每一个任务对应一个TSS，然后由TR寄存器指向当前的任务，执行任务切换时，修改TR寄存器的指向即可，这是硬件层面的多任务切换机制。这个构想其实还是很不错的，然而现实却打了脸，包括Linux和Windows在内的主流操作系统都没有使用这个机制来进行线程切换，而是自己使用软件来实现多线程切换。所以，绝大多数情况下，TR寄存器都是指向固定的，即便线程切换了，TR寄存器仍然不会变化。</p>
+<h3 id="4-9-模型特定寄存器（Module-Specific-Register）"><a href="#4-9-模型特定寄存器（Module-Specific-Register）" class="headerlink" title="4.9 模型特定寄存器（Module Specific Register）"></a>4.9 模型特定寄存器（Module Specific Register）</h3><p>&emsp;&emsp;模型特定寄存器，即MSR寄存器，这些寄存器不像上面列出的寄存器是固定的，这些寄存器可能随着不同的版本有所变化。这些寄存器主要用来支持一些新的功能。随着x86CPU不断更新换代，MSR寄存器变的越来越多，但与此同时，有一部分MSR寄存器随着版本迭代，慢慢固化下来，成为了变化中那部分不变的，这部分MSR寄存器，Intel将其称为Architected MSR，这部分MSR寄存器，在命名上，统一加上了<strong>IA32</strong>的前缀。</p>
 <p>&emsp;&emsp;如IA32_SYSENTER_CS，IA32_SYSENTER_ESP和IA32_SYSENTER_EIP，这三个MSR寄存器是用来实现<strong>快速系统调用</strong>。在早期的x86架构CPU上，系统调用依赖于软中断实现，类似于前面调试用到的int 3指令，在Windows上，系统调用用到的是<strong>int 2e</strong>，在Linux上，用的是<strong>int 80</strong>。软中断毕竟还是比较慢的，因为执行软中断就需要内存查表，通过IDTR定位到IDT，再取出函数进行执行。系统调用是一个频繁触发的动作，如此这般势必对性能有所影响。在进入奔腾时代后，就加上了上面的三个MSR寄存器，分别存储了执行系统调用后，内核系统调用入口函数所需要的段寄存器、堆栈栈顶、函数地址，不再需要内存查表。快速系统调用还提供了专门的CPU指令<strong>sysenter/sysexit</strong>用来发起系统调用和退出系统调用。在64位上，这一对指令升级为<strong>syscall/sysret</strong>。</p>
+<h3 id="4-10-存储寄存器（Memory-Register）"><a href="#4-10-存储寄存器（Memory-Register）" class="headerlink" title="4.10 存储寄存器（Memory Register）"></a>4.10 存储寄存器（Memory Register）</h3><p>&emsp;&emsp;存储寄存器包括地址存储和数据存储，即MAR和MDR寄存器。这两种寄存器会和RAM及缓存打交道，用于数据和地址的存取工作，是最常用的寄存器之一。</p>
+<h3 id="4-11-累积寄存器（Accumulator-Register）"><a href="#4-11-累积寄存器（Accumulator-Register）" class="headerlink" title="4.11 累积寄存器（Accumulator Register）"></a>4.11 累积寄存器（Accumulator Register）</h3><p>&emsp;&emsp;累积寄存器保存ALU累加结果并用于后续计算，也是常用寄存器。</p>
 <h2 id="五-冒险和预测"><a href="#五-冒险和预测" class="headerlink" title="五. 冒险和预测"></a>五. 冒险和预测</h2><p>&emsp;&emsp;了解了CPU的基本结构和底层实现的寄存器后，我们聚焦于多指令CPU流水线模型。其中最关键的，则是流水线设计需要解决的三大冒险：结构冒险（Structural Hazard）、数据冒险（Data Hazard）以及控制冒险（Control Hazard）。</p>
 <h3 id="5-1-结构冒险"><a href="#5-1-结构冒险" class="headerlink" title="5.1 结构冒险"></a>5.1 结构冒险</h3><p>&emsp;&emsp;结构冒险源于流水线操作重，取指令和访问存储器可能会发生读取冲突。为此，我们常见的解法是将指令和数据分开存放，即指令缓存和数据缓存，结构如下所示。之所以采用混合架构而非彻底的分开指令和数据，是因为如果强制拆分，则无法动态分配二者内存，失去了灵活性。内存的访问速度远比 CPU 的速度要慢，所以现代的 CPU 并不会直接读取主内存。它会从主内存把指令和数据加载到高速缓存中，这样后续的访问都是访问高速缓存。而指令缓存和数据缓存的拆分，使得我们的 CPU 在进行数据访问和取指令的时候，不会再发生资源冲突的问题了。</p>
 <img src="https://static001.geekbang.org/resource/image/e7/91/e7508cb409d398380753b292b6df8391.jpeg" alt="img" style="zoom:33%;" />
@@ -1025,7 +1029,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-加法器和乘法器"><span class="nav-text">二. 加法器和乘法器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-门电路和半加器"><span class="nav-text">2.1 门电路和半加器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-半加器到全加器"><span class="nav-text">2.2 半加器到全加器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-基本乘法器"><span class="nav-text">2.3 基本乘法器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-并行乘法器"><span class="nav-text">2.3 并行乘法器</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-CPU基本结构"><span class="nav-text">三. CPU基本结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-指令周期、机器周期和时钟周期"><span class="nav-text">3.1 指令周期、机器周期和时钟周期</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-基本结构"><span class="nav-text">3.2 基本结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-基本硬件电路"><span class="nav-text">3.3 基本硬件电路</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-D触发器"><span class="nav-text">3.4 D触发器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-5-程序计数器"><span class="nav-text">3.5 程序计数器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-6-多指令模型"><span class="nav-text">3.6 多指令模型</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-寄存器"><span class="nav-text">四. 寄存器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-通用寄存器"><span class="nav-text">4.1 通用寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-标志寄存器"><span class="nav-text">4.2 标志寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-指令寄存器和程序计数器"><span class="nav-text">4.3 指令寄存器和程序计数器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-4-段寄存器"><span class="nav-text">4.4 段寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-5-控制寄存器"><span class="nav-text">4.5 控制寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-6-调试寄存器"><span class="nav-text">4.6 调试寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-7-描述符寄存器"><span class="nav-text">4.7 描述符寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-8-任务寄存器"><span class="nav-text">4.8 任务寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-9-模型特定寄存器"><span class="nav-text">4.9 模型特定寄存器</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-冒险和预测"><span class="nav-text">五. 冒险和预测</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-结构冒险"><span class="nav-text">5.1 结构冒险</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-数据冒险"><span class="nav-text">5.2 数据冒险</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#5-2-1-流水线冒泡"><span class="nav-text">5.2.1 流水线冒泡</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-2-2-操作数前推"><span class="nav-text">5.2.2 操作数前推</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-2-3-乱序执行"><span class="nav-text">5.2.3 乱序执行</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-控制冒险"><span class="nav-text">5.3 控制冒险</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#5-3-1-缩短分支延迟"><span class="nav-text">5.3.1 缩短分支延迟</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-3-2-分支预测"><span class="nav-text">5.3.2 分支预测</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-3-3-动态分支预测"><span class="nav-text">5.3.3 动态分支预测</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#六-高级架构"><span class="nav-text">六. 高级架构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#6-1-多发射和超标量"><span class="nav-text">6.1 多发射和超标量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-2-超线程技术"><span class="nav-text">6.2 超线程技术</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-3-SIMD"><span class="nav-text">6.3 SIMD</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-4-GPU"><span class="nav-text">6.4 GPU</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-5-TPU"><span class="nav-text">6.5 TPU</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-加法器和乘法器"><span class="nav-text">二. 加法器和乘法器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-门电路和半加器"><span class="nav-text">2.1 门电路和半加器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-半加器到全加器"><span class="nav-text">2.2 半加器到全加器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-基本乘法器"><span class="nav-text">2.3 基本乘法器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-并行乘法器"><span class="nav-text">2.3 并行乘法器</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-CPU基本结构"><span class="nav-text">三. CPU基本结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-指令周期、机器周期和时钟周期"><span class="nav-text">3.1 指令周期、机器周期和时钟周期</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-基本结构"><span class="nav-text">3.2 基本结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-基本硬件电路"><span class="nav-text">3.3 基本硬件电路</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-D触发器"><span class="nav-text">3.4 D触发器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-5-程序计数器"><span class="nav-text">3.5 程序计数器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-6-多指令模型"><span class="nav-text">3.6 多指令模型</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-寄存器"><span class="nav-text">四. 寄存器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-通用寄存器（General-Purpose-Register）"><span class="nav-text">4.1 通用寄存器（General Purpose Register）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-标志寄存器（Flags-Register"><span class="nav-text">4.2 标志寄存器（Flags Register)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-指令寄存器和程序计数器（Instrunction-Pointer-Register-amp-Program-Counter-Register）"><span class="nav-text">4.3 指令寄存器和程序计数器（Instrunction Pointer Register &amp; Program Counter Register）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-4-段寄存器（Segment-Register）"><span class="nav-text">4.4 段寄存器（Segment Register）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-5-控制寄存器（Control-Register）"><span class="nav-text">4.5 控制寄存器（Control Register）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-6-调试寄存器"><span class="nav-text">4.6 调试寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-7-描述符寄存器（Descriptor-Register）"><span class="nav-text">4.7 描述符寄存器（Descriptor Register）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-8-任务寄存器（Task-Register）"><span class="nav-text">4.8 任务寄存器（Task Register）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-9-模型特定寄存器（Module-Specific-Register）"><span class="nav-text">4.9 模型特定寄存器（Module Specific Register）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-10-存储寄存器（Memory-Register）"><span class="nav-text">4.10 存储寄存器（Memory Register）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-11-累积寄存器（Accumulator-Register）"><span class="nav-text">4.11 累积寄存器（Accumulator Register）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-冒险和预测"><span class="nav-text">五. 冒险和预测</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-结构冒险"><span class="nav-text">5.1 结构冒险</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-数据冒险"><span class="nav-text">5.2 数据冒险</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#5-2-1-流水线冒泡"><span class="nav-text">5.2.1 流水线冒泡</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-2-2-操作数前推"><span class="nav-text">5.2.2 操作数前推</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-2-3-乱序执行"><span class="nav-text">5.2.3 乱序执行</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-控制冒险"><span class="nav-text">5.3 控制冒险</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#5-3-1-缩短分支延迟"><span class="nav-text">5.3.1 缩短分支延迟</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-3-2-分支预测"><span class="nav-text">5.3.2 分支预测</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-3-3-动态分支预测"><span class="nav-text">5.3.3 动态分支预测</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#六-高级架构"><span class="nav-text">六. 高级架构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#6-1-多发射和超标量"><span class="nav-text">6.1 多发射和超标量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-2-超线程技术"><span class="nav-text">6.2 超线程技术</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-3-SIMD"><span class="nav-text">6.3 SIMD</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-4-GPU"><span class="nav-text">6.4 GPU</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-5-TPU"><span class="nav-text">6.5 TPU</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
@@ -1059,7 +1063,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">174.1k</span>
+    <span title="Site words total count">174.2k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
