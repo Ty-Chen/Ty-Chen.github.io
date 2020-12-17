@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://ty-chen.github.io/linux-kernel-system-call/</loc>
+    <lastmod>2020-12-17</lastmod>
+  </url>  <url>
     <loc>https://ty-chen.github.io/linux-kernel-interrupt/</loc>
     <lastmod>2020-12-16</lastmod>
   </url>  <url>
@@ -89,9 +92,6 @@
     <lastmod>2020-07-19</lastmod>
   </url>  <url>
     <loc>https://ty-chen.github.io/linux-kernel-zero-process/</loc>
-    <lastmod>2020-07-18</lastmod>
-  </url>  <url>
-    <loc>https://ty-chen.github.io/linux-kernel-system-call/</loc>
     <lastmod>2020-07-18</lastmod>
   </url>  <url>
     <loc>https://ty-chen.github.io/linux-kernel-protecd-mode/</loc>

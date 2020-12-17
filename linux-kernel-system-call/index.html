@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;通过前面几篇文章，我们分析了从按下电源键到内核启动、完成初始化的整个过程。在后面的文章中我们将分别深入剖析Linux内核各个重要部分的源码。考虑到后面的部分我们会从用户态的代码开始入手一步一步深入，因此在分析这些之前，我们需要仔细看一看如何实现一个从用户态到内核态再回到用户态的系统调用的全过程，即系统调用的实现。">
 <meta property="article:published_time" content="2020-05-10T16:11:56.000Z">
-<meta property="article:modified_time" content="2020-07-18T05:56:35.672Z">
+<meta property="article:modified_time" content="2020-12-17T16:32:48.733Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -305,8 +305,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-07-18T13:56:35+08:00" content="2020-07-18">
-                2020-07-18
+              <time itemprop="dateUpdated" datetime="2020-12-18T00:32:48+08:00" content="2020-12-18">
+                2020-12-18
               </time>
             </span>
           
@@ -409,9 +409,9 @@
         <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;通过前面几篇文章，我们分析了从按下电源键到内核启动、完成初始化的整个过程。在后面的文章中我们将分别深入剖析Linux内核各个重要部分的源码。考虑到后面的部分我们会从用户态的代码开始入手一步一步深入，因此在分析这些之前，我们需要仔细看一看如何实现一个从用户态到内核态再回到用户态的系统调用的全过程，即系统调用的实现。</p>
 <a id="more"></a>
 
-<p>&emsp;&emsp;本文的说明顺序如下</p>
+<p>&emsp;&emsp;本文的说明顺序如下：</p>
 <ul>
-<li>首先从一个简单的例子开始分析glibc中对应的调用</li>
+<li>首先从一个简单的例子开始分析<code>glibc</code>中对应的调用</li>
 <li>针对32位和64位中调用的结构不同会分开两部分单独介绍，会介绍整个调用至完成的过程。即用户态-&gt;内核态-&gt;用户态</li>
 <li>在整个调用过程中最重要的一步是中间访问系统调用表，该部分为了描述清楚单独拉出来最后介绍</li>
 </ul>
