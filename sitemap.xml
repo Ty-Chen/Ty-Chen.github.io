@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://ty-chen.github.io/linux-kernel-0x400000/</loc>
+    
+    <lastmod>2020-12-18T16:11:03.812Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://ty-chen.github.io/linux-kernel-system-call/</loc>
     
     <lastmod>2020-12-17T16:32:48.733Z</lastmod>
