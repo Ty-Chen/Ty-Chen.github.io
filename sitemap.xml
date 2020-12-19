@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://ty-chen.github.io/linux-kernel-qemu/</loc>
+    
+    <lastmod>2020-12-19T14:28:37.949Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://ty-chen.github.io/linux-kernel-0x400000/</loc>
     
     <lastmod>2020-12-18T16:11:03.812Z</lastmod>
@@ -33,13 +40,6 @@
     <loc>https://ty-chen.github.io/linux-kernel-cpu/</loc>
     
     <lastmod>2020-12-14T16:07:56.045Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://ty-chen.github.io/linux-kernel-qemu/</loc>
-    
-    <lastmod>2020-12-13T14:44:02.570Z</lastmod>
     
   </url>
   

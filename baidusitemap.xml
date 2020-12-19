@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://ty-chen.github.io/linux-kernel-qemu/</loc>
+    <lastmod>2020-12-19</lastmod>
+  </url>  <url>
     <loc>https://ty-chen.github.io/linux-kernel-0x400000/</loc>
     <lastmod>2020-12-18</lastmod>
   </url>  <url>
@@ -15,9 +18,6 @@
   </url>  <url>
     <loc>https://ty-chen.github.io/linux-kernel-cpu/</loc>
     <lastmod>2020-12-14</lastmod>
-  </url>  <url>
-    <loc>https://ty-chen.github.io/linux-kernel-qemu/</loc>
-    <lastmod>2020-12-13</lastmod>
   </url>  <url>
     <loc>https://ty-chen.github.io/linux-kernel-docker-k8s/</loc>
     <lastmod>2020-12-07</lastmod>
