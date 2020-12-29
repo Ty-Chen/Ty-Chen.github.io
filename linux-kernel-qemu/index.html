@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;突然发现前文忘了写如何编译运行Linux内核并进行修改、调试，所以这里临时补上。主要使用QEMU搭建虚拟机，并在其基础上下载内核并编译从而实现内核调试。">
 <meta property="article:published_time" content="2020-12-07T14:11:50.000Z">
-<meta property="article:modified_time" content="2020-12-28T16:15:57.272Z">
+<meta property="article:modified_time" content="2020-12-29T16:03:07.704Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -307,8 +307,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-12-29T00:15:57+08:00" content="2020-12-29">
-                2020-12-29
+              <time itemprop="dateUpdated" datetime="2020-12-30T00:03:07+08:00" content="2020-12-30">
+                2020-12-30
               </time>
             </span>
           
@@ -371,7 +371,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  962
+                  981
                 </span>
               
 
@@ -438,7 +438,7 @@
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">apt-get install libvirt-bin</span><br><span class="line">apt-get install virtinst</span><br></pre></td></tr></table></figure>
 
 <ul>
-<li>创建xml管理虚拟机</li>
+<li>创建xml管理虚拟机。需要注意这里的虚拟机<code>ubuntutest.img</code>需要通过<code>qemu-kvm</code>创建。</li>
 </ul>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">&lt;domain type='qemu'&gt;</span><br><span class="line">  &lt;name&gt;ubuntutest&lt;/name&gt;</span><br><span class="line">  &lt;uuid&gt;0f0806ab-531d-6134-5def-c5b4955292aa&lt;/uuid&gt;</span><br><span class="line">  &lt;memory unit='GiB'&gt;4&lt;/memory&gt;</span><br><span class="line">  &lt;currentMemory unit='GiB'&gt;4&lt;/currentMemory&gt;</span><br><span class="line">  &lt;vcpu placement='static'&gt;2&lt;/vcpu&gt;</span><br><span class="line">  &lt;os&gt;</span><br><span class="line">    &lt;type arch='x86_64' machine='pc-i440fx-trusty'&gt;hvm&lt;/type&gt;</span><br><span class="line">    &lt;boot dev='hd'/&gt;</span><br><span class="line">  &lt;/os&gt;</span><br><span class="line">  &lt;features&gt;</span><br><span class="line">    &lt;acpi/&gt;</span><br><span class="line">    &lt;apic/&gt;</span><br><span class="line">    &lt;pae/&gt;</span><br><span class="line">  &lt;/features&gt;</span><br><span class="line">  &lt;clock offset='utc'/&gt;</span><br><span class="line">  &lt;on_poweroff&gt;destroy&lt;/on_poweroff&gt;</span><br><span class="line">  &lt;on_reboot&gt;restart&lt;/on_reboot&gt;</span><br><span class="line">  &lt;on_crash&gt;restart&lt;/on_crash&gt;</span><br><span class="line"> &lt;devices&gt;</span><br><span class="line">    &lt;emulator&gt;/usr/bin/qemu-system-x86_64&lt;/emulator&gt;</span><br><span class="line">    &lt;disk type='file' device='disk'&gt;</span><br><span class="line">      &lt;driver name='qemu' type='qcow2'/&gt;</span><br><span class="line">      &lt;source file='/mnt/vdc/ubuntutest.img'/&gt;</span><br><span class="line">      &lt;target dev='vda' bus='virtio'/&gt;</span><br><span class="line">    &lt;/disk&gt;</span><br><span class="line">    &lt;controller type='pci' index='0' model='pci-root'/&gt;</span><br><span class="line">    &lt;interface type='bridge'&gt;</span><br><span class="line">      &lt;mac address='fa:16:3e:6e:89:ce'/&gt;</span><br><span class="line">      &lt;source bridge='br0'/&gt;</span><br><span class="line">      &lt;target dev='tap1'/&gt;</span><br><span class="line">      &lt;model type='virtio'/&gt;</span><br><span class="line">    &lt;/interface&gt;</span><br><span class="line">    &lt;serial type='pty'&gt;</span><br><span class="line">      &lt;target port='0'/&gt;</span><br><span class="line">    &lt;/serial&gt;</span><br><span class="line">    &lt;console type='pty'&gt;</span><br><span class="line">      &lt;target type='serial' port='0'/&gt;</span><br><span class="line">    &lt;/console&gt;</span><br><span class="line">    &lt;graphics type='vnc' port='-1' autoport='yes' listen='0.0.0.0'&gt;</span><br><span class="line">      &lt;listen type='address' address='0.0.0.0'/&gt;</span><br><span class="line">    &lt;/graphics&gt;</span><br><span class="line">    &lt;video&gt;</span><br><span class="line">      &lt;model type='cirrus'/&gt;</span><br><span class="line">    &lt;/video&gt;</span><br><span class="line">  &lt;/devices&gt;</span><br><span class="line">&lt;/domain&gt;</span><br></pre></td></tr></table></figure>
 
