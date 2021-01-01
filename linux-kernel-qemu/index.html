@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;突然发现前文忘了写如何编译运行Linux内核并进行修改、调试，所以这里临时补上。主要使用QEMU搭建虚拟机，并在其基础上下载内核并编译从而实现内核调试。">
 <meta property="article:published_time" content="2020-12-07T14:11:50.000Z">
-<meta property="article:modified_time" content="2020-12-30T13:38:32.983Z">
+<meta property="article:modified_time" content="2021-01-01T13:06:30.703Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -307,8 +307,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-12-30T21:38:32+08:00" content="2020-12-30">
-                2020-12-30
+              <time itemprop="dateUpdated" datetime="2021-01-01T21:06:30+08:00" content="2021-01-01">
+                2021-01-01
               </time>
             </span>
           
@@ -371,7 +371,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  995
+                  1.2k
                 </span>
               
 
@@ -387,7 +387,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  5
+                  6
                 </span>
               
             </div>
@@ -473,10 +473,24 @@
 </ul>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> virsh console ubuntutest</span></span><br><span class="line">Connected to domain ubuntutest</span><br><span class="line">Escape character is ^]</span><br></pre></td></tr></table></figure>
 
-
-
 <h2 id="三-内核编译"><a href="#三-内核编译" class="headerlink" title="三. 内核编译"></a>三. 内核编译</h2><p>&emsp;&emsp;内核编译主要包括源码的下载、解压缩、编译文件的添加、编译选项的修改等步骤。</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2>
+<p>&emsp;&emsp;下载和压缩很简单</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">apt-get install linux-source-4.15.0</span><br><span class="line"></span><br><span class="line">tar vjxkf /usr/src/linux-source-4.15.0.tar.bz2</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;再安装以下依赖包</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt-get install libncurses5-dev libssl-dev bison flex libelf-dev gcc make openssl libc6-dev</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;接着定义编译选项</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">make menuconfig</span><br><span class="line"></span><br><span class="line">Kernel hacking  ---&gt;</span><br><span class="line">Compile-time checks and compiler options  ---&gt;</span><br><span class="line">[*] Compile the kernel with debug info </span><br><span class="line">[*] Compile the kernel with frame pointers</span><br></pre></td></tr></table></figure>
+
+<p> &emsp;&emsp;编译内核可以通过<code>nohup</code>在后台完成，缺点是不易确定啥时候编译完</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">nohup make -j8 &gt; make1.log 2&gt;&amp;1 &amp;</span><br><span class="line">nohup make modules_install &gt; make2.log 2&gt;&amp;1 &amp;</span><br><span class="line">nohup make install &gt; make3.log 2&gt;&amp;1 &amp;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;完成后，启动虚拟机时在GRUB界面选择即可进入新的内核。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>&emsp;&emsp;本文大致介绍了QEMU以及内核编译的知识，有兴趣的可以自己动手试一试。</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] <a href="https://www.kernel.org/doc/html/v4.14/dev-tools/gdb-kernel-debugging.html" target="_blank" rel="noopener">Debugging kernel and modules via gdb</a></p>
+<p>[2] 极客时间 趣谈Linux操作系统</p>
+
       
     </div>
     
@@ -800,7 +814,7 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+        <div class="copyright">&copy; 2020 &mdash; <span itemprop="copyrightYear">2021</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
@@ -814,7 +828,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">175.9k</span>
+    <span title="Site words total count">176.2k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
