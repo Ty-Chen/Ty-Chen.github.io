@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;本文介绍Docker容器实现的三大技能：namespace, cgroup和rootfs，以此希望能从本质上剖析容器，并理解其工作机制和工作中可能会遇到的问题。">
 <meta property="article:published_time" content="2020-12-07T14:11:50.000Z">
-<meta property="article:modified_time" content="2020-12-15T15:56:21.134Z">
+<meta property="article:modified_time" content="2021-01-02T16:01:22.246Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -308,8 +308,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2020-12-15T23:56:21+08:00" content="2020-12-15">
-                2020-12-15
+              <time itemprop="dateUpdated" datetime="2021-01-03T00:01:22+08:00" content="2021-01-03">
+                2021-01-03
               </time>
             </span>
           
@@ -372,7 +372,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  85
+                  242
                 </span>
               
 
@@ -412,8 +412,11 @@
         <h2 id="一-简介"><a href="#一-简介" class="headerlink" title="一. 简介"></a>一. 简介</h2><p>&emsp;&emsp;本文介绍Docker容器实现的三大技能：<code>namespace</code>, <code>cgroup</code>和<code>rootfs</code>，以此希望能从本质上剖析容器，并理解其工作机制和工作中可能会遇到的问题。</p>
 <a id="more"></a>
 
-<h2 id="二-NameSpace"><a href="#二-NameSpace" class="headerlink" title="二. NameSpace"></a>二. NameSpace</h2><p>&emsp;&emsp;<code>namespace</code>是实现“看起来”隔离的关键技术。</p>
-<h2 id="三-Cgroup"><a href="#三-Cgroup" class="headerlink" title="三. Cgroup"></a>三. Cgroup</h2><p>&emsp;&emsp;</p>
+<h2 id="二-NameSpace"><a href="#二-NameSpace" class="headerlink" title="二. NameSpace"></a>二. NameSpace</h2><p>&emsp;&emsp;<code>namespace</code>是实现“看起来”隔离的关键技术，其作用主要是修改进程的视图，使其看起来仿佛是一个新的操作系统进程树。docker使用<code>namespace</code>通常可以通过命令行或者程序调用的方式执行。</p>
+<h3 id="2-1-命令行"><a href="#2-1-命令行" class="headerlink" title="2.1 命令行"></a>2.1 命令行</h3><p>&emsp;&emsp;操作 <code>namespace</code> 的常用指令 <code>nsenter</code>，可以用来运行一个进程，进入指定的 <code>namespace</code>。另一个常用指令是<code>unshare</code>，可以用于离开当前的namespace、创建并加入新的<code>namespacce</code>，然后执行参数中指定的命令。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> nsenter --target 58212 --mount --uts --ipc --net --pid -- env --ignore-environment -- /bin/bash</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> unshare --mount --ipc --pid --net --mount-proc=/proc --fork /bin/bash</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-系统调用"><a href="#2-2-系统调用" class="headerlink" title="2.2 系统调用"></a>2.2 系统调用</h3><h2 id="三-Cgroup"><a href="#三-Cgroup" class="headerlink" title="三. Cgroup"></a>三. Cgroup</h2><p>&emsp;&emsp;</p>
 <h2 id="四-rootfs"><a href="#四-rootfs" class="headerlink" title="四. rootfs"></a>四. rootfs</h2><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2>
       
     </div>
@@ -720,7 +723,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-NameSpace"><span class="nav-text">二. NameSpace</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-Cgroup"><span class="nav-text">三. Cgroup</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-rootfs"><span class="nav-text">四. rootfs</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-NameSpace"><span class="nav-text">二. NameSpace</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-命令行"><span class="nav-text">2.1 命令行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-系统调用"><span class="nav-text">2.2 系统调用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-Cgroup"><span class="nav-text">三. Cgroup</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-rootfs"><span class="nav-text">四. rootfs</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
@@ -754,7 +757,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">176.2k</span>
+    <span title="Site words total count">176.3k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
