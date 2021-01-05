@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;本文介绍Docker容器实现的三大技能：namespace, cgroup和rootfs，以此希望能从本质上剖析容器，并理解其工作机制和工作中可能会遇到的问题。">
 <meta property="article:published_time" content="2020-12-07T14:11:50.000Z">
-<meta property="article:modified_time" content="2021-01-04T16:56:13.729Z">
+<meta property="article:modified_time" content="2021-01-05T16:26:09.955Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -308,8 +308,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2021-01-05T00:56:13+08:00" content="2021-01-05">
-                2021-01-05
+              <time itemprop="dateUpdated" datetime="2021-01-06T00:26:09+08:00" content="2021-01-06">
+                2021-01-06
               </time>
             </span>
           
@@ -372,7 +372,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  846
+                  963
                 </span>
               
 
@@ -388,7 +388,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  3
+                  4
                 </span>
               
             </div>
@@ -433,7 +433,11 @@
 <h3 id="2-3-源码实现"><a href="#2-3-源码实现" class="headerlink" title="2.3 源码实现"></a>2.3 源码实现</h3><p>&emsp;&emsp;<code>namespace</code>的结构体定义于<code>task_struct</code>中的<code>nsproxy</code>，在创建进程时，调用链执行到<code>copy_process()</code>时，会执行<code>copy_namesapces()</code>进行复制和设置。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">task_struct</span> &#123;</span></span><br><span class="line">......</span><br><span class="line">  <span class="comment">/* Namespaces: */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">nsproxy</span>      *<span class="title">nsproxy</span>;</span></span><br><span class="line">......</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * A structure to contain pointers to all per-process</span></span><br><span class="line"><span class="comment"> * namespaces - fs (mount), uts, network, sysvipc, etc.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * The pid namespace is an exception -- it's accessed using</span></span><br><span class="line"><span class="comment"> * task_active_pid_ns.  The pid namespace here is the</span></span><br><span class="line"><span class="comment"> * namespace that children will use.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">nsproxy</span> &#123;</span></span><br><span class="line">  <span class="keyword">atomic_t</span> count;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">uts_namespace</span> *<span class="title">uts_ns</span>;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">ipc_namespace</span> *<span class="title">ipc_ns</span>;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">mnt_namespace</span> *<span class="title">mnt_ns</span>;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">pid_namespace</span> *<span class="title">pid_ns_for_children</span>;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">net</span>        *<span class="title">net_ns</span>;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">cgroup_namespace</span> *<span class="title">cgroup_ns</span>;</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 
-<p>&emsp;&emsp;</p>
+<p>&emsp;&emsp;<code>copy_namespace()</code>源码如下，可见其中如果没有<code>CLONE_NEWNS | CLONE_NEWUTS | CLONE_NEWIPC | CLONE_NEWPID | CLONE_NEWNET | CLONE_NEWCGROUP</code>，就返回原来的 <code>namespace</code>，调用 <code>get_nsproxy</code>，否则调用<code>create_new_namespace()</code>创建新的名字空间。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * called from clone.  This now handles copy for nsproxy and all</span></span><br><span class="line"><span class="comment"> * namespaces therein.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">copy_namespaces</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">long</span> flags, struct task_struct *tsk)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">nsproxy</span> *<span class="title">old_ns</span> = <span class="title">tsk</span>-&gt;<span class="title">nsproxy</span>;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">user_namespace</span> *<span class="title">user_ns</span> = <span class="title">task_cred_xxx</span>(<span class="title">tsk</span>, <span class="title">user_ns</span>);</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">nsproxy</span> *<span class="title">new_ns</span>;</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (likely(!(flags &amp; (CLONE_NEWNS | CLONE_NEWUTS | CLONE_NEWIPC |</span><br><span class="line">            CLONE_NEWPID | CLONE_NEWNET |</span><br><span class="line">            CLONE_NEWCGROUP)))) &#123;</span><br><span class="line">    get_nsproxy(old_ns);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (!ns_capable(user_ns, CAP_SYS_ADMIN))</span><br><span class="line">    <span class="keyword">return</span> -EPERM;</span><br><span class="line">......</span><br><span class="line">  new_ns = create_new_namespaces(flags, tsk, user_ns, tsk-&gt;fs);</span><br><span class="line"></span><br><span class="line">  tsk-&gt;nsproxy = new_ns;</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
 <h2 id="三-Cgroup"><a href="#三-Cgroup" class="headerlink" title="三. Cgroup"></a>三. Cgroup</h2><p>&emsp;&emsp;</p>
 <h2 id="四-rootfs"><a href="#四-rootfs" class="headerlink" title="四. rootfs"></a>四. rootfs</h2><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2>
       
@@ -775,7 +779,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">176.9k</span>
+    <span title="Site words total count">177k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
