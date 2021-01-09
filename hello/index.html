@@ -85,20 +85,13 @@
 <meta property="og:url" content="https://ty-chen.github.io/hello/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;最近学习了一些C内联汇编的知识，简单的尝试了一下，发现里面有很多有趣的东西，分享如下。首先说明，本文的内联使用仅为一个小例子，并不规范，另外32位和64位有着较大区别，本文基于64位Ubuntu16.04环境编译。">
-<meta property="og:image" content="c:%5CUsers%5CRaytine%5CAppData%5CRoaming%5CTypora%5Ctypora-user-images%5Cimage-20210108232100405.png">
-<meta property="og:image" content="c:%5CUsers%5CRaytine%5CAppData%5CRoaming%5CTypora%5Ctypora-user-images%5Cimage-20210108233613134.png">
-<meta property="og:image" content="c:%5CUsers%5CRaytine%5CAppData%5CRoaming%5CTypora%5Ctypora-user-images%5Cimage-20210108233419842.png">
-<meta property="og:image" content="c:%5CUsers%5CRaytine%5CAppData%5CRoaming%5CTypora%5Ctypora-user-images%5Cimage-20210108232254448.png">
-<meta property="og:image" content="c:%5CUsers%5CRaytine%5CAppData%5CRoaming%5CTypora%5Ctypora-user-images%5Cimage-20210108232511426.png">
-<meta property="og:image" content="c:%5CUsers%5CRaytine%5CAppData%5CRoaming%5CTypora%5Ctypora-user-images%5Cimage-20210108234249119.png">
 <meta property="article:published_time" content="2021-01-08T15:15:04.000Z">
-<meta property="article:modified_time" content="2021-01-09T06:41:13.498Z">
+<meta property="article:modified_time" content="2021-01-09T06:59:50.635Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="内嵌汇编">
 <meta property="article:tag" content="objdump">
 <meta property="article:tag" content="链接">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="c:%5CUsers%5CRaytine%5CAppData%5CRoaming%5CTypora%5Ctypora-user-images%5Cimage-20210108232100405.png">
 
 
 
@@ -312,7 +305,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2021-01-09T14:41:13+08:00" content="2021-01-09">
+              <time itemprop="dateUpdated" datetime="2021-01-09T14:59:50+08:00" content="2021-01-09">
                 2021-01-09
               </time>
             </span>
@@ -376,7 +369,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  558
+                  877
                 </span>
               
 
@@ -392,7 +385,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  2
+                  3
                 </span>
               
             </div>
@@ -429,19 +422,22 @@
 <h3 id="2-2-exit"><a href="#2-2-exit" class="headerlink" title="2.2 exit()"></a>2.2 exit()</h3><p>&emsp;&emsp;exit()对应的系统调用为<code>exit()</code>，系统调用号为1，所以<code>rax</code>赋值为1。<code>rbx</code>表示返回值，这里42其实是一个神奇的数字，有兴趣的可以看一看《银河系漫游指南》（大雾）。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F;hello.c</span><br><span class="line">char* str &#x3D; &quot;Hello world!\n&quot;;</span><br><span class="line"></span><br><span class="line">void print()</span><br><span class="line">&#123;</span><br><span class="line">    asm(</span><br><span class="line">        &quot;mov $13, %%rdx \n\t&quot;</span><br><span class="line">        &quot;mov %0,  %%rcx \n\t&quot;</span><br><span class="line">        &quot;mov $0,  %%rbx \n\t&quot;</span><br><span class="line">        &quot;mov $4,  %%rax \n\t&quot;</span><br><span class="line">        &quot;int $0x80       \n\t&quot;</span><br><span class="line">        ::&quot;r&quot;(str):&quot;rdx&quot;,&quot;rcx&quot;,&quot;rbx&quot;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void exit()</span><br><span class="line">&#123;</span><br><span class="line">    asm(</span><br><span class="line">        &quot;mov $42, %rbx \n\t&quot;</span><br><span class="line">        &quot;mov $1,  %rax \n\t&quot;</span><br><span class="line">        &quot;int $0x80      \n\t&quot;</span><br><span class="line">    );</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void hello()</span><br><span class="line">&#123;</span><br><span class="line">    print();</span><br><span class="line">    exit();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>注意，本代码为64位编译环境，如果是32位需要改为<code>movl</code>配合<code>ebx/ecx</code>系列或者编译时加上<code>-m32</code>选项。</p>
+<p>&emsp;&emsp;注意，本代码为64位编译环境，如果是32位需要改为<code>movl</code>配合<code>ebx/ecx</code>系列或者编译时加上<code>-m32</code>选项。</p>
 <h2 id="三-编译和执行"><a href="#三-编译和执行" class="headerlink" title="三. 编译和执行"></a>三. 编译和执行</h2><p>&emsp;&emsp;使用如下命令编译和链接，生成可执行文件</p>
-<p><img src="C:%5CUsers%5CRaytine%5CAppData%5CRoaming%5CTypora%5Ctypora-user-images%5Cimage-20210108232100405.png" alt="image-20210108232100405"></p>
-<p><img src="C:%5CUsers%5CRaytine%5CAppData%5CRoaming%5CTypora%5Ctypora-user-images%5Cimage-20210108233613134.png" alt="image-20210108233613134"></p>
-<h2 id="四-分析"><a href="#四-分析" class="headerlink" title="四. 分析"></a>四. 分析</h2><p><img src="C:%5CUsers%5CRaytine%5CAppData%5CRoaming%5CTypora%5Ctypora-user-images%5Cimage-20210108233419842.png" alt="image-20210108233419842"></p>
-<p><img src="C:%5CUsers%5CRaytine%5CAppData%5CRoaming%5CTypora%5Ctypora-user-images%5Cimage-20210108232254448.png" alt="image-20210108232254448"></p>
-<p><img src="C:%5CUsers%5CRaytine%5CAppData%5CRoaming%5CTypora%5Ctypora-user-images%5Cimage-20210108232511426.png" alt="image-20210108232511426"></p>
-<p><img src="C:%5CUsers%5CRaytine%5CAppData%5CRoaming%5CTypora%5Ctypora-user-images%5Cimage-20210108234249119.png" alt="image-20210108234249119"></p>
-<h2 id="五-自制lds"><a href="#五-自制lds" class="headerlink" title="五. 自制lds"></a>五. 自制<code>lds</code></h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">ENTRY(hello)</span><br><span class="line"></span><br><span class="line">SECTIONS</span><br><span class="line">&#123;</span><br><span class="line">    . &#x3D; 0X00000000 + SIZEOF_HEADERS;</span><br><span class="line">    </span><br><span class="line">    tinytext : &#123;*(.text) *(.data) *(.rodata)&#125;</span><br><span class="line">    </span><br><span class="line">    &#x2F;DISCARD&#x2F; : &#123;*(.comment)&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">gcc -c -fno-builtin hello.c</span><br><span class="line">ld -static -e hello -o hello hello.o</span><br></pre></td></tr></table></figure>
 
+<p>&emsp;&emsp;运行hello可见如下结果</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> ./hello</span></span><br><span class="line">Hello world!</span><br><span class="line"><span class="meta">$</span><span class="bash"> <span class="built_in">echo</span> $?</span></span><br><span class="line">42</span><br></pre></td></tr></table></figure>
 
+<h2 id="四-自制lds"><a href="#四-自制lds" class="headerlink" title="四. 自制lds"></a>四. 自制<code>lds</code></h2><p>&emsp;&emsp;通过<code>objdump</code>可以看到<code>hello</code>包括了<code>.data, .text, .rodata</code>等字段，同时还有<code>.comment</code>。这里我们尝试自己制作链接脚本，使这三个字段合并，同时去掉<code>.comment</code>字段，这样子应该可以让可执行文件的大小大大缩减。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">ENTRY(hello)</span><br><span class="line"></span><br><span class="line">SECTIONS</span><br><span class="line">&#123;</span><br><span class="line">    . &#x3D; 0X00000000 + SIZEOF_HEADERS;</span><br><span class="line">    </span><br><span class="line">    tinytext : &#123;*(.text) *(.data) *(.rodata)&#125;</span><br><span class="line">    </span><br><span class="line">    &#x2F;DISCARD&#x2F; : &#123;*(.comment)&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2>
+<p>&emsp;&emsp;再次编译</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ld -static -T hello.lds -o hello hello.o</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;编译完依然可以正常执行，通过<code>objdump</code>可见已经生效，可执行文件的大小从<code>1.6KB</code>成功缩减到<code>704B</code>，所以就算是成功了。实际还可以通过<code>-s</code>再次减小大小。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>&emsp;&emsp;本文基于中断，汇编，编译，链接等知识，进行一次综合性的上手小实验，适合新人们做为入门级小尝试来步入学习。另外内联汇编本身较为复杂，本文进行了大量简化，实际在源码及工业级运用会需要考虑更多的安全性等因素，同时80中断实际并不适合在64位使用，这个回头会再写一篇文章专门叙述。鉴于水平有限，还望大佬们多多指点不足之处，共同进步。</p>
+<h2 id=""><a href="#" class="headerlink" title=""></a></h2>
       
     </div>
     
@@ -737,7 +733,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-源码介绍"><span class="nav-text">二. 源码介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-print"><span class="nav-text">2.1 print()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-exit"><span class="nav-text">2.2 exit()</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-编译和执行"><span class="nav-text">三. 编译和执行</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-分析"><span class="nav-text">四. 分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-自制lds"><span class="nav-text">五. 自制lds</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-源码介绍"><span class="nav-text">二. 源码介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-print"><span class="nav-text">2.1 print()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-exit"><span class="nav-text">2.2 exit()</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-编译和执行"><span class="nav-text">三. 编译和执行</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-自制lds"><span class="nav-text">四. 自制lds</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#"><span class="nav-text"></span></a></li></ol></div>
             
 
           </div>
@@ -771,7 +767,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">177.8k</span>
+    <span title="Site words total count">178.1k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
