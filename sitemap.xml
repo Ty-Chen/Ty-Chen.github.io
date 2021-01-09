@@ -2,6 +2,20 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://ty-chen.github.io/hello/</loc>
+    
+    <lastmod>2021-01-08T16:07:58.527Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://ty-chen.github.io/volatile/</loc>
+    
+    <lastmod>2021-01-08T15:16:06.647Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://ty-chen.github.io/linux-kernel-docker/</loc>
     
     <lastmod>2021-01-07T16:21:07.725Z</lastmod>
@@ -75,13 +89,6 @@
     <loc>https://ty-chen.github.io/linux-kernel-bootstrap/</loc>
     
     <lastmod>2020-12-02T14:51:37.874Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://ty-chen.github.io/volatile/</loc>
-    
-    <lastmod>2020-11-29T12:06:23.948Z</lastmod>
     
   </url>
   
