@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;最近学习了一些C内联汇编的知识，简单的尝试了一下，发现里面有很多有趣的东西，分享如下。首先说明，本文的内联使用仅为一个小例子，并不规范，另外32位和64位有着较大区别，本文基于64位Ubuntu16.04环境编译。">
 <meta property="article:published_time" content="2021-01-08T15:15:04.000Z">
-<meta property="article:modified_time" content="2021-01-11T16:09:09.333Z">
+<meta property="article:modified_time" content="2021-01-14T16:50:24.850Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="内嵌汇编">
 <meta property="article:tag" content="objdump">
@@ -305,8 +305,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2021-01-12T00:09:09+08:00" content="2021-01-12">
-                2021-01-12
+              <time itemprop="dateUpdated" datetime="2021-01-15T00:50:24+08:00" content="2021-01-15">
+                2021-01-15
               </time>
             </span>
           
@@ -369,7 +369,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  937
+                  960
                 </span>
               
 
@@ -426,10 +426,13 @@
 <h2 id="三-编译和执行"><a href="#三-编译和执行" class="headerlink" title="三. 编译和执行"></a>三. 编译和执行</h2><p>&emsp;&emsp;使用如下命令编译和链接，生成可执行文件。这里<code>-fno-builtin</code>表示不进行编译器优化。否则对于纯字符串的<code>printf()</code>，编译器会自动优化为使用<code>puts()</code>函数。另外链接时，<code>-e hello</code>表示入口函数为<code>hello()</code>，而非常见的<code>main()</code>函数。</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">gcc -c -fno-builtin hello.c</span><br><span class="line">ld -static -e hello -o hello hello.o</span><br></pre></td></tr></table></figure>
 
-<p>&emsp;&emsp;运行hello可见如下结果</p>
+<p>&emsp;&emsp;运行hello可见如下结果，输出成功，返回值为预设的42。</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> ./hello</span></span><br><span class="line">Hello world!</span><br><span class="line"><span class="meta">$</span><span class="bash"> <span class="built_in">echo</span> $?</span></span><br><span class="line">42</span><br></pre></td></tr></table></figure>
 
 <h2 id="四-自制lds"><a href="#四-自制lds" class="headerlink" title="四. 自制lds"></a>四. 自制<code>lds</code></h2><p>&emsp;&emsp;通过<code>objdump</code>可以看到<code>hello</code>包括了<code>.data, .text, .rodata</code>等字段，同时还有<code>.comment</code>。这里我们尝试自己制作链接脚本，使这三个字段合并，同时去掉<code>.comment</code>字段，这样子应该可以让可执行文件的大小大大缩减。</p>
+<ul>
+<li><code>ENTRY</code>表明了入口函数为<code>hello</code>函数</li>
+</ul>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">ENTRY(hello)</span><br><span class="line"></span><br><span class="line">SECTIONS</span><br><span class="line">&#123;</span><br><span class="line">    . &#x3D; 0X00000000 + SIZEOF_HEADERS;</span><br><span class="line">    </span><br><span class="line">    tinytext : &#123;*(.text) *(.data) *(.rodata)&#125;</span><br><span class="line">    </span><br><span class="line">    &#x2F;DISCARD&#x2F; : &#123;*(.comment)&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>&emsp;&emsp;再次编译</p>
