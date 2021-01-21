@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="内嵌汇编,objdump,链接," />
+  <meta name="keywords" content="objdump,函数返回值,；临时栈," />
 
 
 
@@ -79,18 +79,18 @@
 
 
 
-<meta name="description" content="一. 简介&amp;emsp;&amp;emsp;之前写了一个C内联汇编的小例子，其中用到了80中断。就在我写完了“沾沾自喜”的时候，有个谷歌大佬指点说32位采用80中断，64位下这么写是不合适的。由此我们展开更深入的分析，搞清楚32和64下陷入中断的区别。">
+<meta name="description" content="一. 简介&amp;emsp;&amp;emsp;最近有同学问为什么函数返回值选择返回对象指针而不是对象，所以就此展开来深入分析一下。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="0x80和syscall深入分析">
+<meta property="og:title" content="函数返回值的坑">
 <meta property="og:url" content="https://ty-chen.github.io/0x80-and-syscall/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
-<meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;之前写了一个C内联汇编的小例子，其中用到了80中断。就在我写完了“沾沾自喜”的时候，有个谷歌大佬指点说32位采用80中断，64位下这么写是不合适的。由此我们展开更深入的分析，搞清楚32和64下陷入中断的区别。">
+<meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;最近有同学问为什么函数返回值选择返回对象指针而不是对象，所以就此展开来深入分析一下。">
 <meta property="article:published_time" content="2021-01-17T13:04:39.000Z">
-<meta property="article:modified_time" content="2021-01-17T13:07:06.204Z">
+<meta property="article:modified_time" content="2021-01-21T14:58:21.863Z">
 <meta property="article:author" content="Ty Chen">
-<meta property="article:tag" content="内嵌汇编">
 <meta property="article:tag" content="objdump">
-<meta property="article:tag" content="链接">
+<meta property="article:tag" content="函数返回值">
+<meta property="article:tag" content="；临时栈">
 <meta name="twitter:card" content="summary">
 
 
@@ -127,7 +127,7 @@
 
 
 
-  <title>0x80和syscall深入分析 | Ty-Chen's Home</title>
+  <title>函数返回值的坑 | Ty-Chen's Home</title>
   
 
 
@@ -281,7 +281,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">0x80和syscall深入分析</h1>
+          <h1 class="post-title" itemprop="name headline">函数返回值的坑</h1>
         
 
         <div class="post-meta">
@@ -305,8 +305,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2021-01-17T21:07:06+08:00" content="2021-01-17">
-                2021-01-17
+              <time itemprop="dateUpdated" datetime="2021-01-21T22:58:21+08:00" content="2021-01-21">
+                2021-01-21
               </time>
             </span>
           
@@ -369,7 +369,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  92
+                  246
                 </span>
               
 
@@ -406,8 +406,17 @@
       
 
       
-        <h2 id="一-简介"><a href="#一-简介" class="headerlink" title="一. 简介"></a>一. 简介</h2><p>&emsp;&emsp;之前写了一个C内联汇编的小例子，其中用到了80中断。就在我写完了“沾沾自喜”的时候，有个谷歌大佬指点说32位采用80中断，64位下这么写是不合适的。由此我们展开更深入的分析，搞清楚32和64下陷入中断的区别。</p>
+        <h2 id="一-简介"><a href="#一-简介" class="headerlink" title="一. 简介"></a>一. 简介</h2><p>&emsp;&emsp;最近有同学问为什么函数返回值选择返回对象指针而不是对象，所以就此展开来深入分析一下。</p>
 <a id="more"></a>
+
+<h2 id="二-一个简单的小例子"><a href="#二-一个简单的小例子" class="headerlink" title="二. 一个简单的小例子"></a>二. 一个简单的小例子</h2><p>&emsp;&emsp;</p>
+<h2 id="三-C-的小例子"><a href="#三-C-的小例子" class="headerlink" title="三. C++的小例子"></a>三. C++的小例子</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Obj</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Obj()</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"constructor"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    Obj(<span class="keyword">const</span> Obj&amp; obj)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"copy constructor"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    Obj&amp; <span class="keyword">operator</span>=(<span class="keyword">const</span> Obj&amp; rhs)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"operator = "</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">        <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ~Obj()</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"destructor"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function">Obj <span class="title">returnTest</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Obj b;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"before return"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> b;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Obj obj;</span><br><span class="line">    obj = returnTest();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">    obj &#x3D; returnTest();</span><br><span class="line">00E4282F  lea         eax,[ebp-0E1h]  </span><br><span class="line">00E42835  push        eax  </span><br><span class="line">00E42836  call        returnTest (0E413A7h)  </span><br><span class="line">00E4283B  add         esp,4  </span><br><span class="line">00E4283E  mov         dword ptr [ebp-0F8h],eax  </span><br><span class="line">00E42844  mov         ecx,dword ptr [ebp-0F8h]  </span><br><span class="line">00E4284A  mov         dword ptr [ebp-0FCh],ecx  </span><br><span class="line">00E42850  mov         byte ptr [ebp-4],1  </span><br><span class="line">00E42854  mov         edx,dword ptr [ebp-0FCh]  </span><br><span class="line">00E4285A  push        edx  </span><br><span class="line">00E4285B  lea         ecx,[obj]  </span><br><span class="line">00E4285E  call        Obj::operator&#x3D; (0E41140h)  </span><br><span class="line">00E42863  mov         byte ptr [ebp-4],0  </span><br><span class="line">00E42867  lea         ecx,[ebp-0E1h]  </span><br><span class="line">00E4286D  call        Obj::~Obj (0E41357h)</span><br></pre></td></tr></table></figure>
+
+
       
     </div>
     
@@ -456,7 +465,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="https://ty-chen.github.io/0x80-and-syscall/" title="0x80和syscall深入分析">https://ty-chen.github.io/0x80-and-syscall/</a>
+    <a href="https://ty-chen.github.io/0x80-and-syscall/" title="函数返回值的坑">https://ty-chen.github.io/0x80-and-syscall/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>
@@ -471,11 +480,11 @@
       
         <div class="post-tags">
           
-            <a href="/tags/%E5%86%85%E5%B5%8C%E6%B1%87%E7%BC%96/" rel="tag"># 内嵌汇编</a>
-          
             <a href="/tags/objdump/" rel="tag"># objdump</a>
           
-            <a href="/tags/%E9%93%BE%E6%8E%A5/" rel="tag"># 链接</a>
+            <a href="/tags/%E5%87%BD%E6%95%B0%E8%BF%94%E5%9B%9E%E5%80%BC/" rel="tag"># 函数返回值</a>
+          
+            <a href="/tags/%EF%BC%9B%E4%B8%B4%E6%97%B6%E6%A0%88/" rel="tag"># ；临时栈</a>
           
         </div>
       
@@ -640,7 +649,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">68</span>
+                  <span class="site-state-item-count">70</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -703,7 +712,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-一个简单的小例子"><span class="nav-text">二. 一个简单的小例子</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-C-的小例子"><span class="nav-text">三. C++的小例子</span></a></li></ol></div>
             
 
           </div>
@@ -737,7 +746,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">178.3k</span>
+    <span title="Site words total count">178.4k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
