@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;脚本语言，即动态语言，其相较于静态语言如C&#x2F;C++&#x2F;GO等，一大区别即不需要经过计算机的预处理、编译、汇编、链接，而是由虚拟机代为完成上述过程。虚拟机模拟真实的步骤，首先将脚本语言转化为特定的opcode（各脚本语言自行定义），接着放在虚拟机中逐个执行。Lua作为一门嵌入式语言，其虚拟机附着于宿主环境中而非单独存在，其核心问题主要包括：  如何分析源代码文件生成O">
 <meta property="article:published_time" content="2021-04-03T16:20:57.000Z">
-<meta property="article:modified_time" content="2021-04-10T16:36:34.578Z">
+<meta property="article:modified_time" content="2021-04-11T13:57:45.110Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="CPU">
 <meta property="article:tag" content="Lua">
@@ -305,7 +305,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2021-04-11T00:36:34+08:00" content="2021-04-11">
+              <time itemprop="dateUpdated" datetime="2021-04-11T21:57:45+08:00" content="2021-04-11">
                 2021-04-11
               </time>
             </span>
@@ -369,7 +369,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  341
+                  468
                 </span>
               
 
@@ -385,7 +385,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  1
+                  2
                 </span>
               
             </div>
@@ -423,7 +423,11 @@
 <li>调用<code>lua_pcall()</code>执行</li>
 </ul>
 <p>下面几节就详细展开进行叙述，并补充LuaJIT的实现方式的不同之处。</p>
-<h2 id="二-opcode的生成"><a href="#二-opcode的生成" class="headerlink" title="二. opcode的生成"></a>二. opcode的生成</h2><p>&emsp;&emsp;</p>
+<h2 id="二-opcode的生成"><a href="#二-opcode的生成" class="headerlink" title="二. opcode的生成"></a>二. opcode的生成</h2><p>&emsp;&emsp;<code>luaL_loadfile()</code>最终调用<code>f_parser()</code>函数，对<code>Lua</code>代码进行语法语义分析。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">(ldo.c)</span><br><span class="line"><span class="number">490</span> <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">f_parser</span> <span class="params">(lua_State *L, <span class="keyword">void</span> *ud)</span> </span>&#123;</span><br><span class="line"><span class="number">491</span>   <span class="keyword">int</span> i;</span><br><span class="line"><span class="number">492</span>   Proto *tf;</span><br><span class="line"><span class="number">493</span>   Closure *cl;</span><br><span class="line"><span class="number">494</span>   <span class="class"><span class="keyword">struct</span> <span class="title">SParser</span> *<span class="title">p</span> = <span class="title">cast</span>(<span class="title">struct</span> <span class="title">SParser</span> *, <span class="title">ud</span>);</span></span><br><span class="line"><span class="number">495</span>   <span class="keyword">int</span> c = luaZ_lookahead(p-&gt;z);</span><br><span class="line"><span class="number">496</span>   luaC_checkGC(L);</span><br><span class="line"><span class="number">497</span>   tf = ((c == LUA_SIGNATURE[<span class="number">0</span>]) ? luaU_undump : luaY_parser)(L, p-&gt;z,</span><br><span class="line"><span class="number">498</span>                                                              &amp;p-&gt;buff, p-&gt;name);</span><br><span class="line"><span class="number">499</span>   cl = luaF_newLclosure(L, tf-&gt;nups, hvalue(gt(L)));</span><br><span class="line"><span class="number">500</span>   cl-&gt;l.p = tf;</span><br><span class="line"><span class="number">501</span>   <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; tf-&gt;nups; i++)  <span class="comment">/* initialize eventual upvalues */</span></span><br><span class="line"><span class="number">502</span>     cl-&gt;l.upvals[i] = luaF_newupval(L);</span><br><span class="line"><span class="number">503</span>   setclvalue(L, L-&gt;top, cl);</span><br><span class="line"><span class="number">504</span>   incr_top(L);</span><br><span class="line"><span class="number">505</span> &#125;</span><br></pre></td></tr></table></figure>
+
+
+
 <h2 id="三-opcode的执行"><a href="#三-opcode的执行" class="headerlink" title="三. opcode的执行"></a>三. opcode的执行</h2><p>&emsp;&emsp;</p>
 <h2 id="四-上下文环境切换"><a href="#四-上下文环境切换" class="headerlink" title="四. 上下文环境切换"></a>四. 上下文环境切换</h2><p>&emsp;&emsp;</p>
 <h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><ol>
@@ -761,7 +765,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">180.9k</span>
+    <span title="Site words total count">181.1k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
