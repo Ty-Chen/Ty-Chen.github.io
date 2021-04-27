@@ -79,14 +79,14 @@
 
 
 
-<meta name="description" content="一. 简介&amp;emsp;&amp;emsp;脚本语言，即动态语言，其相较于静态语言如C&#x2F;C++&#x2F;GO等，一大区别即不需要经过计算机的预处理、编译、汇编、链接，而是由虚拟机代为完成上述过程。虚拟机模拟真实的步骤，首先将脚本语言转化为特定的opcode（各脚本语言自行定义），接着放在虚拟机中逐个执行。Lua作为一门嵌入式语言，其虚拟机附着于宿主环境中而非单独存在，其核心问题主要包括：  如何分析源代码文件生成O">
+<meta name="description" content="一. 简介&amp;emsp;&amp;emsp;脚本语言，即动态语言，其相较于静态语言如C&#x2F;C++&#x2F;GO等，一大区别即不需要经过计算机的预处理、编译、汇编、链接，而是由虚拟机代为完成上述过程。虚拟机模拟真实的步骤，首先将脚本语言转化为特定的opcode（各脚本语言自行定义），接着放在虚拟机中逐个执行，模拟了CPU及内存的基本功能。Lua作为一门嵌入式语言，其虚拟机附着于宿主环境中而非单独存在，其核心问题主要包括">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Lua虚拟机深度剖析">
 <meta property="og:url" content="https://ty-chen.github.io/lua-linux/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
-<meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;脚本语言，即动态语言，其相较于静态语言如C&#x2F;C++&#x2F;GO等，一大区别即不需要经过计算机的预处理、编译、汇编、链接，而是由虚拟机代为完成上述过程。虚拟机模拟真实的步骤，首先将脚本语言转化为特定的opcode（各脚本语言自行定义），接着放在虚拟机中逐个执行。Lua作为一门嵌入式语言，其虚拟机附着于宿主环境中而非单独存在，其核心问题主要包括：  如何分析源代码文件生成O">
+<meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;脚本语言，即动态语言，其相较于静态语言如C&#x2F;C++&#x2F;GO等，一大区别即不需要经过计算机的预处理、编译、汇编、链接，而是由虚拟机代为完成上述过程。虚拟机模拟真实的步骤，首先将脚本语言转化为特定的opcode（各脚本语言自行定义），接着放在虚拟机中逐个执行，模拟了CPU及内存的基本功能。Lua作为一门嵌入式语言，其虚拟机附着于宿主环境中而非单独存在，其核心问题主要包括">
 <meta property="article:published_time" content="2021-04-03T16:20:57.000Z">
-<meta property="article:modified_time" content="2021-04-25T16:12:40.715Z">
+<meta property="article:modified_time" content="2021-04-27T16:13:53.295Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="CPU">
 <meta property="article:tag" content="Lua">
@@ -305,8 +305,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2021-04-26T00:12:40+08:00" content="2021-04-26">
-                2021-04-26
+              <time itemprop="dateUpdated" datetime="2021-04-28T00:13:53+08:00" content="2021-04-28">
+                2021-04-28
               </time>
             </span>
           
@@ -406,7 +406,7 @@
       
 
       
-        <h2 id="一-简介"><a href="#一-简介" class="headerlink" title="一. 简介"></a>一. 简介</h2><p>&emsp;&emsp;脚本语言，即动态语言，其相较于静态语言如C/C++/GO等，一大区别即不需要经过计算机的预处理、编译、汇编、链接，而是由虚拟机代为完成上述过程。虚拟机模拟真实的步骤，首先将脚本语言转化为特定的opcode（各脚本语言自行定义），接着放在虚拟机中逐个执行。Lua作为一门嵌入式语言，其虚拟机附着于宿主环境中而非单独存在，其核心问题主要包括：</p>
+        <h2 id="一-简介"><a href="#一-简介" class="headerlink" title="一. 简介"></a>一. 简介</h2><p>&emsp;&emsp;脚本语言，即动态语言，其相较于静态语言如C/C++/GO等，一大区别即不需要经过计算机的预处理、编译、汇编、链接，而是由虚拟机代为完成上述过程。虚拟机模拟真实的步骤，首先将脚本语言转化为特定的opcode（各脚本语言自行定义），接着放在虚拟机中逐个执行，模拟了CPU及内存的基本功能。Lua作为一门嵌入式语言，其虚拟机附着于宿主环境中而非单独存在，其核心问题主要包括：</p>
 <ul>
 <li>如何分析源代码文件生成Opcode</li>
 <li>如何执行Opcode指令</li>
