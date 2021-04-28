@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;脚本语言，即动态语言，其相较于静态语言如C&#x2F;C++&#x2F;GO等，一大区别即不需要经过计算机的预处理、编译、汇编、链接，而是由虚拟机代为完成上述过程。虚拟机模拟真实的步骤，首先将脚本语言转化为特定的opcode（各脚本语言自行定义），接着放在虚拟机中逐个执行，模拟了CPU及内存的基本功能。Lua作为一门嵌入式语言，其虚拟机附着于宿主环境中而非单独存在，其核心问题主要包括">
 <meta property="article:published_time" content="2021-04-03T16:20:57.000Z">
-<meta property="article:modified_time" content="2021-04-27T16:13:53.295Z">
+<meta property="article:modified_time" content="2021-04-28T16:38:42.460Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="CPU">
 <meta property="article:tag" content="Lua">
@@ -305,8 +305,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2021-04-28T00:13:53+08:00" content="2021-04-28">
-                2021-04-28
+              <time itemprop="dateUpdated" datetime="2021-04-29T00:38:42+08:00" content="2021-04-29">
+                2021-04-29
               </time>
             </span>
           
@@ -369,7 +369,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  2.5k
+                  2.6k
                 </span>
               
 
@@ -385,7 +385,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  12
+                  13
                 </span>
               
             </div>
@@ -430,6 +430,8 @@
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">** Information about a call.</span></span><br><span class="line"><span class="comment">** When a thread yields, 'func' is adjusted to pretend that the</span></span><br><span class="line"><span class="comment">** top function has only the yielded values in its stack; in that</span></span><br><span class="line"><span class="comment">** case, the actual 'func' value is saved in field 'extra'.</span></span><br><span class="line"><span class="comment">** When a function calls another with a continuation, 'extra' keeps</span></span><br><span class="line"><span class="comment">** the function index so that, in case of errors, the continuation</span></span><br><span class="line"><span class="comment">** function can be called with the correct top.</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">CallInfo</span> &#123;</span></span><br><span class="line">  StkId func;  <span class="comment">/* function index in the stack */</span></span><br><span class="line">  StkId	top;  <span class="comment">/* top for this function */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">CallInfo</span> *<span class="title">previous</span>, *<span class="title">next</span>;</span>  <span class="comment">/* dynamic call link */</span></span><br><span class="line">  <span class="keyword">union</span> &#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> &#123;</span>  <span class="comment">/* only for Lua functions */</span></span><br><span class="line">      StkId base;  <span class="comment">/* base for this function */</span></span><br><span class="line">      <span class="keyword">const</span> Instruction *savedpc;</span><br><span class="line">    &#125; l;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> &#123;</span>  <span class="comment">/* only for C functions */</span></span><br><span class="line">      lua_KFunction k;  <span class="comment">/* continuation in case of yields */</span></span><br><span class="line">      <span class="keyword">ptrdiff_t</span> old_errfunc;</span><br><span class="line">      lua_KContext ctx;  <span class="comment">/* context info. in case of yields */</span></span><br><span class="line">    &#125; c;</span><br><span class="line">  &#125; u;</span><br><span class="line">  <span class="keyword">ptrdiff_t</span> extra;</span><br><span class="line">  short nresults;  <span class="comment">/* expected number of results from this function */</span></span><br><span class="line">  <span class="keyword">unsigned</span> short callstatus;</span><br><span class="line">&#125; CallInfo;</span><br></pre></td></tr></table></figure>
 
 <p>&emsp;&emsp;<code>lua_State</code>和<code>CallInfo</code>初始化主要在<code>stack_init()</code>函数中执行。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">(lstate.c)</span><br><span class="line"><span class="number">42</span> <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">stack_init</span> <span class="params">(lua_State *L1, lua_State *L)</span> </span>&#123;</span><br><span class="line"><span class="number">43</span>   <span class="comment">/* initialize CallInfo array */</span></span><br><span class="line"><span class="number">44</span>   L1-&gt;base_ci = luaM_newvector(L, BASIC_CI_SIZE, CallInfo);</span><br><span class="line"><span class="number">45</span>   L1-&gt;ci = L1-&gt;base_ci;</span><br><span class="line"><span class="number">46</span>   L1-&gt;size_ci = BASIC_CI_SIZE;</span><br><span class="line"><span class="number">47</span>   L1-&gt;end_ci = L1-&gt;base_ci + L1-&gt;size_ci - <span class="number">1</span>;</span><br><span class="line"><span class="number">48</span>   <span class="comment">/* initialize stack array */</span></span><br><span class="line"><span class="number">49</span>   L1-&gt;<span class="built_in">stack</span> = luaM_newvector(L, BASIC_STACK_SIZE + EXTRA_STACK, TValue);</span><br><span class="line"><span class="number">50</span>   L1-&gt;stacksize = BASIC_STACK_SIZE + EXTRA_STACK;</span><br><span class="line"><span class="number">51</span>   L1-&gt;top = L1-&gt;<span class="built_in">stack</span>;</span><br><span class="line"><span class="number">52</span>   L1-&gt;stack_last = L1-&gt;<span class="built_in">stack</span>+(L1-&gt;stacksize - EXTRA_STACK)<span class="number">-1</span>;</span><br><span class="line"><span class="number">53</span>   <span class="comment">/* initialize first ci */</span></span><br><span class="line"><span class="number">54</span>   L1-&gt;ci-&gt;func = L1-&gt;top;</span><br><span class="line"><span class="number">55</span>   setnilvalue(L1-&gt;top++);  <span class="comment">/* `function' entry for this `ci' */</span></span><br><span class="line"><span class="number">56</span>   L1-&gt;base = L1-&gt;ci-&gt;base = L1-&gt;top;</span><br><span class="line"><span class="number">57</span>   L1-&gt;ci-&gt;top = L1-&gt;top + LUA_MINSTACK;</span><br><span class="line"><span class="number">58</span> &#125;</span><br></pre></td></tr></table></figure>
+
 <p>&emsp;&emsp;除此之外，还需要注意<code>Closure</code>结构体及<code>Proto</code>结构体。Lua的函数有三种类型： </p>
 <ul>
 <li>Lua 函数 (LUA_TLCL)</li>
@@ -821,7 +823,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">183.1k</span>
+    <span title="Site words total count">183.2k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
