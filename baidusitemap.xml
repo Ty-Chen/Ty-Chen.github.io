@@ -2,7 +2,11 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://ty-chen.github.io/lua-linux/</loc>
-    <lastmod>2021-04-29</lastmod>
+    <lastmod>2021-05-16</lastmod>
+  </url>
+  <url>
+    <loc>https://ty-chen.github.io/lua-vm-md/</loc>
+    <lastmod>2021-05-16</lastmod>
   </url>
   <url>
     <loc>https://ty-chen.github.io/ret-val/</loc>

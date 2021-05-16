@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="CPU,Lua,虚拟机," />
+  <meta name="keywords" content="Lua,虚拟机,栈," />
 
 
 
@@ -79,18 +79,18 @@
 
 
 
-<meta name="description" content="一. 简介&amp;emsp;&amp;emsp;脚本语言，即动态语言，其相较于静态语言如C&#x2F;C++&#x2F;GO等，一大区别即不需要经过计算机的预处理、编译、汇编、链接，而是由虚拟机代为完成上述过程。虚拟机模拟真实的步骤，首先将脚本语言转化为特定的opcode（各脚本语言自行定义），接着放在虚拟机中逐个执行，模拟了CPU及内存的基本功能。Lua作为一门嵌入式语言，其虚拟机附着于宿主环境中而非单独存在，其核心问题主要包括">
+<meta name="description" content="一. 简介&amp;emsp;&amp;emsp;Lua是一种脚本语言，在游戏、嵌入式等领域有着众多应用。本系列文章会沿着基本数据结构、Lua虚拟机、Lua环境、gc回收、Lua特色等方面来分析Lua的实现，从而做到对其语言充分的了解。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Lua虚拟机深度剖析">
+<meta property="og:title" content="Lua源码剖析（一）基本数据结构">
 <meta property="og:url" content="https://ty-chen.github.io/lua-linux/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
-<meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;脚本语言，即动态语言，其相较于静态语言如C&#x2F;C++&#x2F;GO等，一大区别即不需要经过计算机的预处理、编译、汇编、链接，而是由虚拟机代为完成上述过程。虚拟机模拟真实的步骤，首先将脚本语言转化为特定的opcode（各脚本语言自行定义），接着放在虚拟机中逐个执行，模拟了CPU及内存的基本功能。Lua作为一门嵌入式语言，其虚拟机附着于宿主环境中而非单独存在，其核心问题主要包括">
+<meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;Lua是一种脚本语言，在游戏、嵌入式等领域有着众多应用。本系列文章会沿着基本数据结构、Lua虚拟机、Lua环境、gc回收、Lua特色等方面来分析Lua的实现，从而做到对其语言充分的了解。">
 <meta property="article:published_time" content="2021-04-03T16:20:57.000Z">
-<meta property="article:modified_time" content="2021-04-29T16:10:08.216Z">
+<meta property="article:modified_time" content="2021-05-16T14:24:52.187Z">
 <meta property="article:author" content="Ty Chen">
-<meta property="article:tag" content="CPU">
 <meta property="article:tag" content="Lua">
 <meta property="article:tag" content="虚拟机">
+<meta property="article:tag" content="栈">
 <meta name="twitter:card" content="summary">
 
 
@@ -127,7 +127,7 @@
 
 
 
-  <title>Lua虚拟机深度剖析 | Ty-Chen's Home</title>
+  <title>Lua源码剖析（一）基本数据结构 | Ty-Chen's Home</title>
   
 
 
@@ -281,7 +281,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">Lua虚拟机深度剖析</h1>
+          <h1 class="post-title" itemprop="name headline">Lua源码剖析（一）基本数据结构</h1>
         
 
         <div class="post-meta">
@@ -305,8 +305,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2021-04-30T00:10:08+08:00" content="2021-04-30">
-                2021-04-30
+              <time itemprop="dateUpdated" datetime="2021-05-16T22:24:52+08:00" content="2021-05-16">
+                2021-05-16
               </time>
             </span>
           
@@ -323,8 +323,8 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%BC%96%E7%A8%8B%E9%9A%8F%E7%AC%94/" itemprop="url" rel="index">
-                    <span itemprop="name">编程随笔</span>
+                  <a href="/categories/Lua%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index">
+                    <span itemprop="name">Lua学习</span>
                   </a>
                 </span>
 
@@ -369,7 +369,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  2.6k
+                  995
                 </span>
               
 
@@ -385,7 +385,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  13
+                  5
                 </span>
               
             </div>
@@ -406,24 +406,10 @@
       
 
       
-        <h2 id="一-简介"><a href="#一-简介" class="headerlink" title="一. 简介"></a>一. 简介</h2><p>&emsp;&emsp;脚本语言，即动态语言，其相较于静态语言如C/C++/GO等，一大区别即不需要经过计算机的预处理、编译、汇编、链接，而是由虚拟机代为完成上述过程。虚拟机模拟真实的步骤，首先将脚本语言转化为特定的opcode（各脚本语言自行定义），接着放在虚拟机中逐个执行，模拟了CPU及内存的基本功能。Lua作为一门嵌入式语言，其虚拟机附着于宿主环境中而非单独存在，其核心问题主要包括：</p>
-<ul>
-<li>如何分析源代码文件生成Opcode</li>
-<li>如何执行Opcode指令</li>
-<li>如何保存整个执行环境</li>
-</ul>
+        <h2 id="一-简介"><a href="#一-简介" class="headerlink" title="一. 简介"></a>一. 简介</h2><p>&emsp;&emsp;Lua是一种脚本语言，在游戏、嵌入式等领域有着众多应用。本系列文章会沿着基本数据结构、Lua虚拟机、Lua环境、gc回收、Lua特色等方面来分析Lua的实现，从而做到对其语言充分的了解。</p>
 <a id="more"></a>
 
-<p>&emsp;&emsp;本文将就以上三方面进行详细剖析，源码版本为Lua5.3.4。Lua脚本的加载、编译和执行通过函数<code>luaL_doFile()</code>进行，本文就由此函数开始展开分析。该函数实际是一个宏定义，如下所示：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// lauxlib.h</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> luaL_dofile(L, fn) \</span></span><br><span class="line">    (luaL_loadfile(L, fn) || lua_pcall(L, <span class="number">0</span>, LUA_MULTRET, <span class="number">0</span>))</span><br></pre></td></tr></table></figure>
-
-<p>&emsp;&emsp;主要做了两件事：</p>
-<ul>
-<li>调用<code>luaL_loadfile(L, fn)</code>生成opcode</li>
-<li>调用<code>lua_pcall()</code>执行</li>
-</ul>
-<p>&emsp;&emsp;下面几节就详细展开进行叙述，并补充<code>LuaJIT</code>的实现方式的不同之处。</p>
-<h2 id="二-相关结构体"><a href="#二-相关结构体" class="headerlink" title="二. 相关结构体"></a>二. 相关结构体</h2><p>&emsp;&emsp;正式进入流程前我们先分析一下相关的重要结构体，首先当然是<code>lua_State</code>，使用<code>lua</code>时接触最多的结构体。如果说Lua虚拟机模拟的是CPU的运作，那么Lua栈模拟的就是内存的角色。在Lua内部参数的传递是通过Lua栈，Lua与C等外部进行交互的时候也是使用的栈。<code>lua_State</code>中主要保存了当前函数栈的相关信息及上一个函数的信息。</p>
+<h2 id="二-相关结构体"><a href="#二-相关结构体" class="headerlink" title="二. 相关结构体"></a>二. 相关结构体</h2><p>&emsp;&emsp;首先需要分析的重要结构体当然是<code>lua_State</code>，使用<code>lua</code>时接触最多的结构体。如果说Lua虚拟机模拟的是CPU的运作，那么Lua栈模拟的就是内存的角色。在Lua内部参数的传递是通过Lua栈，Lua与C等外部进行交互的时候也是使用的栈。<code>lua_State</code>中主要保存了当前函数栈的相关信息及上一个函数的信息。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">** 'per thread' state</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">lua_State</span> &#123;</span></span><br><span class="line">  CommonHeader;</span><br><span class="line">  <span class="keyword">unsigned</span> short nci;  <span class="comment">/* number of items in 'ci' list */</span></span><br><span class="line">  lu_byte status;</span><br><span class="line">  StkId top;  <span class="comment">/* first free slot in the stack */</span></span><br><span class="line">  global_State *l_G;</span><br><span class="line">  CallInfo *ci;  <span class="comment">/* call info for current function */</span></span><br><span class="line">  <span class="keyword">const</span> Instruction *oldpc;  <span class="comment">/* last pc traced */</span></span><br><span class="line">  StkId stack_last;  <span class="comment">/* last free slot in the stack */</span></span><br><span class="line">  StkId <span class="built_in">stack</span>;  <span class="comment">/* stack base */</span></span><br><span class="line">  UpVal *openupval;  <span class="comment">/* list of open upvalues in this stack */</span></span><br><span class="line">  GCObject *gclist;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">lua_State</span> *<span class="title">twups</span>;</span>  <span class="comment">/* list of threads with open upvalues */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">lua_longjmp</span> *<span class="title">errorJmp</span>;</span>  <span class="comment">/* current error recover point */</span></span><br><span class="line">  CallInfo base_ci;  <span class="comment">/* CallInfo for first level (C calling Lua) */</span></span><br><span class="line">  <span class="keyword">volatile</span> lua_Hook hook;</span><br><span class="line">  <span class="keyword">ptrdiff_t</span> errfunc;  <span class="comment">/* current error handling function (stack index) */</span></span><br><span class="line">  <span class="keyword">int</span> stacksize;</span><br><span class="line">  <span class="keyword">int</span> basehookcount;</span><br><span class="line">  <span class="keyword">int</span> hookcount;</span><br><span class="line">  <span class="keyword">unsigned</span> short nny;  <span class="comment">/* number of non-yieldable calls in stack */</span></span><br><span class="line">  <span class="keyword">unsigned</span> short nCcalls;  <span class="comment">/* number of nested C calls */</span></span><br><span class="line">  l_signalT hookmask;</span><br><span class="line">  lu_byte allowhook;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 
 <p>&emsp;&emsp;<code>lua_State</code>中的<code>CallInfo</code>保存当前调用函数的信息，定义如下：</p>
@@ -449,45 +435,6 @@
 </ul>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">** Function Prototypes</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">Proto</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    CommonHeader;</span><br><span class="line">    lu_byte numparams; <span class="comment">/* number of fixed parameters */</span></span><br><span class="line">    lu_byte is_vararg;</span><br><span class="line">    lu_byte maxstacksize; <span class="comment">/* number of registers needed by this function */</span></span><br><span class="line">    <span class="keyword">int</span> sizeupvalues;     <span class="comment">/* size of 'upvalues' */</span></span><br><span class="line">    <span class="keyword">int</span> sizek;            <span class="comment">/* size of 'k' */</span></span><br><span class="line">    <span class="keyword">int</span> sizecode;</span><br><span class="line">    <span class="keyword">int</span> sizelineinfo;</span><br><span class="line">    <span class="keyword">int</span> sizep; <span class="comment">/* size of 'p' */</span></span><br><span class="line">    <span class="keyword">int</span> sizelocvars;</span><br><span class="line">    <span class="keyword">int</span> linedefined;        <span class="comment">/* debug information  */</span></span><br><span class="line">    <span class="keyword">int</span> lastlinedefined;    <span class="comment">/* debug information  */</span></span><br><span class="line">    TValue *k;              <span class="comment">/* constants used by the function */</span></span><br><span class="line">    Instruction *code;      <span class="comment">/* opcodes */</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">Proto</span> **<span class="title">p</span>;</span>       <span class="comment">/* functions defined inside the function */</span></span><br><span class="line">    <span class="keyword">int</span> *lineinfo;          <span class="comment">/* map from opcodes to source lines (debug information) */</span></span><br><span class="line">    LocVar *locvars;        <span class="comment">/* information about local variables (debug information) */</span></span><br><span class="line">    Upvaldesc *upvalues;    <span class="comment">/* upvalue information */</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">LClosure</span> *<span class="title">cache</span>;</span> <span class="comment">/* last-created closure with this prototype */</span></span><br><span class="line">    TString *source;        <span class="comment">/* used for debug information */</span></span><br><span class="line">    GCObject *gclist;</span><br><span class="line">&#125; Proto;</span><br></pre></td></tr></table></figure>
 
-<h2 id="三-opcode的生成"><a href="#三-opcode的生成" class="headerlink" title="三. opcode的生成"></a>三. opcode的生成</h2><p>&emsp;&emsp;从源码生成opcode，需要以下步骤：</p>
-<ul>
-<li>初始化Lua虚拟机数据结构</li>
-<li>读取Lua脚本文件内容</li>
-<li>依次对Lua脚本文件进行词法分析、语法分析、语义分析,最后生成该文件的Lua虚拟机指令.注意以上的过程仅需要一次遍历,这是Lua解释器做的非常好的地方</li>
-</ul>
-<p>&emsp;&emsp;<code>luaL_loadfile()</code>最终调用<code>f_parser()</code>函数，对<code>Lua</code>代码进行语法语义分析。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ldo.c</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">f_parser</span> <span class="params">(lua_State *L, <span class="keyword">void</span> *ud)</span> </span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    LClosure *cl;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">SParser</span> *<span class="title">p</span> = <span class="title">cast</span>(<span class="title">struct</span> <span class="title">SParser</span> *, <span class="title">ud</span>);</span></span><br><span class="line">    <span class="keyword">int</span> c = zgetc(p-&gt;z);  <span class="comment">/* read first character */</span></span><br><span class="line">    <span class="keyword">if</span> (c == LUA_SIGNATURE[<span class="number">0</span>]) &#123;</span><br><span class="line">        checkmode(L, p-&gt;mode, <span class="string">"binary"</span>);</span><br><span class="line">        cl = luaU_undump(L, p-&gt;z, p-&gt;name);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> &#123;</span><br><span class="line">        checkmode(L, p-&gt;mode, <span class="string">"text"</span>);</span><br><span class="line">        cl = luaY_parser(L, p-&gt;z, &amp;p-&gt;buff, &amp;p-&gt;dyd, p-&gt;name, c);</span><br><span class="line">    &#125;</span><br><span class="line">    lua_assert(cl-&gt;nupvalues == cl-&gt;p-&gt;sizeupvalues);</span><br><span class="line">    luaF_initupvals(L, cl);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>&emsp;&emsp;实际解析根据文件类型选择通过<code>luaU_undump()或者luaY_parser()</code>函数执行，保存在<code>Closure</code>中并压入栈，进入后续的opcode执行过程。</p>
-<h2 id="四-opcode的执行"><a href="#四-opcode的执行" class="headerlink" title="四. opcode的执行"></a>四. opcode的执行</h2><p>&emsp;&emsp;<code>lua_pcall()</code>对栈中的<code>opcode</code>进行实际的执行。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">(lapi.c)</span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> lua_pcall(L,n,r,f)	lua_pcallk(L, (n), (r), (f), 0, NULL)</span></span><br><span class="line"></span><br><span class="line"><span class="function">LUA_API <span class="keyword">int</span> <span class="title">lua_pcallk</span><span class="params">(lua_State *L, <span class="keyword">int</span> nargs, <span class="keyword">int</span> nresults, <span class="keyword">int</span> errfunc,</span></span></span><br><span class="line"><span class="function"><span class="params">                       lua_KContext ctx, lua_KFunction k)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">CallS</span> <span class="title">c</span>;</span></span><br><span class="line">    <span class="keyword">int</span> status;</span><br><span class="line">    <span class="keyword">ptrdiff_t</span> func;</span><br><span class="line">....</span><br><span class="line">    c.func = L-&gt;top - (nargs + <span class="number">1</span>); <span class="comment">/* function to be called */</span></span><br><span class="line">    <span class="keyword">if</span> (k == <span class="literal">NULL</span> || L-&gt;nny &gt; <span class="number">0</span>)</span><br><span class="line">    &#123;                          <span class="comment">/* no continuation or no yieldable? */</span></span><br><span class="line">        c.nresults = nresults; <span class="comment">/* do a 'conventional' protected call */</span></span><br><span class="line">        status = luaD_pcall(L, f_call, &amp;c, savestack(L, c.func), func);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123; <span class="comment">/* prepare continuation (call is already protected by 'resume') */</span></span><br><span class="line">        CallInfo *ci = L-&gt;ci;</span><br><span class="line">        ci-&gt;u.c.k = k;     <span class="comment">/* save continuation */</span></span><br><span class="line">        ci-&gt;u.c.ctx = ctx; <span class="comment">/* save context */</span></span><br><span class="line">        <span class="comment">/* save information for error recovery */</span></span><br><span class="line">        ci-&gt;extra = savestack(L, c.func);</span><br><span class="line">        ci-&gt;u.c.old_errfunc = L-&gt;errfunc;</span><br><span class="line">        L-&gt;errfunc = func;</span><br><span class="line">        setoah(ci-&gt;callstatus, L-&gt;allowhook); <span class="comment">/* save value of 'allowhook' */</span></span><br><span class="line">        ci-&gt;callstatus |= CIST_YPCALL;        <span class="comment">/* function can do error recovery */</span></span><br><span class="line">        luaD_call(L, c.func, nresults);       <span class="comment">/* do the call */</span></span><br><span class="line">        ci-&gt;callstatus &amp;= ~CIST_YPCALL;</span><br><span class="line">        L-&gt;errfunc = ci-&gt;u.c.old_errfunc;</span><br><span class="line">        status = LUA_OK; <span class="comment">/* if it is here, there were no errors */</span></span><br><span class="line">    &#125;</span><br><span class="line">    adjustresults(L, nresults);</span><br><span class="line">    lua_unlock(L);</span><br><span class="line">    <span class="keyword">return</span> status;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>&emsp;&emsp;该函数主要流程为</p>
-<ul>
-<li>获取需要调用的函数指针<code>c.func</code></li>
-<li>如果不是连续调用则调用<code>luaD_pcall()</code>执行代码，否则调用<code>luaD_call()</code></li>
-</ul>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ldo.c</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">luaD_pcall</span><span class="params">(lua_State *L, Pfunc func, <span class="keyword">void</span> *u,</span></span></span><br><span class="line"><span class="function"><span class="params">               <span class="keyword">ptrdiff_t</span> old_top, <span class="keyword">ptrdiff_t</span> ef)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> status;</span><br><span class="line">    CallInfo *old_ci = L-&gt;ci;</span><br><span class="line">    lu_byte old_allowhooks = L-&gt;allowhook;</span><br><span class="line">    <span class="keyword">unsigned</span> short old_nny = L-&gt;nny;</span><br><span class="line">    <span class="keyword">ptrdiff_t</span> old_errfunc = L-&gt;errfunc;</span><br><span class="line">    L-&gt;errfunc = ef;</span><br><span class="line">    status = luaD_rawrunprotected(L, func, u);</span><br><span class="line">    <span class="keyword">if</span> (status != LUA_OK)</span><br><span class="line">    &#123; <span class="comment">/* an error occurred? */</span></span><br><span class="line">        StkId oldtop = restorestack(L, old_top);</span><br><span class="line">        luaF_close(L, oldtop); <span class="comment">/* close possible pending closures */</span></span><br><span class="line">        seterrorobj(L, status, oldtop);</span><br><span class="line">        L-&gt;ci = old_ci;</span><br><span class="line">        L-&gt;allowhook = old_allowhooks;</span><br><span class="line">        L-&gt;nny = old_nny;</span><br><span class="line">        luaD_shrinkstack(L);</span><br><span class="line">    &#125;</span><br><span class="line">    L-&gt;errfunc = old_errfunc;</span><br><span class="line">    <span class="keyword">return</span> status;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>&emsp;&emsp;实际需要关注的是<code>luaD_call()</code>函数，其主要调用<code>luaD_precall()</code>进行预处理，然后调用<code>luaV_execute()</code>执行。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">** Call a function (C or Lua). The function to be called is at *func.</span></span><br><span class="line"><span class="comment">** The arguments are on the stack, right after the function.</span></span><br><span class="line"><span class="comment">** When returns, all the results are on the stack, starting at the original</span></span><br><span class="line"><span class="comment">** function position.</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">luaD_call</span><span class="params">(lua_State *L, StkId func, <span class="keyword">int</span> nResults)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (++L-&gt;nCcalls &gt;= LUAI_MAXCCALLS)</span><br><span class="line">        stackerror(L);</span><br><span class="line">    <span class="keyword">if</span> (!luaD_precall(L, func, nResults)) <span class="comment">/* is a Lua function? */</span></span><br><span class="line">        luaV_execute(L);                  <span class="comment">/* call it */</span></span><br><span class="line">    L-&gt;nCcalls--;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>&emsp;&emsp;<code>luaD_precall()</code>函数主要逻辑在注释中已经说明的很清晰了。对于C函数直接调用，后续通过<code>luaD_poscall()</code>返回上一层级，对于lua函数则使用<code>luaV_execute()</code>进行实际调用工作。其中关键操作包括：</p>
-<ul>
-<li>调用<code>next_ci()</code>从<code>lua_State</code>的<code>CallInfo</code>数组中得到一个新的<code>CallInfo</code>结构体,设置它的<code>func/base/top</code>指针</li>
-<li>调用<code>setnilvalue()</code>给多余参数赋值为nil</li>
-<li>将<code>lua_State</code>的<code>top/base</code>指针赋值为<code>CallInfo</code>的值，供给<code>luaV_execute()</code>执行</li>
-</ul>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">** Prepares a function call: checks the stack, creates a new CallInfo</span></span><br><span class="line"><span class="comment">** entry, fills in the relevant information, calls hook if needed.</span></span><br><span class="line"><span class="comment">** If function is a C function, does the call, too. (Otherwise, leave</span></span><br><span class="line"><span class="comment">** the execution ('luaV_execute') to the caller, to allow stackless</span></span><br><span class="line"><span class="comment">** calls.) Returns true iff function has been executed (C function).</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">luaD_precall</span><span class="params">(lua_State *L, StkId func, <span class="keyword">int</span> nresults)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    lua_CFunction f;</span><br><span class="line">    CallInfo *ci;</span><br><span class="line">    <span class="keyword">switch</span> (ttype(func))</span><br><span class="line">    &#123;</span><br><span class="line">    <span class="keyword">case</span> LUA_TCCL: <span class="comment">/* C closure */</span></span><br><span class="line">        f = clCvalue(func)-&gt;f;</span><br><span class="line">        <span class="keyword">goto</span> Cfunc;</span><br><span class="line">    <span class="keyword">case</span> LUA_TLCF: <span class="comment">/* light C function */</span></span><br><span class="line">        f = fvalue(func);</span><br><span class="line">    Cfunc:</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">int</span> n;                              <span class="comment">/* number of returns */</span></span><br><span class="line">        checkstackp(L, LUA_MINSTACK, func); <span class="comment">/* ensure minimum stack size */</span></span><br><span class="line">        ci = next_ci(L);                    <span class="comment">/* now 'enter' new function */</span></span><br><span class="line">        ci-&gt;nresults = nresults;</span><br><span class="line">        ci-&gt;func = func;</span><br><span class="line">        ci-&gt;top = L-&gt;top + LUA_MINSTACK;</span><br><span class="line">        lua_assert(ci-&gt;top &lt;= L-&gt;stack_last);</span><br><span class="line">        ci-&gt;callstatus = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">if</span> (L-&gt;hookmask &amp; LUA_MASKCALL)</span><br><span class="line">            luaD_hook(L, LUA_HOOKCALL, <span class="number">-1</span>);</span><br><span class="line">        lua_unlock(L);</span><br><span class="line">        n = (*f)(L); <span class="comment">/* do the actual call */</span></span><br><span class="line">        lua_lock(L);</span><br><span class="line">        api_checknelems(L, n);</span><br><span class="line">        luaD_poscall(L, ci, L-&gt;top - n, n);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">case</span> LUA_TLCL:</span><br><span class="line">    &#123; <span class="comment">/* Lua function: prepare its call */</span></span><br><span class="line">        StkId base;</span><br><span class="line">        Proto *p = clLvalue(func)-&gt;p;</span><br><span class="line">        <span class="keyword">int</span> n = cast_int(L-&gt;top - func) - <span class="number">1</span>; <span class="comment">/* number of real arguments */</span></span><br><span class="line">        <span class="keyword">int</span> fsize = p-&gt;maxstacksize;         <span class="comment">/* frame size */</span></span><br><span class="line">        checkstackp(L, fsize, func);</span><br><span class="line">        <span class="keyword">if</span> (p-&gt;is_vararg)</span><br><span class="line">            base = adjust_varargs(L, p, n);</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123; <span class="comment">/* non vararg function */</span></span><br><span class="line">            <span class="keyword">for</span> (; n &lt; p-&gt;numparams; n++)</span><br><span class="line">                setnilvalue(L-&gt;top++); <span class="comment">/* complete missing arguments */</span></span><br><span class="line">            base = func + <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        ci = next_ci(L); <span class="comment">/* now 'enter' new function */</span></span><br><span class="line">        ci-&gt;nresults = nresults;</span><br><span class="line">        ci-&gt;func = func;</span><br><span class="line">        ci-&gt;u.l.base = base;</span><br><span class="line">        L-&gt;top = ci-&gt;top = base + fsize;</span><br><span class="line">        lua_assert(ci-&gt;top &lt;= L-&gt;stack_last);</span><br><span class="line">        ci-&gt;u.l.savedpc = p-&gt;code; <span class="comment">/* 设置PC寄存器的位置，即起始函数 starting point */</span></span><br><span class="line">        ci-&gt;callstatus = CIST_LUA;</span><br><span class="line">        <span class="keyword">if</span> (L-&gt;hookmask &amp; LUA_MASKCALL)</span><br><span class="line">            callhook(L, ci);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">    &#123;                                           <span class="comment">/* not a function */</span></span><br><span class="line">        checkstackp(L, <span class="number">1</span>, func);                <span class="comment">/* ensure space for metamethod */</span></span><br><span class="line">        tryfuncTM(L, func);                     <span class="comment">/* try to get '__call' metamethod */</span></span><br><span class="line">        <span class="keyword">return</span> luaD_precall(L, func, nresults); <span class="comment">/* now it must be a function */</span></span><br><span class="line">    &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>&emsp;&emsp;<code>luaV_execute()</code>中根据实际的字节码类型进行实际的操作，取的是在<code>luaD_precall()</code>中压入的函数。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">luaV_execute</span><span class="params">(lua_State *L)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    CallInfo *ci = L-&gt;ci;</span><br><span class="line">    LClosure *cl;</span><br><span class="line">    TValue *k;</span><br><span class="line">    StkId base;</span><br><span class="line">    ci-&gt;callstatus |= CIST_FRESH; <span class="comment">/* fresh invocation of 'luaV_execute" */</span></span><br><span class="line">newframe:                         <span class="comment">/* reentry point when frame changes (call/return) */</span></span><br><span class="line">    lua_assert(ci == L-&gt;ci);</span><br><span class="line">    cl = clLvalue(ci-&gt;func); <span class="comment">/* local reference to function's closure */</span></span><br><span class="line">    k = cl-&gt;p-&gt;k;            <span class="comment">/* local reference to function's constant table */</span></span><br><span class="line">    base = ci-&gt;u.l.base;     <span class="comment">/* local copy of function's base */</span></span><br><span class="line">    <span class="comment">/* main loop of interpreter */</span></span><br><span class="line">    <span class="keyword">for</span> (;;)</span><br><span class="line">    &#123;</span><br><span class="line">        Instruction i;</span><br><span class="line">        StkId ra;</span><br><span class="line">        vmfetch();</span><br><span class="line">        vmdispatch(GET_OPCODE(i))</span><br><span class="line">        &#123;</span><br><span class="line">            vmcase(OP_MOVE)</span><br><span class="line">            &#123;</span><br><span class="line">                setobjs2s(L, ra, RB(i));</span><br><span class="line">                vmbreak;</span><br><span class="line">            &#125;</span><br><span class="line">        ...</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-
-
-
-<h2 id="五-上下文环境切换"><a href="#五-上下文环境切换" class="headerlink" title="五. 上下文环境切换"></a>五. 上下文环境切换</h2><p>&emsp;&emsp;</p>
 <h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><ol>
 <li><p><a href="https://github.com/lichuang/Lua-Source-Internal" target="_blank" rel="noopener">Lua-Source-Internal</a></p>
 </li>
@@ -542,7 +489,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="https://ty-chen.github.io/lua-linux/" title="Lua虚拟机深度剖析">https://ty-chen.github.io/lua-linux/</a>
+    <a href="https://ty-chen.github.io/lua-linux/" title="Lua源码剖析（一）基本数据结构">https://ty-chen.github.io/lua-linux/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>
@@ -557,11 +504,11 @@
       
         <div class="post-tags">
           
-            <a href="/tags/CPU/" rel="tag"># CPU</a>
-          
             <a href="/tags/Lua/" rel="tag"># Lua</a>
           
             <a href="/tags/%E8%99%9A%E6%8B%9F%E6%9C%BA/" rel="tag"># 虚拟机</a>
+          
+            <a href="/tags/%E6%A0%88/" rel="tag"># 栈</a>
           
         </div>
       
@@ -583,6 +530,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/lua-vm-md/" rel="prev" title="Lua源码剖析（二）虚拟机">
+                Lua源码剖析（二）虚拟机 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -704,7 +655,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">43</span>
+                  <span class="site-state-item-count">44</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -715,7 +666,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-count">7</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>
@@ -726,7 +677,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">72</span>
+                  <span class="site-state-item-count">73</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -789,7 +740,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-相关结构体"><span class="nav-text">二. 相关结构体</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-opcode的生成"><span class="nav-text">三. opcode的生成</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-opcode的执行"><span class="nav-text">四. opcode的执行</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-上下文环境切换"><span class="nav-text">五. 上下文环境切换</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-相关结构体"><span class="nav-text">二. 相关结构体</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
