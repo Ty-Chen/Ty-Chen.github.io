@@ -79,14 +79,14 @@
 
 
 
-<meta name="description" content="一. 前言&amp;emsp;&amp;emsp;设计模式，究其本质，无非是发现变化、封装变化。而对于面向对象编程来说，变化本身分为了创建对象、对象之间的关系、对象之间的调用，即为创建型、结构性、行为型设计模式。本文就创建型设计模式进行分析，洞察其背后的逻辑，并比较各种创建型设计模式的区别和使用场景。 二. 单例方法三. 简单工厂四. 工厂方法五. 抽象工厂六. 原型模式七. 建造者模式">
+<meta name="description" content="一. 前言&amp;emsp;&amp;emsp;设计模式，究其本质，无非是发现变化、封装变化。而对于面向对象编程来说，变化本身分为了创建对象、对象之间的关系、对象之间的调用，即为创建型、结构性、行为型设计模式。本文就创建型设计模式进行分析，洞察其背后的逻辑，并比较各种创建型设计模式的区别和使用场景。 &amp;emsp;&amp;emsp;为方便比较，创建型行为模式的几种我们采取同一个例子，即GOF一书中的迷宫创建为例。 二.">
 <meta property="og:type" content="article">
 <meta property="og:title" content="创建型设计模式分析">
 <meta property="og:url" content="https://ty-chen.github.io/structure-pattern-md/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
-<meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;设计模式，究其本质，无非是发现变化、封装变化。而对于面向对象编程来说，变化本身分为了创建对象、对象之间的关系、对象之间的调用，即为创建型、结构性、行为型设计模式。本文就创建型设计模式进行分析，洞察其背后的逻辑，并比较各种创建型设计模式的区别和使用场景。 二. 单例方法三. 简单工厂四. 工厂方法五. 抽象工厂六. 原型模式七. 建造者模式">
+<meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;设计模式，究其本质，无非是发现变化、封装变化。而对于面向对象编程来说，变化本身分为了创建对象、对象之间的关系、对象之间的调用，即为创建型、结构性、行为型设计模式。本文就创建型设计模式进行分析，洞察其背后的逻辑，并比较各种创建型设计模式的区别和使用场景。 &amp;emsp;&amp;emsp;为方便比较，创建型行为模式的几种我们采取同一个例子，即GOF一书中的迷宫创建为例。 二.">
 <meta property="article:published_time" content="2021-06-28T12:11:24.000Z">
-<meta property="article:modified_time" content="2021-07-02T14:41:38.128Z">
+<meta property="article:modified_time" content="2021-07-03T04:36:38.667Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="设计模式">
 <meta property="article:tag" content="创建型设计模式">
@@ -304,8 +304,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2021-07-02T22:41:38+08:00" content="2021-07-02">
-                2021-07-02
+              <time itemprop="dateUpdated" datetime="2021-07-03T12:36:38+08:00" content="2021-07-03">
+                2021-07-03
               </time>
             </span>
           
@@ -368,7 +368,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  148
+                  192
                 </span>
               
 
@@ -406,7 +406,9 @@
 
       
         <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;设计模式，究其本质，无非是发现变化、封装变化。而对于面向对象编程来说，变化本身分为了创建对象、对象之间的关系、对象之间的调用，即为创建型、结构性、行为型设计模式。本文就创建型设计模式进行分析，洞察其背后的逻辑，并比较各种创建型设计模式的区别和使用场景。</p>
-<h2 id="二-单例方法"><a href="#二-单例方法" class="headerlink" title="二. 单例方法"></a>二. 单例方法</h2><h2 id="三-简单工厂"><a href="#三-简单工厂" class="headerlink" title="三. 简单工厂"></a>三. 简单工厂</h2><h2 id="四-工厂方法"><a href="#四-工厂方法" class="headerlink" title="四. 工厂方法"></a>四. 工厂方法</h2><h2 id="五-抽象工厂"><a href="#五-抽象工厂" class="headerlink" title="五. 抽象工厂"></a>五. 抽象工厂</h2><h2 id="六-原型模式"><a href="#六-原型模式" class="headerlink" title="六. 原型模式"></a>六. 原型模式</h2><h2 id="七-建造者模式"><a href="#七-建造者模式" class="headerlink" title="七. 建造者模式"></a>七. 建造者模式</h2>
+<p>&emsp;&emsp;为方便比较，创建型行为模式的几种我们采取同一个例子，即GOF一书中的迷宫创建为例。</p>
+<h2 id="二-单例模式"><a href="#二-单例模式" class="headerlink" title="二. 单例模式"></a>二. 单例模式</h2><p>&emsp;&emsp;单例模式是一种常见的经典模式。</p>
+<h2 id="三-工厂模式"><a href="#三-工厂模式" class="headerlink" title="三. 工厂模式"></a>三. 工厂模式</h2><h2 id="四-原型模式"><a href="#四-原型模式" class="headerlink" title="四. 原型模式"></a>四. 原型模式</h2><h2 id="五-建造者模式"><a href="#五-建造者模式" class="headerlink" title="五. 建造者模式"></a>五. 建造者模式</h2>
       
     </div>
     
@@ -700,7 +702,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-单例方法"><span class="nav-text">二. 单例方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-简单工厂"><span class="nav-text">三. 简单工厂</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-工厂方法"><span class="nav-text">四. 工厂方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-抽象工厂"><span class="nav-text">五. 抽象工厂</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#六-原型模式"><span class="nav-text">六. 原型模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#七-建造者模式"><span class="nav-text">七. 建造者模式</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-单例模式"><span class="nav-text">二. 单例模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-工厂模式"><span class="nav-text">三. 工厂模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-原型模式"><span class="nav-text">四. 原型模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-建造者模式"><span class="nav-text">五. 建造者模式</span></a></li></ol></div>
             
 
           </div>
