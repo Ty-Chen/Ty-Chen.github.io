@@ -300,8 +300,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2021-07-04T23:26:10+08:00" content="2021-07-04">
-                2021-07-04
+              <time itemprop="dateUpdated" datetime="2021-07-06T20:53:26+08:00" content="2021-07-06">
+                2021-07-06
               </time>
             </span>
           
@@ -359,7 +359,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  247
+                  373
                 </span>
               
 
@@ -399,7 +399,19 @@
         
           
             <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;设计模式，究其本质，无非是发现变化、封装变化。而对于面向对象编程来说，变化本身分为了创建对象、对象之间的关系、对象之间的调用，即为创建型、结构性、行为型设计模式。本文就创建型设计模式进行分析，洞察其背后的逻辑，并比较各种创建型设计模式的区别和使用场景。</p>
-<p>&emsp;&emsp;为方便比较，创建型行为模式的几种我们采取同一个例子，即GOF一书中的迷宫创建为例。迷宫的创建至少包括了房间<code>Room</code>类、墙<code>Wall</code>类、门<code>Door</code>类几种子类和父类迷宫<code>Maze</code>类，更合理的，我们可以为房间、墙、门抽象一个迷宫基本构件<code>MapSite</code>类。</p>
+<p>&emsp;&emsp;为方便比较，创建型行为模式的几种我们采取同一个例子，即GOF一书中的迷宫创建为例。迷宫的创建至少包括了房间<code>Room</code>类、墙<code>Wall</code>类、门<code>Door</code>类几种组成元素和迷宫总体的表示<code>Maze</code>类，更合理的，我们可以为房间、墙、门抽象一个迷宫基本构件<code>MapSite</code>类。</p>
+<p>&emsp;&emsp;首先定义方向</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">enum</span> Direction</span><br><span class="line">&#123;</span><br><span class="line">    North,</span><br><span class="line">    South,</span><br><span class="line">    East,</span><br><span class="line">    West</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;基本构件<code>MapSite</code>需要的功能是可以进入</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MapSite</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">Enter</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;房间联系门和墙</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Room</span> :</span> <span class="keyword">public</span> MapSite</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Room(<span class="keyword">int</span> nRoomID);</span><br><span class="line">    </span><br><span class="line">    <span class="function">MapSite* <span class="title">GetSide</span><span class="params">(Direction)</span> <span class="keyword">const</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">SetSide</span><span class="params">(Direction, MapSite*)</span></span>;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">Enter</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    MapSite* m_sides[<span class="number">4</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;门和墙如下所示</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Wall</span> :</span> <span class="keyword">public</span> MapSite</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Wall();</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">Enter</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Door</span> :</span> <span class="keyword">public</span> MapSite</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Door(Room* pOneSide, Room* pOtherSide);</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">Enter</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function">Room* <span class="title">GetOtherSide</span><span class="params">(Room* pNowRoom)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    Room* m_Room[<span class="number">2</span>];</span><br><span class="line">    <span class="keyword">bool</span>  m_bOpen;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <h2 id="二-单例模式"><a href="#二-单例模式" class="headerlink" title="二. 单例模式"></a>二. 单例模式</h2><p>&emsp;&emsp;单例模式是一种常见的经典模式。</p>
 <h2 id="三-工厂模式"><a href="#三-工厂模式" class="headerlink" title="三. 工厂模式"></a>三. 工厂模式</h2><h2 id="四-原型模式"><a href="#四-原型模式" class="headerlink" title="四. 原型模式"></a>四. 原型模式</h2><h2 id="五-建造者模式"><a href="#五-建造者模式" class="headerlink" title="五. 建造者模式"></a>五. 建造者模式</h2>
           
@@ -2344,7 +2356,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">183.5k</span>
+    <span title="Site words total count">183.6k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
