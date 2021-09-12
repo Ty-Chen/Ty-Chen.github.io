@@ -81,12 +81,12 @@
 
 <meta name="description" content="一. 前言&amp;emsp;&amp;emsp;本文为luajit作者所写文章Numerical Computing Performance Guide的译文，属于个人记录。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Lua计算相关代码性能指引">
+<meta property="og:title" content="LuaJIT计算相关代码性能指引">
 <meta property="og:url" content="https://ty-chen.github.io/lua-performance-guid/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;本文为luajit作者所写文章Numerical Computing Performance Guide的译文，属于个人记录。">
 <meta property="article:published_time" content="2021-05-16T14:16:46.000Z">
-<meta property="article:modified_time" content="2021-09-11T08:33:51.653Z">
+<meta property="article:modified_time" content="2021-09-11T10:00:06.327Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Lua">
 <meta property="article:tag" content="虚拟机">
@@ -127,7 +127,7 @@
 
 
 
-  <title>Lua计算相关代码性能指引 | Ty-Chen's Home</title>
+  <title>LuaJIT计算相关代码性能指引 | Ty-Chen's Home</title>
   
 
 
@@ -281,7 +281,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">Lua计算相关代码性能指引</h1>
+          <h1 class="post-title" itemprop="name headline">LuaJIT计算相关代码性能指引</h1>
         
 
         <div class="post-meta">
@@ -305,7 +305,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2021-09-11T16:33:51+08:00" content="2021-09-11">
+              <time itemprop="dateUpdated" datetime="2021-09-11T18:00:06+08:00" content="2021-09-11">
                 2021-09-11
               </time>
             </span>
@@ -369,7 +369,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  368
+                  655
                 </span>
               
 
@@ -385,7 +385,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  1
+                  2
                 </span>
               
             </div>
@@ -448,7 +448,19 @@
 <li>对于FFI C的函数不要这么做，缓存名字空间即可，如<code>local lib = ffi.load(&quot;lib&quot;)</code></li>
 </ul>
 </li>
-<li></li>
+<li>避免自己创建派遣机制，而是改用系统自带的，如元方法</li>
+<li>不要过度优化，JIT编译器可能已经优化过了<ul>
+<li>例如，<code>z = x[a+b] + y[a+b]</code>的写法是没有问题的，如果手动增加一个临时变量存放<code>a+b</code>，不仅不会提升性能，还会导致多占用了一个寄存器或者栈空间，得不偿失</li>
+<li>例如，<code>a[i][j] = a[i][j] * a[i][j+1]</code>也一样没有问题</li>
+<li>在使用LuaJIT的时候，这些细小的优化点编译器均帮忙做了更优的实现，程序员更需要关心的是更为宏大的优化，如算法复杂度的优化</li>
+</ul>
+</li>
+<li>不同于C/JAVA，变量的声明和定义尽量放在要用的地方，而不是函数开头</li>
+<li>不要过度使用昂贵或未编译的操作<ul>
+<li>如<code>assert(type(x) == &quot;number&quot;, &quot;x is a &quot;..mytype(x)&quot;)</code>，该语句最大的问题在于字符串拼接，该操作无论断言是否生效均需要每次操作</li>
+<li>通过<code>-jv/-jdump</code>来看output确认是否有不需要的操作</li>
+</ul>
+</li>
 </ul>
 <h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>【1】<a href="http://wiki.luajit.org/Numerical-Computing-Performance-Guide" target="_blank" rel="noopener">Numerical Computing Performance Guide</a></p>
 
@@ -500,7 +512,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="https://ty-chen.github.io/lua-performance-guid/" title="Lua计算相关代码性能指引">https://ty-chen.github.io/lua-performance-guid/</a>
+    <a href="https://ty-chen.github.io/lua-performance-guid/" title="LuaJIT计算相关代码性能指引">https://ty-chen.github.io/lua-performance-guid/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>
@@ -785,7 +797,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">185.5k</span>
+    <span title="Site words total count">185.8k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
