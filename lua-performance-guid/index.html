@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;本文为luajit作者所写文章Numerical Computing Performance Guide的译文，属于个人记录。">
 <meta property="article:published_time" content="2021-05-16T14:16:46.000Z">
-<meta property="article:modified_time" content="2021-09-13T14:48:41.147Z">
+<meta property="article:modified_time" content="2021-09-15T14:34:26.929Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Lua">
 <meta property="article:tag" content="虚拟机">
@@ -305,8 +305,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2021-09-13T22:48:41+08:00" content="2021-09-13">
-                2021-09-13
+              <time itemprop="dateUpdated" datetime="2021-09-15T22:34:26+08:00" content="2021-09-15">
+                2021-09-15
               </time>
             </span>
           
@@ -420,19 +420,19 @@
 </li>
 </ul>
 </li>
-<li>使用FFI数据结构<ul>
-<li>使用int32_t，避免使用uint32_t类型</li>
-<li>使用double，避免使用float</li>
+<li>使用<code>FFI</code>数据结构<ul>
+<li>使用<code>int32_t</code>，避免使用<code>uint32_t</code>类型</li>
+<li>使用<code>double</code>，避免使用<code>float</code></li>
 <li>不要滥用元方法</li>
 </ul>
 </li>
-<li>仅通过FFI调用C函数<ul>
+<li>仅通过<code>FFI</code>调用C函数<ul>
 <li>避免调用很小的函数，更好的做法是在Lua重写</li>
-<li>避免回调函数，使用推送（read/write）或者迭代器来代替</li>
+<li>避免回调函数，使用推送（<code>read/write</code>）或者迭代器来代替</li>
 </ul>
 </li>
-<li>使用诸如 ‘for i=start,stop,step do … end’ 的循环语句<ul>
-<li>数组索引也类似, e.g. ‘a[i+2]’.</li>
+<li>使用诸如 <code>for i=start,stop,step do ... end</code>的循环语句<ul>
+<li>数组索引也类似, e.g. <code>a[i+2].</code></li>
 <li>避免使用指针计算</li>
 </ul>
 </li>
