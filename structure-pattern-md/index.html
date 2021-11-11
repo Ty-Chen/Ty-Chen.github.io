@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;设计模式，究其本质，无非是发现变化、封装变化。而对于面向对象编程来说，变化本身分为了创建对象、对象之间的关系、对象之间的调用，即为创建型、结构性、行为型设计模式。本文就创建型设计模式进行分析，洞察其背后的逻辑，并比较各种创建型设计模式的区别和使用场景。 &amp;emsp;&amp;emsp;为方便比较，创建型行为模式的几种我们采取同一个例子，即GOF一书中的迷宫创建为例。迷宫的">
 <meta property="article:published_time" content="2021-06-28T12:11:24.000Z">
-<meta property="article:modified_time" content="2021-11-10T15:29:17.520Z">
+<meta property="article:modified_time" content="2021-11-11T10:56:58.256Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="设计模式">
 <meta property="article:tag" content="创建型设计模式">
@@ -304,8 +304,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2021-11-10T23:29:17+08:00" content="2021-11-10">
-                2021-11-10
+              <time itemprop="dateUpdated" datetime="2021-11-11T18:56:58+08:00" content="2021-11-11">
+                2021-11-11
               </time>
             </span>
           
@@ -480,7 +480,7 @@
 <li>静态方法替代，但是静态方法并不比单例模式好。</li>
 </ul>
 <h2 id="三-工厂模式"><a href="#三-工厂模式" class="headerlink" title="三. 工厂模式"></a>三. 工厂模式</h2><p>&emsp;&emsp;一般情况下，工厂模式分为三种更加细分的类型：简单工厂、工厂方法和抽象工厂。不过，在 GoF 的《设计模式》一书中，它将简单工厂模式看作是工厂方法模式的一种特例，所以工厂模式只被分成了工厂方法和抽象工厂两类。</p>
-<h3 id="3-1-工厂方法"><a href="#3-1-工厂方法" class="headerlink" title="3.1 工厂方法"></a>3.1 工厂方法</h3><p>定义一个用于创建对象的接口，让子类决定实例化哪一个类。工厂模式使一个类的实例化延迟到其子类。GoF的定义并不好理解，这里仅放出来做一个参考，其实际意思就是定义一个抽象产品类Product负责产品的共性，再由一个抽象创建类Creator创建产品，具体创建哪种可以在子类具体实现。</p>
+<h3 id="3-1-工厂方法"><a href="#3-1-工厂方法" class="headerlink" title="3.1 工厂方法"></a>3.1 工厂方法</h3><p>定义一个用于创建对象的接口，让子类决定实例化哪一个类。工厂模式使一个类的实例化延迟到其子类。GoF的定义并不好理解，这里仅放出来做一个参考，其实际意思就是定义一个抽象产品类Product负责产品的共性，再由一个抽象创建类Creator创建产品，具体创建哪种可以在子类具体实现,，也就是对生产产品的抽象。</p>
 <h3 id="3-2-抽象工厂"><a href="#3-2-抽象工厂" class="headerlink" title="3.2 抽象工厂"></a>3.2 抽象工厂</h3><p>提供一个接口以创建一系列相关或者相互依赖的对象，而无需指定它们具体的类型。如果说工厂方法是生产多种产品，那抽象工厂就是生产多个不同品牌的产品，即对工厂方法的抽象。</p>
 <h4 id="3-2-1-适用场景"><a href="#3-2-1-适用场景" class="headerlink" title="3.2.1 适用场景"></a>3.2.1 适用场景</h4><ul>
 <li>一个系统要独立于它的产品的创建、组合和表示</li>
