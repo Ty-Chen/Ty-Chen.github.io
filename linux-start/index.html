@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 前言在跟踪并学习了一遍Linux内核源码框架之后，又经过了一系列相关书籍的阅读，最终决定沉下心来从零开始写一个属于自己的微型操作系统，大致思路如下：  写一个简单的可以启动的操作系统，显示Hello World 实现第一个进程 实现基本的内存管理 实现多进程及进程调度 增加设备注册、设备驱动 增加虚拟文件系统 增加网络架构 封装内核态和用户态 添加交互，如shell等  那么现在就从零开始，">
 <meta property="article:published_time" content="2022-03-22T12:44:13.000Z">
-<meta property="article:modified_time" content="2022-03-31T11:14:21.709Z">
+<meta property="article:modified_time" content="2022-04-02T13:58:53.165Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -306,8 +306,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2022-03-31T19:14:21+08:00" content="2022-03-31">
-                2022-03-31
+              <time itemprop="dateUpdated" datetime="2022-04-02T21:58:53+08:00" content="2022-04-02">
+                2022-04-02
               </time>
             </span>
           
@@ -370,7 +370,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  955
+                  1.1k
                 </span>
               
 
@@ -386,7 +386,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  3
+                  4
                 </span>
               
             </div>
@@ -439,6 +439,9 @@
 </ol>
 <p>最后调用main函数作为入口函数启动，函数如下：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"vgastr.h"</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"Hello world, welcome to TY's OS!"</span>);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中对应的头文件意义在于定义<code>printf</code>函数。我们通常使用的printf来自于运行时库，而此处自建操作系统是没有库函数用的，需要自己写一个能够打印并显示出来的函数。自制的 <code>printf</code> 函数直接调用了 <code>_strwrite</code> 函数，而 <code>_strwrite</code> 函数正是将字符串里每个字符依次定入到 0xb8000 地址开始的显存中，而 <code>p_strdst</code> 每次加 2，这也是为了跳过字符的颜色信息的空间。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//vgstr.h</span></span><br><span class="line"><span class="keyword">void</span> _strwrite(<span class="keyword">char</span>* <span class="built_in">string</span>);</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">printf</span><span class="params">(<span class="keyword">char</span>* fmt, ...)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//vgstr.c</span></span><br><span class="line"><span class="keyword">void</span> _strwrite(<span class="keyword">char</span>* <span class="built_in">string</span>)</span><br><span class="line">&#123; </span><br><span class="line">    <span class="keyword">char</span>* p_strdst = (<span class="keyword">char</span>*)(<span class="number">0xb8000</span>);<span class="comment">//指向显存的开始地址 </span></span><br><span class="line">    <span class="keyword">while</span> (*<span class="built_in">string</span>) </span><br><span class="line">    &#123; </span><br><span class="line">        *p_strdst = *<span class="built_in">string</span>++; </span><br><span class="line">        p_strdst += <span class="number">2</span>; </span><br><span class="line">    &#125; </span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">printf</span><span class="params">(<span class="keyword">char</span>* fmt, ...)</span></span></span><br><span class="line"><span class="function"></span>&#123; </span><br><span class="line">    _strwrite(fmt); </span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 
 
@@ -777,7 +780,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">186.9k</span>
+    <span title="Site words total count">187.1k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
