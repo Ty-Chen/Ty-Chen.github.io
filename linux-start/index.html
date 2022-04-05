@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 前言在跟踪并学习了一遍Linux内核源码框架之后，又经过了一系列相关书籍的阅读，最终决定沉下心来从零开始写一个属于自己的微型操作系统，大致思路如下：  写一个简单的可以启动的操作系统，显示Hello World 实现第一个进程 实现基本的内存管理 实现多进程及进程调度 增加设备注册、设备驱动 增加虚拟文件系统 增加网络架构 封装内核态和用户态 添加交互，如shell等  那么现在就从零开始，">
 <meta property="article:published_time" content="2022-03-22T12:44:13.000Z">
-<meta property="article:modified_time" content="2022-04-04T15:37:56.215Z">
+<meta property="article:modified_time" content="2022-04-05T13:37:50.529Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -306,8 +306,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2022-04-04T23:37:56+08:00" content="2022-04-04">
-                2022-04-04
+              <time itemprop="dateUpdated" datetime="2022-04-05T21:37:50+08:00" content="2022-04-05">
+                2022-04-05
               </time>
             </span>
           
@@ -370,7 +370,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1.3k
+                  1.4k
                 </span>
               
 
@@ -386,7 +386,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  5
+                  6
                 </span>
               
             </div>
@@ -449,6 +449,10 @@
 <p>最后再编写一个<code>makefile</code>文件来自动编译。注意这里在<code>Makefile</code>中增加了<code>update_image</code>及<code>qemu</code>，用于通过<code>qemu</code>直接启动而不需要修改操作系统文件。</p>
 <figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line">MAKEFLAGS = -sR</span><br><span class="line">MKDIR = mkdir</span><br><span class="line">RMDIR = rmdir</span><br><span class="line">CP = cp</span><br><span class="line">CD = cd</span><br><span class="line">DD = dd</span><br><span class="line">RM = rm</span><br><span class="line"></span><br><span class="line">ASM		= nasm</span><br><span class="line">CC		= gcc</span><br><span class="line">LD		= ld</span><br><span class="line">OBJCOPY	= objcopy</span><br><span class="line"></span><br><span class="line">ASMBFLAGS	= -f elf -w-orphan-labels</span><br><span class="line">CFLAGS		= -c -Os -std=c99 -m32 -Wall -Wshadow -W -Wconversion -Wno-sign-conversion  -fno-stack-protector -fomit-frame-pointer -fno-builtin -fno-common  -ffreestanding  -Wno-unused-parameter -Wunused-variable</span><br><span class="line">LDFLAGS		= -s -static -T main.lds -n -Map NanoOS.map </span><br><span class="line">OJCYFLAGS	= -S -O binary</span><br><span class="line"></span><br><span class="line">OS_OBJS :=</span><br><span class="line">OS_OBJS += entry.o main.o vgastr.o</span><br><span class="line">OS_ELF = NanoOS.elf</span><br><span class="line">OS_BIN = NanoOS.bin</span><br><span class="line"></span><br><span class="line">.PHONY : build clean all link bin</span><br><span class="line"></span><br><span class="line"><span class="section">all: clean build link bin</span></span><br><span class="line"></span><br><span class="line"><span class="section">clean:</span></span><br><span class="line">    <span class="variable">$(RM)</span> -f *.o *.bin *.elf</span><br><span class="line"></span><br><span class="line"><span class="section">build: <span class="variable">$(OS_OBJS)</span></span></span><br><span class="line"></span><br><span class="line"><span class="section">link: <span class="variable">$(OS_ELF)</span></span></span><br><span class="line"><span class="variable">$(OS_ELF)</span>: <span class="variable">$(OS_OBJS)</span></span><br><span class="line">    <span class="variable">$(LD)</span> <span class="variable">$(LDFLAGS)</span> -o <span class="variable">$@</span> <span class="variable">$(OS_OBJS)</span></span><br><span class="line"><span class="section">bin: <span class="variable">$(OS_BIN)</span></span></span><br><span class="line"><span class="variable">$(OS_BIN)</span>: <span class="variable">$(OS_ELF)</span></span><br><span class="line">    <span class="variable">$(OBJCOPY)</span> <span class="variable">$(OJCYFLAGS)</span> <span class="variable">$&lt;</span> <span class="variable">$@</span></span><br><span class="line"></span><br><span class="line">%.o : %.asm</span><br><span class="line">    <span class="variable">$(ASM)</span> <span class="variable">$(ASMBFLAGS)</span> -o <span class="variable">$@</span> <span class="variable">$&lt;</span></span><br><span class="line">%.o : %.c</span><br><span class="line">    <span class="variable">$(CC)</span> <span class="variable">$(CFLAGS)</span> -o <span class="variable">$@</span> <span class="variable">$&lt;</span></span><br><span class="line"></span><br><span class="line"><span class="section">update_image:</span></span><br><span class="line">    sudo mount floppy.img /mnt/kernel</span><br><span class="line">    sudo cp HelloOS.bin /mnt/kernel/hx_kernel</span><br><span class="line">    sleep 1</span><br><span class="line">    sudo umount /mnt/kernel</span><br><span class="line"></span><br><span class="line"><span class="section">umount_image:</span></span><br><span class="line">    sudo umount /mnt/kernel	</span><br><span class="line"></span><br><span class="line"><span class="section">qemu:</span></span><br><span class="line">    qemu-system-i386 -fda floppy.img -boot a</span><br><span class="line">    <span class="comment">#add '-nographic' option if using server of linux distro, such as fedora-server,or "gtk initialization failed" error will occur.</span></span><br></pre></td></tr></table></figure>
 
+<h3 id="2-2-bootloader的修改"><a href="#2-2-bootloader的修改" class="headerlink" title="2.2 bootloader的修改"></a>2.2 bootloader的修改</h3><p>实际上，在makefile里我们已经做了一个qemu的镜像操作，利用qemu可以不用修改bootloader，直接在Linux或者windows上启动虚拟机，操作如下</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">make &amp;&amp; make umount_image</span><br><span class="line">make qemu</span><br></pre></td></tr></table></figure>
+
+<p>如果还是希望能够在Linux/Windows上实际生效一个新的操作系统，那就需要用到下面的知识修改BootLoader添加新的操作系统配置项了。</p>
 
       
     </div>
@@ -747,7 +751,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-必须材料"><span class="nav-text">二. 必须材料</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-程序文件"><span class="nav-text">2.1 程序文件</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-必须材料"><span class="nav-text">二. 必须材料</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-程序文件"><span class="nav-text">2.1 程序文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-bootloader的修改"><span class="nav-text">2.2 bootloader的修改</span></a></li></ol></li></ol></div>
             
 
           </div>
@@ -781,7 +785,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">187.3k</span>
+    <span title="Site words total count">187.4k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
