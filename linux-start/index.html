@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 前言在跟踪并学习了一遍Linux内核源码框架之后，又经过了一系列相关书籍的阅读，最终决定沉下心来从零开始写一个属于自己的微型操作系统，大致思路如下：  写一个简单的可以启动的操作系统，显示Hello World 实现第一个进程 实现基本的内存管理 实现多进程及进程调度 增加设备注册、设备驱动 增加虚拟文件系统 增加网络架构 封装内核态和用户态 添加交互，如shell等  那么现在就从零开始，">
 <meta property="article:published_time" content="2022-03-22T12:44:13.000Z">
-<meta property="article:modified_time" content="2022-04-13T15:45:42.365Z">
+<meta property="article:modified_time" content="2022-04-16T13:10:07.144Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="操作系统">
@@ -306,8 +306,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2022-04-13T23:45:42+08:00" content="2022-04-13">
-                2022-04-13
+              <time itemprop="dateUpdated" datetime="2022-04-16T21:10:07+08:00" content="2022-04-16">
+                2022-04-16
               </time>
             </span>
           
@@ -422,7 +422,7 @@
 <p>那么现在就从零开始，一步一步搭建属于自己的操作系统吧。路可能很漫长，但是只要坚持就一定会有收获。本讲内容为如何写出一个可以启动的操作系统。</p>
 <a id="more"></a>
 
-<h2 id="二-必须材料"><a href="#二-必须材料" class="headerlink" title="二. 必须材料"></a>二. 必须材料</h2><p>在前文研究操作系统的时候提到过，电源启动后会由CS:IP组成指令指向BIOS，随后会跳转至bootloader加载操作系统。由此，我们需要以下几部分内容：</p>
+<h2 id="二-实现"><a href="#二-实现" class="headerlink" title="二. 实现"></a>二. 实现</h2><p>在前文研究操作系统的时候提到过，电源启动后会由CS:IP组成指令指向BIOS，随后会跳转至bootloader加载操作系统。由此，我们需要以下几部分内容：</p>
 <ul>
 <li>一个可运行的程序文件（操作系统）</li>
 <li>对bootloader的修改</li>
@@ -456,7 +456,7 @@
 <p>首先需要修改的是<code>grub.cfg</code>配置文件，该文件实际存储了各个操作系统配置，会加载并显示在屏幕供选择。</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">menuentry 'HelloOS' &#123; </span><br><span class="line">    insmod part_msdos #GRUB加载分区模块识别分区 </span><br><span class="line">    insmod ext2 #GRUB加载ext文件系统模块识别ext文件系统 </span><br><span class="line">    set root='hd0,msdos1' #注意boot目录挂载的分区 </span><br><span class="line">    multiboot2 /boot/NanoOS.bin #GRUB以multiboot2协议加载NanoOS.bin </span><br><span class="line">    boot #GRUB启动</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>接着修改/etc/default/grub</p>
+<p>接着修改<code>/etc/default/grub</code>，修改步骤如下</p>
 <p>a. 注释掉HIDDEN所在的2行</p>
 <p>b. 将GRUB_TIMEOUT设置为30（使用默认值10其实也可以）</p>
 <p>c. 将GRUB_CMDLINE_LINUX_DEFAUL设置为text</p>
@@ -760,7 +760,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-必须材料"><span class="nav-text">二. 必须材料</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-程序文件"><span class="nav-text">2.1 程序文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-bootloader的修改"><span class="nav-text">2.2 bootloader的修改</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-实现"><span class="nav-text">二. 实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-程序文件"><span class="nav-text">2.1 程序文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-bootloader的修改"><span class="nav-text">2.2 bootloader的修改</span></a></li></ol></li></ol></div>
             
 
           </div>
