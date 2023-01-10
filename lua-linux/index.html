@@ -81,12 +81,12 @@
 
 <meta name="description" content="一. 简介&amp;emsp;&amp;emsp;Lua是一种脚本语言，在游戏、嵌入式等领域有着众多应用。本系列文章会沿着基本数据结构、Lua虚拟机、Lua环境、gc回收、Lua特色等方面来分析Lua的实现，从而做到对其语言充分的了解。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Lua源码剖析（一）基本数据结构">
+<meta property="og:title" content="Lua源码剖析（一）基本结构体">
 <meta property="og:url" content="https://ty-chen.github.io/lua-linux/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;Lua是一种脚本语言，在游戏、嵌入式等领域有着众多应用。本系列文章会沿着基本数据结构、Lua虚拟机、Lua环境、gc回收、Lua特色等方面来分析Lua的实现，从而做到对其语言充分的了解。">
 <meta property="article:published_time" content="2021-04-03T16:20:57.000Z">
-<meta property="article:modified_time" content="2023-01-10T12:01:26.886Z">
+<meta property="article:modified_time" content="2023-01-10T13:04:13.400Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Lua">
 <meta property="article:tag" content="虚拟机">
@@ -127,7 +127,7 @@
 
 
 
-  <title>Lua源码剖析（一）基本数据结构 | Ty-Chen's Home</title>
+  <title>Lua源码剖析（一）基本结构体 | Ty-Chen's Home</title>
   
 
 
@@ -281,7 +281,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">Lua源码剖析（一）基本数据结构</h1>
+          <h1 class="post-title" itemprop="name headline">Lua源码剖析（一）基本结构体</h1>
         
 
         <div class="post-meta">
@@ -305,7 +305,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2023-01-10T20:01:26+08:00" content="2023-01-10">
+              <time itemprop="dateUpdated" datetime="2023-01-10T21:04:13+08:00" content="2023-01-10">
                 2023-01-10
               </time>
             </span>
@@ -430,7 +430,7 @@
 <p>&emsp;&emsp;<code>Proto</code>结构体则是用于将函数解析后的opcode结果传递给后续执行所必备的桥梁，一个Lua文件有一个总的<code>Proto</code>结构体,如果它内部还有定义函数,那么每个函数也有一个对应的<code>Proto</code>结构体，其关键数据结构包括</p>
 <ul>
 <li>TValue : 存放常量的数组.</li>
-<li>Instruction : 存放指令的数组.</li>
+<li>Instruction : 存放指令的数组.git</li>
 <li>struct Proto  : 该Proto内定义的函数相关的Proto数据.</li>
 </ul>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">** Function Prototypes</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">Proto</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    CommonHeader;</span><br><span class="line">    lu_byte numparams; <span class="comment">/* number of fixed parameters */</span></span><br><span class="line">    lu_byte is_vararg;</span><br><span class="line">    lu_byte maxstacksize; <span class="comment">/* number of registers needed by this function */</span></span><br><span class="line">    <span class="keyword">int</span> sizeupvalues;     <span class="comment">/* size of 'upvalues' */</span></span><br><span class="line">    <span class="keyword">int</span> sizek;            <span class="comment">/* size of 'k' */</span></span><br><span class="line">    <span class="keyword">int</span> sizecode;</span><br><span class="line">    <span class="keyword">int</span> sizelineinfo;</span><br><span class="line">    <span class="keyword">int</span> sizep; <span class="comment">/* size of 'p' */</span></span><br><span class="line">    <span class="keyword">int</span> sizelocvars;</span><br><span class="line">    <span class="keyword">int</span> linedefined;        <span class="comment">/* debug information  */</span></span><br><span class="line">    <span class="keyword">int</span> lastlinedefined;    <span class="comment">/* debug information  */</span></span><br><span class="line">    TValue *k;              <span class="comment">/* constants used by the function */</span></span><br><span class="line">    Instruction *code;      <span class="comment">/* opcodes */</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">Proto</span> **<span class="title">p</span>;</span>       <span class="comment">/* functions defined inside the function */</span></span><br><span class="line">    <span class="keyword">int</span> *lineinfo;          <span class="comment">/* map from opcodes to source lines (debug information) */</span></span><br><span class="line">    LocVar *locvars;        <span class="comment">/* information about local variables (debug information) */</span></span><br><span class="line">    Upvaldesc *upvalues;    <span class="comment">/* upvalue information */</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">LClosure</span> *<span class="title">cache</span>;</span> <span class="comment">/* last-created closure with this prototype */</span></span><br><span class="line">    TString *source;        <span class="comment">/* used for debug information */</span></span><br><span class="line">    GCObject *gclist;</span><br><span class="line">&#125; Proto;</span><br></pre></td></tr></table></figure>
@@ -487,7 +487,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="https://ty-chen.github.io/lua-linux/" title="Lua源码剖析（一）基本数据结构">https://ty-chen.github.io/lua-linux/</a>
+    <a href="https://ty-chen.github.io/lua-linux/" title="Lua源码剖析（一）基本结构体">https://ty-chen.github.io/lua-linux/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>
