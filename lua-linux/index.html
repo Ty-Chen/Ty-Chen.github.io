@@ -81,12 +81,12 @@
 
 <meta name="description" content="一. 简介&amp;emsp;&amp;emsp;Lua是一种脚本语言，在游戏、嵌入式等领域有着众多应用。本系列文章会沿着基本数据结构、Lua虚拟机、Lua环境、gc回收、Lua特色等方面来分析Lua的实现，从而做到对其语言充分的了解。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Lua源码剖析（一）基本结构体">
+<meta property="og:title" content="Lua源码剖析（一）开篇">
 <meta property="og:url" content="https://ty-chen.github.io/lua-linux/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;Lua是一种脚本语言，在游戏、嵌入式等领域有着众多应用。本系列文章会沿着基本数据结构、Lua虚拟机、Lua环境、gc回收、Lua特色等方面来分析Lua的实现，从而做到对其语言充分的了解。">
 <meta property="article:published_time" content="2021-04-03T16:20:57.000Z">
-<meta property="article:modified_time" content="2023-01-10T13:04:13.400Z">
+<meta property="article:modified_time" content="2023-01-12T13:07:28.883Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Lua">
 <meta property="article:tag" content="虚拟机">
@@ -127,7 +127,7 @@
 
 
 
-  <title>Lua源码剖析（一）基本结构体 | Ty-Chen's Home</title>
+  <title>Lua源码剖析（一）开篇 | Ty-Chen's Home</title>
   
 
 
@@ -281,7 +281,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">Lua源码剖析（一）基本结构体</h1>
+          <h1 class="post-title" itemprop="name headline">Lua源码剖析（一）开篇</h1>
         
 
         <div class="post-meta">
@@ -305,8 +305,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2023-01-10T21:04:13+08:00" content="2023-01-10">
-                2023-01-10
+              <time itemprop="dateUpdated" datetime="2023-01-12T21:07:28+08:00" content="2023-01-12">
+                2023-01-12
               </time>
             </span>
           
@@ -409,7 +409,7 @@
         <h2 id="一-简介"><a href="#一-简介" class="headerlink" title="一. 简介"></a>一. 简介</h2><p>&emsp;&emsp;Lua是一种脚本语言，在游戏、嵌入式等领域有着众多应用。本系列文章会沿着基本数据结构、Lua虚拟机、Lua环境、gc回收、Lua特色等方面来分析Lua的实现，从而做到对其语言充分的了解。</p>
 <a id="more"></a>
 
-<h2 id="二-相关结构体"><a href="#二-相关结构体" class="headerlink" title="二. 相关结构体"></a>二. 相关结构体</h2><p>&emsp;&emsp;首先需要分析的重要结构体当然是<code>lua_State</code>，使用<code>lua</code>时接触最多的结构体。如果说Lua虚拟机模拟的是CPU的运作，那么Lua栈模拟的就是内存的角色。在Lua内部参数的传递是通过Lua栈，Lua与C等外部进行交互的时候也是使用的栈。<code>lua_State</code>中主要保存了当前函数栈的相关信息及上一个函数的信息。</p>
+<h2 id="二-源码之外的话"><a href="#二-源码之外的话" class="headerlink" title="二. 源码之外的话"></a>二. 源码之外的话</h2><h2 id="三-核心结构体"><a href="#三-核心结构体" class="headerlink" title="三. 核心结构体"></a>三. 核心结构体</h2><p>&emsp;&emsp;首先需要分析的重要结构体当然是<code>lua_State</code>，使用<code>lua</code>时接触最多的结构体。如果说Lua虚拟机模拟的是CPU的运作，那么Lua栈模拟的就是内存的角色。在Lua内部参数的传递是通过Lua栈，Lua与C等外部进行交互的时候也是使用的栈。<code>lua_State</code>中主要保存了当前函数栈的相关信息及上一个函数的信息。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">** 'per thread' state</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">lua_State</span> &#123;</span></span><br><span class="line">  CommonHeader;</span><br><span class="line">  <span class="keyword">unsigned</span> short nci;  <span class="comment">/* number of items in 'ci' list */</span></span><br><span class="line">  lu_byte status;</span><br><span class="line">  StkId top;  <span class="comment">/* first free slot in the stack */</span></span><br><span class="line">  global_State *l_G;</span><br><span class="line">  CallInfo *ci;  <span class="comment">/* call info for current function */</span></span><br><span class="line">  <span class="keyword">const</span> Instruction *oldpc;  <span class="comment">/* last pc traced */</span></span><br><span class="line">  StkId stack_last;  <span class="comment">/* last free slot in the stack */</span></span><br><span class="line">  StkId <span class="built_in">stack</span>;  <span class="comment">/* stack base */</span></span><br><span class="line">  UpVal *openupval;  <span class="comment">/* list of open upvalues in this stack */</span></span><br><span class="line">  GCObject *gclist;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">lua_State</span> *<span class="title">twups</span>;</span>  <span class="comment">/* list of threads with open upvalues */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">lua_longjmp</span> *<span class="title">errorJmp</span>;</span>  <span class="comment">/* current error recover point */</span></span><br><span class="line">  CallInfo base_ci;  <span class="comment">/* CallInfo for first level (C calling Lua) */</span></span><br><span class="line">  <span class="keyword">volatile</span> lua_Hook hook;</span><br><span class="line">  <span class="keyword">ptrdiff_t</span> errfunc;  <span class="comment">/* current error handling function (stack index) */</span></span><br><span class="line">  <span class="keyword">int</span> stacksize;</span><br><span class="line">  <span class="keyword">int</span> basehookcount;</span><br><span class="line">  <span class="keyword">int</span> hookcount;</span><br><span class="line">  <span class="keyword">unsigned</span> short nny;  <span class="comment">/* number of non-yieldable calls in stack */</span></span><br><span class="line">  <span class="keyword">unsigned</span> short nCcalls;  <span class="comment">/* number of nested C calls */</span></span><br><span class="line">  l_signalT hookmask;</span><br><span class="line">  lu_byte allowhook;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 
 <p>&emsp;&emsp;<code>lua_State</code>中的<code>CallInfo</code>保存当前调用函数的信息，定义如下：</p>
@@ -418,6 +418,7 @@
 <p>&emsp;&emsp;<code>lua_State</code>和<code>CallInfo</code>初始化主要在<code>stack_init()</code>函数中执行。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">stack_init</span><span class="params">(lua_State *L1, lua_State *L)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i;</span><br><span class="line">    CallInfo *ci;</span><br><span class="line">    <span class="comment">/* initialize stack array */</span></span><br><span class="line">    L1-&gt;<span class="built_in">stack</span> = luaM_newvector(L, BASIC_STACK_SIZE, TValue);</span><br><span class="line">    L1-&gt;stacksize = BASIC_STACK_SIZE;</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; BASIC_STACK_SIZE; i++)</span><br><span class="line">        setnilvalue(L1-&gt;<span class="built_in">stack</span> + i); <span class="comment">/* erase new stack */</span></span><br><span class="line">    L1-&gt;top = L1-&gt;<span class="built_in">stack</span>;</span><br><span class="line">    L1-&gt;stack_last = L1-&gt;<span class="built_in">stack</span> + L1-&gt;stacksize - EXTRA_STACK;</span><br><span class="line">    <span class="comment">/* initialize first ci */</span></span><br><span class="line">    ci = &amp;L1-&gt;base_ci;</span><br><span class="line">    ci-&gt;next = ci-&gt;previous = <span class="literal">NULL</span>;</span><br><span class="line">    ci-&gt;callstatus = <span class="number">0</span>;</span><br><span class="line">    ci-&gt;func = L1-&gt;top;</span><br><span class="line">    setnilvalue(L1-&gt;top++); <span class="comment">/* 'function' entry for this 'ci' */</span></span><br><span class="line">    ci-&gt;top = L1-&gt;top + LUA_MINSTACK;</span><br><span class="line">    L1-&gt;ci = ci;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
+<h2 id="四-基础数据结构体"><a href="#四-基础数据结构体" class="headerlink" title="四. 基础数据结构体"></a>四. 基础数据结构体</h2><p>Lua的基础数据主要包括：</p>
 <p>&emsp;&emsp;除此之外，还需要注意<code>Closure</code>结构体及<code>Proto</code>结构体。Lua的函数有三种类型： </p>
 <ul>
 <li>Lua 函数 (LUA_TLCL)：T Lua Closure</li>
@@ -487,7 +488,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="https://ty-chen.github.io/lua-linux/" title="Lua源码剖析（一）基本结构体">https://ty-chen.github.io/lua-linux/</a>
+    <a href="https://ty-chen.github.io/lua-linux/" title="Lua源码剖析（一）开篇">https://ty-chen.github.io/lua-linux/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>
@@ -738,7 +739,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-相关结构体"><span class="nav-text">二. 相关结构体</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-源码之外的话"><span class="nav-text">二. 源码之外的话</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-核心结构体"><span class="nav-text">三. 核心结构体</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-基础数据结构体"><span class="nav-text">四. 基础数据结构体</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
