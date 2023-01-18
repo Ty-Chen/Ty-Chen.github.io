@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://ty-chen.github.io/lua-vm-md/</loc>
+    <loc>https://ty-chen.github.io/lua-linux/</loc>
     <lastmod>2023-01-18</lastmod>
   </url>
   <url>
@@ -9,7 +9,11 @@
     <lastmod>2023-01-18</lastmod>
   </url>
   <url>
-    <loc>https://ty-chen.github.io/lua-linux/</loc>
+    <loc>https://ty-chen.github.io/lua-data-struct/</loc>
+    <lastmod>2023-01-18</lastmod>
+  </url>
+  <url>
+    <loc>https://ty-chen.github.io/lua-vm-md/</loc>
     <lastmod>2023-01-18</lastmod>
   </url>
   <url>

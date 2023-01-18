@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>https://ty-chen.github.io/lua-vm-md/</loc>
+    <loc>https://ty-chen.github.io/lua-linux/</loc>
     
     <lastmod>2023-01-18</lastmod>
     
@@ -16,7 +16,14 @@
   </url>
   
   <url>
-    <loc>https://ty-chen.github.io/lua-linux/</loc>
+    <loc>https://ty-chen.github.io/lua-data-struct/</loc>
+    
+    <lastmod>2023-01-18</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://ty-chen.github.io/lua-vm-md/</loc>
     
     <lastmod>2023-01-18</lastmod>
     
@@ -908,6 +915,27 @@
   
   <url>
     <loc>https://ty-chen.github.io/tags/LuaJit/</loc>
+    <lastmod>2023-01-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://ty-chen.github.io/tags/%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/</loc>
+    <lastmod>2023-01-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://ty-chen.github.io/tags/%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80/</loc>
+    <lastmod>2023-01-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://ty-chen.github.io/tags/%E6%B2%99%E7%9B%92/</loc>
     <lastmod>2023-01-18</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
