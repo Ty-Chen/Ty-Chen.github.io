@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;Lua是一种脚本语言，在游戏、嵌入式等领域有着众多应用。Lua的源码体量较小，但是有着诸多精彩之处，值得认真品鉴。在阅读了众多源码分析的文章和博客后，笔者发现不少博客有着一些亮点，但是不能做到由浅入深且让人提纲挈领，亦存在种种缺陷之处，因此才有了本系列的源码分析文章。本系列文章大致覆盖内容如下。">
 <meta property="article:published_time" content="2023-01-13T16:20:57.000Z">
-<meta property="article:modified_time" content="2023-01-22T10:09:45.357Z">
+<meta property="article:modified_time" content="2023-01-22T17:15:35.596Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Lua">
 <meta property="article:tag" content="脚本语言">
@@ -305,8 +305,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2023-01-22T18:09:45+08:00" content="2023-01-22">
-                2023-01-22
+              <time itemprop="dateUpdated" datetime="2023-01-23T01:15:35+08:00" content="2023-01-23">
+                2023-01-23
               </time>
             </span>
           
@@ -369,7 +369,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1.1k
+                  1.5k
                 </span>
               
 
@@ -385,7 +385,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  3
+                  5
                 </span>
               
             </div>
@@ -430,7 +430,27 @@
 <li>内部基本操作：如字面值的读取，基本的算术运算，比较操作，栈操作等</li>
 <li>控制流：条件、循环等控制流。</li>
 </ul>
-<h2 id="四-虚拟机"><a href="#四-虚拟机" class="headerlink" title="四. 虚拟机"></a>四. 虚拟机</h2><h2 id="五-取舍"><a href="#五-取舍" class="headerlink" title="五. 取舍"></a>五. 取舍</h2><p>上文已经大致说明了脚本语言的基本设计思路和实现方法，但是这只能简单的做出一个有趣的雏形，距离真正的商业实践还有着很大的差距。对比lua/python等成熟的脚本语言，其实还有着诸多实现上的取舍，这些也是将雏形变为成熟项目的精妙之处。</p>
+<p>&emsp;&emsp;这里仅做一个简单的例子，例如我们要对某角色设置状态，则大致需要</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">SetPlayerHP</span><span class="params">(<span class="keyword">int</span> nPlayerID, <span class="keyword">int</span> nValue)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">SetPlayerMP</span><span class="params">(<span class="keyword">int</span> nPlayerID, <span class="keyword">int</span> nValue)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;对应的指令集</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">enum</span> ScriptInstructions</span><br><span class="line">&#123;</span><br><span class="line">    esiSetHP = <span class="number">0</span>,</span><br><span class="line">    esiSetMP = <span class="number">1</span>,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;当指令读入后，只需要调用对应的函数即可</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span> (intstruction)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">case</span> esiSetHP:</span><br><span class="line">        SetPlayerHP(<span class="number">0</span>, <span class="number">100</span>);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">        </span><br><span class="line">    <span class="keyword">case</span> esiSetMP:</span><br><span class="line">        SetPlayerMP(<span class="number">0</span>, <span class="number">100</span>);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;细心看到人可能发现问题了，只是一个指令的话，对应的传参怎么办呢？所以这里就需要考虑<strong>指令后携带数值，并存入虚拟寄存器进行操作</strong>。</p>
+<h2 id="四-虚拟机"><a href="#四-虚拟机" class="headerlink" title="四. 虚拟机"></a>四. 虚拟机</h2><p>&emsp;&emsp;第三节中的例子，可以完成一个简单指令的操作，但是实际的游戏中，我们往往需要多条指令去实现一个目标，这里就需要多条指令保持一个相对关系并存储对应的值，这儿就和操作系统的栈功能很类似了，我们将这个栈及对应的栈操作称之为虚拟机。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MAX_STACK_SIZE 128</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">VM</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Vm();</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">Run</span><span class="params">()</span></span>;</span><br><span class="line">    </span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">Push</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">Pop</span><span class="params">()</span></span>;</span><br><span class="line">    </span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="keyword">int</span> nStackSize;</span><br><span class="line">    <span class="keyword">int</span> nStack[MAX_STACK_SIZE];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对应的，指令的执行需要修改为</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">  <span class="keyword">case</span> esiSetHP:</span><br><span class="line">    <span class="keyword">int</span> nPlayerID = pop();</span><br><span class="line"><span class="keyword">int</span> nValue = pop();</span><br><span class="line">       SetPlayerHP(nPlayerID, nValue);</span><br><span class="line">       <span class="keyword">break</span>;</span><br></pre></td></tr></table></figure>
+
+<p>最后再完善下循环函数</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">VM::Run</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">while</span> (bRunning)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">while</span> (nStackSize)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">char</span> instruction = nStack[nStackSize];</span><br><span class="line">            <span class="keyword">switch</span> (instruction)</span><br><span class="line">            &#123;</span><br><span class="line">                ...</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>至此，整个指令执行的雏形就完成了，实现了基础指令集后，就可以做出各种复杂多样的需求。</p>
+<h2 id="五-取舍"><a href="#五-取舍" class="headerlink" title="五. 取舍"></a>五. 取舍</h2><p>上文已经大致说明了脚本语言的基本设计思路和实现方法，但是这只能简单的做出一个有趣的雏形，距离真正的商业实践还有着很大的差距。对比lua/python等成熟的脚本语言，其实还有着诸多实现上的取舍，这些也是将雏形变为成熟项目的精妙之处。</p>
 <h3 id="5-1-值"><a href="#5-1-值" class="headerlink" title="5.1 值"></a>5.1 值</h3><h3 id="5-2-指令和栈"><a href="#5-2-指令和栈" class="headerlink" title="5.2 指令和栈"></a>5.2 指令和栈</h3><h3 id="5-3-内存处理"><a href="#5-3-内存处理" class="headerlink" title="5.3 内存处理"></a>5.3 内存处理</h3><h3 id="5-4-使用和扩展"><a href="#5-4-使用和扩展" class="headerlink" title="5.4 使用和扩展"></a>5.4 使用和扩展</h3><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><ol>
 <li><a href="https://github.com/lichuang/Lua-Source-Internal" target="_blank" rel="noopener">Lua-Source-Internal</a></li>
 </ol>
@@ -768,7 +788,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">188.7k</span>
+    <span title="Site words total count">189k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
