@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;Lua是一种脚本语言，在游戏、嵌入式等领域有着众多应用。Lua的源码体量较小，但是有着诸多精彩之处，值得认真品鉴。在阅读了众多源码分析的文章和博客后，笔者发现不少博客有着一些亮点，但是不能做到由浅入深且让人提纲挈领，亦存在种种缺陷之处，因此才有了本系列的源码分析文章。本系列文章大致覆盖内容如下。">
 <meta property="article:published_time" content="2023-01-13T16:20:57.000Z">
-<meta property="article:modified_time" content="2023-01-18T17:40:18.193Z">
+<meta property="article:modified_time" content="2023-01-22T04:59:15.929Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Lua">
 <meta property="article:tag" content="脚本语言">
@@ -305,8 +305,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2023-01-19T01:40:18+08:00" content="2023-01-19">
-                2023-01-19
+              <time itemprop="dateUpdated" datetime="2023-01-22T12:59:15+08:00" content="2023-01-22">
+                2023-01-22
               </time>
             </span>
           
@@ -369,7 +369,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  300
+                  551
                 </span>
               
 
@@ -412,7 +412,14 @@
 <p>&emsp;&emsp;首先开篇，即本文，会介绍什么是脚本语言，其设计意图和权衡取舍。</p>
 <p>&emsp;&emsp;其次，就Lua的重要结构体、基本数据结构、Lua虚拟机、Lua环境、gc回收等Lua特色等方面来分析Lua的实现，从而做到系统性的充分了解。</p>
 <p>&emsp;&emsp;最后，会对Lua的一些库进行介绍，并对Lua的性能监控、性能优化进行分析探讨，做到入源码而超越源码，从高纬度洞悉掌握，而非沉溺于源码之中迷失了方向。</p>
-<h2 id="二-何为脚本语言"><a href="#二-何为脚本语言" class="headerlink" title="二. 何为脚本语言"></a>二. 何为脚本语言</h2><h2 id="三-取舍"><a href="#三-取舍" class="headerlink" title="三. 取舍"></a>三. 取舍</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><ol>
+<h2 id="二-何为脚本语言"><a href="#二-何为脚本语言" class="headerlink" title="二. 何为脚本语言"></a>二. 何为脚本语言</h2><p>&emsp;&emsp;设想有一个以C++开发的大型游戏项目，作为一个开发者，难免会遇到一系列的不良体验，可能包括</p>
+<ul>
+<li>上手难度大，容易出现错误导致宕机</li>
+<li>根据策划的方案设计玩法，需要反复修改逻辑，每次微调都需要重新编译，编译成本随着代码体量的增大可能会到几十分钟，可能只是一个简单的伤害计算公式，调来调去一天就过去了。</li>
+</ul>
+<p>&emsp;&emsp;为此，如果有一个相对安全的沙盒开发环境，并且满足修改完代码无需编译无需关闭服务器重启，那一定可以极大的提高开发效率。而这就是脚本语言，即动态语言的设计精髓所在。</p>
+<p>下面让我们抱着解决以上两个问题为主旨需求，来看看如果要自己设计一个脚本语言，需要做些什么。</p>
+<h2 id="三-取舍"><a href="#三-取舍" class="headerlink" title="三. 取舍"></a>三. 取舍</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><ol>
 <li><a href="https://github.com/lichuang/Lua-Source-Internal" target="_blank" rel="noopener">Lua-Source-Internal</a></li>
 </ol>
 
@@ -749,7 +756,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">187.8k</span>
+    <span title="Site words total count">188.1k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
