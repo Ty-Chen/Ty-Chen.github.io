@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;Lua是一种脚本语言，在游戏、嵌入式等领域有着众多应用。Lua的源码体量较小，但是有着诸多精彩之处，值得认真品鉴。在阅读了众多源码分析的文章和博客后，笔者发现不少博客有着一些亮点，但是不能做到由浅入深且让人提纲挈领，亦存在种种缺陷之处，因此才有了本系列的源码分析文章。本系列文章大致覆盖内容如下。">
 <meta property="article:published_time" content="2023-01-13T16:20:57.000Z">
-<meta property="article:modified_time" content="2023-01-22T04:59:15.929Z">
+<meta property="article:modified_time" content="2023-01-22T10:09:45.357Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Lua">
 <meta property="article:tag" content="脚本语言">
@@ -305,7 +305,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2023-01-22T12:59:15+08:00" content="2023-01-22">
+              <time itemprop="dateUpdated" datetime="2023-01-22T18:09:45+08:00" content="2023-01-22">
                 2023-01-22
               </time>
             </span>
@@ -369,7 +369,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  551
+                  1.1k
                 </span>
               
 
@@ -385,7 +385,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  1
+                  3
                 </span>
               
             </div>
@@ -418,8 +418,20 @@
 <li>根据策划的方案设计玩法，需要反复修改逻辑，每次微调都需要重新编译，编译成本随着代码体量的增大可能会到几十分钟，可能只是一个简单的伤害计算公式，调来调去一天就过去了。</li>
 </ul>
 <p>&emsp;&emsp;为此，如果有一个相对安全的沙盒开发环境，并且满足修改完代码无需编译无需关闭服务器重启，那一定可以极大的提高开发效率。而这就是脚本语言，即动态语言的设计精髓所在。</p>
-<p>下面让我们抱着解决以上两个问题为主旨需求，来看看如果要自己设计一个脚本语言，需要做些什么。</p>
-<h2 id="三-取舍"><a href="#三-取舍" class="headerlink" title="三. 取舍"></a>三. 取舍</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><ol>
+<p>&emsp;&emsp;下面让我们抱着解决以上两个问题为主旨需求，来看看如果要自己设计一个脚本语言，需要做些什么：我们需要用一种规定好的语法，去写一个脚本，然后让其在程序中可以加载、解析并成功执行我们想要的命令，对于输入错误、逻辑有误的不予执行。因此，大致需要以下两方面功能。</p>
+<ul>
+<li>代替编译器工作：如同静态语言需要经历语法解析等一系列过程最后生成可执行文件，脚本语言需要对输入的脚本进行解析生成对应的<strong>执行指令</strong>。</li>
+<li>检测并执行指令：静态语言编译后即为机器指令直接可执行，而脚本语言经过上一步，翻译成了我们自己特定的执行指令，因此需要对其进行判断和实际的逻辑处理。这一步的判断实现了沙盒的安全性，而逻辑处理则实现了类似于CPU的运算功能。</li>
+</ul>
+<p>为了实现这两方面功能，我们需要一套指令系统，以及一个能够不断执行各条指令的逻辑处理系统。这两个，也就是脚本语言中核心设计之指令集和虚拟机。</p>
+<h2 id="三-指令集"><a href="#三-指令集" class="headerlink" title="三. 指令集"></a>三. 指令集</h2><p>&emsp;&emsp;假设我们需要做一个游戏的逻辑开发，那我们设计的这一套脚本语言，至少需要以下三方面的指令</p>
+<ul>
+<li>内外部交互：程序主体和该脚本语言执行的交互，即发出指令、加载执行脚本及获取执行结果并执行后续脚本或静态语言逻辑的能力</li>
+<li>内部基本操作：如字面值的读取，基本的算术运算，比较操作，栈操作等</li>
+<li>控制流：条件、循环等控制流。</li>
+</ul>
+<h2 id="四-虚拟机"><a href="#四-虚拟机" class="headerlink" title="四. 虚拟机"></a>四. 虚拟机</h2><h2 id="五-取舍"><a href="#五-取舍" class="headerlink" title="五. 取舍"></a>五. 取舍</h2><p>上文已经大致说明了脚本语言的基本设计思路和实现方法，但是这只能简单的做出一个有趣的雏形，距离真正的商业实践还有着很大的差距。对比lua/python等成熟的脚本语言，其实还有着诸多实现上的取舍，这些也是将雏形变为成熟项目的精妙之处。</p>
+<h3 id="5-1-值"><a href="#5-1-值" class="headerlink" title="5.1 值"></a>5.1 值</h3><h3 id="5-2-指令和栈"><a href="#5-2-指令和栈" class="headerlink" title="5.2 指令和栈"></a>5.2 指令和栈</h3><h3 id="5-3-内存处理"><a href="#5-3-内存处理" class="headerlink" title="5.3 内存处理"></a>5.3 内存处理</h3><h3 id="5-4-使用和扩展"><a href="#5-4-使用和扩展" class="headerlink" title="5.4 使用和扩展"></a>5.4 使用和扩展</h3><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><ol>
 <li><a href="https://github.com/lichuang/Lua-Source-Internal" target="_blank" rel="noopener">Lua-Source-Internal</a></li>
 </ol>
 
@@ -722,7 +734,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-何为脚本语言"><span class="nav-text">二. 何为脚本语言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-取舍"><span class="nav-text">三. 取舍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-何为脚本语言"><span class="nav-text">二. 何为脚本语言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-指令集"><span class="nav-text">三. 指令集</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-虚拟机"><span class="nav-text">四. 虚拟机</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-取舍"><span class="nav-text">五. 取舍</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-值"><span class="nav-text">5.1 值</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-指令和栈"><span class="nav-text">5.2 指令和栈</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-内存处理"><span class="nav-text">5.3 内存处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-4-使用和扩展"><span class="nav-text">5.4 使用和扩展</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
@@ -756,7 +768,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">188.1k</span>
+    <span title="Site words total count">188.7k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
