@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;Lua是一种脚本语言，在游戏、嵌入式等领域有着众多应用。Lua的源码体量较小，但是有着诸多精彩之处，值得认真品鉴。在阅读了众多源码分析的文章和博客后，笔者发现不少博客有着一些亮点，但是不能做到由浅入深且让人提纲挈领，亦存在种种缺陷之处，因此才有了本系列的源码分析文章。本系列文章大致覆盖内容如下。">
 <meta property="article:published_time" content="2023-01-13T16:20:57.000Z">
-<meta property="article:modified_time" content="2023-01-22T17:15:35.596Z">
+<meta property="article:modified_time" content="2023-01-23T14:11:30.212Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Lua">
 <meta property="article:tag" content="脚本语言">
@@ -305,7 +305,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2023-01-23T01:15:35+08:00" content="2023-01-23">
+              <time itemprop="dateUpdated" datetime="2023-01-23T22:11:30+08:00" content="2023-01-23">
                 2023-01-23
               </time>
             </span>
@@ -369,7 +369,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1.5k
+                  2.4k
                 </span>
               
 
@@ -385,7 +385,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  5
+                  8
                 </span>
               
             </div>
@@ -439,20 +439,41 @@
 <p>&emsp;&emsp;当指令读入后，只需要调用对应的函数即可</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span> (intstruction)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">case</span> esiSetHP:</span><br><span class="line">        SetPlayerHP(<span class="number">0</span>, <span class="number">100</span>);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">        </span><br><span class="line">    <span class="keyword">case</span> esiSetMP:</span><br><span class="line">        SetPlayerMP(<span class="number">0</span>, <span class="number">100</span>);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>&emsp;&emsp;细心看到人可能发现问题了，只是一个指令的话，对应的传参怎么办呢？所以这里就需要考虑<strong>指令后携带数值，并存入虚拟寄存器进行操作</strong>。</p>
+<p>&emsp;&emsp;细心看到人可能发现问题了，只是一个指令的话，对应的传参怎么办呢？所以这里就需要考虑如何判断输入的是数值，因此内部基本操作指令必不可少一种字面值指令：读取的下一个字节为数值，进行存储以待使用。</p>
 <h2 id="四-虚拟机"><a href="#四-虚拟机" class="headerlink" title="四. 虚拟机"></a>四. 虚拟机</h2><p>&emsp;&emsp;第三节中的例子，可以完成一个简单指令的操作，但是实际的游戏中，我们往往需要多条指令去实现一个目标，这里就需要多条指令保持一个相对关系并存储对应的值，这儿就和操作系统的栈功能很类似了，我们将这个栈及对应的栈操作称之为虚拟机。</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MAX_STACK_SIZE 128</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">VM</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Vm();</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">Run</span><span class="params">()</span></span>;</span><br><span class="line">    </span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">Push</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">Pop</span><span class="params">()</span></span>;</span><br><span class="line">    </span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="keyword">int</span> nStackSize;</span><br><span class="line">    <span class="keyword">int</span> nStack[MAX_STACK_SIZE];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>对应的，指令的执行需要修改为</p>
+<p>&emsp;&emsp;对应的，指令的执行需要修改为</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">  <span class="keyword">case</span> esiSetHP:</span><br><span class="line">    <span class="keyword">int</span> nPlayerID = pop();</span><br><span class="line"><span class="keyword">int</span> nValue = pop();</span><br><span class="line">       SetPlayerHP(nPlayerID, nValue);</span><br><span class="line">       <span class="keyword">break</span>;</span><br></pre></td></tr></table></figure>
 
-<p>最后再完善下循环函数</p>
+<p>&emsp;&emsp;最后再完善下循环函数</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">VM::Run</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">while</span> (bRunning)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">while</span> (nStackSize)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">char</span> instruction = nStack[nStackSize];</span><br><span class="line">            <span class="keyword">switch</span> (instruction)</span><br><span class="line">            &#123;</span><br><span class="line">                ...</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>至此，整个指令执行的雏形就完成了，实现了基础指令集后，就可以做出各种复杂多样的需求。</p>
-<h2 id="五-取舍"><a href="#五-取舍" class="headerlink" title="五. 取舍"></a>五. 取舍</h2><p>上文已经大致说明了脚本语言的基本设计思路和实现方法，但是这只能简单的做出一个有趣的雏形，距离真正的商业实践还有着很大的差距。对比lua/python等成熟的脚本语言，其实还有着诸多实现上的取舍，这些也是将雏形变为成熟项目的精妙之处。</p>
-<h3 id="5-1-值"><a href="#5-1-值" class="headerlink" title="5.1 值"></a>5.1 值</h3><h3 id="5-2-指令和栈"><a href="#5-2-指令和栈" class="headerlink" title="5.2 指令和栈"></a>5.2 指令和栈</h3><h3 id="5-3-内存处理"><a href="#5-3-内存处理" class="headerlink" title="5.3 内存处理"></a>5.3 内存处理</h3><h3 id="5-4-使用和扩展"><a href="#5-4-使用和扩展" class="headerlink" title="5.4 使用和扩展"></a>5.4 使用和扩展</h3><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><ol>
-<li><a href="https://github.com/lichuang/Lua-Source-Internal" target="_blank" rel="noopener">Lua-Source-Internal</a></li>
+<p>&emsp;&emsp;至此，整个指令执行的雏形就完成了，实现了基础指令集后，就可以做出各种复杂多样的需求。</p>
+<h2 id="五-取舍"><a href="#五-取舍" class="headerlink" title="五. 取舍"></a>五. 取舍</h2><p>&emsp;&emsp;上文已经大致说明了脚本语言的基本设计思路和实现方法，但是这只能简单的做出一个有趣的雏形，距离真正的商业实践还有着很大的差距。对比<code>lua/python</code>等成熟的脚本语言，其实还有着诸多实现上的取舍，这些也是将雏形变为成熟项目的精妙之处。</p>
+<h3 id="5-1-值"><a href="#5-1-值" class="headerlink" title="5.1 值"></a>5.1 值</h3><p> &emsp;&emsp;上文例中可以忽视了传值的类型问题，全部使用了整形，而在真实的程序之中，远不止如此，因此需要考虑如何设定传递不同种类的值的问题。大体上有几种做法：</p>
+<ul>
+<li>只传递单一类型的值：好处就是简单方便，坏处就是过于不通用，牺牲了灵活性，因此几乎不被采纳</li>
+<li>标签+联合传值：传递的值开头几位设计为类型的标签，后续才是长度、数值，这种做法好处当然是通用性强，问题是在于会占用更多的内存，需要对内存进行更精细的管理。如Lua等脚本语言就采取此方法，因此gc也就成了重中之重。</li>
+<li>不带标签直接传值：将值的正确性交给脚本的编写者承担，这就意味着提高了运行速度的同时也带来了极大的风险。</li>
+</ul>
+<h3 id="5-2-指令和栈"><a href="#5-2-指令和栈" class="headerlink" title="5.2 指令和栈"></a>5.2 指令和栈</h3><p>&emsp;&emsp;如果指令均只能访问栈顶元素，那么一个简单的加法，就需要读指令，取值，读指令，取值，然后再相加。如果模拟CPU中的寄存器，则可以大幅提高速度，甚至可以通过寄存器存储栈帧位置实现栈内任意位置的访问。这也是指令和栈设计的另一种模式。两种模式如何选择，需要设计者多多思考。</p>
+<ul>
+<li>仅基于栈，则指令会非常简单，代码生成也更容易，但是同样的一段逻辑处理，无疑需要更多的指令，越复杂的逻辑，需要的数量就会更繁琐。</li>
+<li>栈+寄存器，会导致指令变得复杂，但是相对的指令数就会减少。Lua正式基于这种设计思想而实现。</li>
+</ul>
+<h3 id="5-3-内存处理"><a href="#5-3-内存处理" class="headerlink" title="5.3 内存处理"></a>5.3 内存处理</h3><p>&emsp;&emsp;如果仅生成不释放，那么执行脚本的沙盒的空间会随着使用的增加而增长，因此如何释放、何时释放、释放权交给脚本编写者还是由沙盒内核心逻辑进行，都是很重要的问题，后续也会专门写文章分析Lua是如何进行内存管理和回收的。</p>
+<h3 id="5-4-使用和扩展"><a href="#5-4-使用和扩展" class="headerlink" title="5.4 使用和扩展"></a>5.4 使用和扩展</h3><p>&emsp;&emsp;一个成熟的脚本语言，肯定需要考虑如何提供给大家使用，以及如何去不断地更新、并且支持大家一起去扩展其功能。常见的使用方法无外乎脚本编辑或者UI编辑，二者的取舍主要是面向群体的不同。如何不断更新，其实主要涉及到模块和模块之间耦合关系的问题，在设计之初就应该考虑到如何解耦各模块并留出扩展槽接口。</p>
+<h2 id="六-总结"><a href="#六-总结" class="headerlink" title="六. 总结"></a>六. 总结</h2><p>&emsp;&emsp;看完本文，不会告诉你Lua或者Python是如何具体实现的，但是一定会给你如何设计并实现一门脚本语言的思路和入手着手点。由此再去看源码，你就不会局限于源码中一行一段的逻辑，而是高屋建瓴的站在脚本语言设计者的角度去思考，这就是本文希望能带给你的全部收获，可能也是最重要的东西。</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><ol>
+<li><p><a href="https://github.com/lichuang/Lua-Source-Internal" target="_blank" rel="noopener">Lua-Source-Internal</a></p>
+</li>
+<li><p>《A No Frills Introduction to Lua 5.1 VM Instructions》</p>
+</li>
+<li><p>《A Look at the Design of Lua》</p>
+</li>
+<li><p>《游戏编程模式》</p>
+</li>
 </ol>
 
       
@@ -754,7 +775,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-何为脚本语言"><span class="nav-text">二. 何为脚本语言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-指令集"><span class="nav-text">三. 指令集</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-虚拟机"><span class="nav-text">四. 虚拟机</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-取舍"><span class="nav-text">五. 取舍</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-值"><span class="nav-text">5.1 值</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-指令和栈"><span class="nav-text">5.2 指令和栈</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-内存处理"><span class="nav-text">5.3 内存处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-4-使用和扩展"><span class="nav-text">5.4 使用和扩展</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-何为脚本语言"><span class="nav-text">二. 何为脚本语言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-指令集"><span class="nav-text">三. 指令集</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-虚拟机"><span class="nav-text">四. 虚拟机</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-取舍"><span class="nav-text">五. 取舍</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-值"><span class="nav-text">5.1 值</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-指令和栈"><span class="nav-text">5.2 指令和栈</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-内存处理"><span class="nav-text">5.3 内存处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-4-使用和扩展"><span class="nav-text">5.4 使用和扩展</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#六-总结"><span class="nav-text">六. 总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
@@ -788,7 +809,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">189k</span>
+    <span title="Site words total count">189.9k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
