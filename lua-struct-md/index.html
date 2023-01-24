@@ -79,14 +79,14 @@
 
 
 
-<meta name="description" content="一. 前言本文介绍Lua的核心结构体。">
+<meta name="description" content="一. 前言&amp;emsp;&amp;emsp;无论是和静态语言交互，还是内部的API，永远少不了lua_State，这就是Lua最核心的栈结构体，也是本文的重点介绍对象。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Lua源码剖析（二）基本结构体">
+<meta property="og:title" content="Lua源码剖析（二）核心结构体">
 <meta property="og:url" content="https://ty-chen.github.io/lua-struct-md/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
-<meta property="og:description" content="一. 前言本文介绍Lua的核心结构体。">
+<meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;无论是和静态语言交互，还是内部的API，永远少不了lua_State，这就是Lua最核心的栈结构体，也是本文的重点介绍对象。">
 <meta property="article:published_time" content="2023-01-15T13:04:51.000Z">
-<meta property="article:modified_time" content="2023-01-18T17:40:03.952Z">
+<meta property="article:modified_time" content="2023-01-24T08:10:33.814Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Lua">
 <meta property="article:tag" content="虚拟机">
@@ -127,7 +127,7 @@
 
 
 
-  <title>Lua源码剖析（二）基本结构体 | Ty-Chen's Home</title>
+  <title>Lua源码剖析（二）核心结构体 | Ty-Chen's Home</title>
   
 
 
@@ -281,7 +281,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">Lua源码剖析（二）基本结构体</h1>
+          <h1 class="post-title" itemprop="name headline">Lua源码剖析（二）核心结构体</h1>
         
 
         <div class="post-meta">
@@ -305,8 +305,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2023-01-19T01:40:03+08:00" content="2023-01-19">
-                2023-01-19
+              <time itemprop="dateUpdated" datetime="2023-01-24T16:10:33+08:00" content="2023-01-24">
+                2023-01-24
               </time>
             </span>
           
@@ -369,7 +369,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  558
+                  819
                 </span>
               
 
@@ -406,11 +406,26 @@
       
 
       
-        <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>本文介绍Lua的核心结构体。</p>
+        <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;无论是和静态语言交互，还是内部的API，永远少不了<code>lua_State</code>，这就是Lua最核心的栈结构体，也是本文的重点介绍对象。</p>
 <a id="more"></a>
 
-<h2 id="二-核心结构体分析"><a href="#二-核心结构体分析" class="headerlink" title="二. 核心结构体分析"></a>二. 核心结构体分析</h2><p>&emsp;&emsp;首先需要分析的重要结构体当然是<code>lua_State</code>，使用<code>lua</code>时接触最多的结构体。如果说Lua虚拟机模拟的是CPU的运作，那么Lua栈模拟的就是内存的角色。在Lua内部参数的传递是通过Lua栈，Lua与C等外部进行交互的时候也是使用的栈。<code>lua_State</code>中主要保存了当前函数栈的相关信息及上一个函数的信息。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">** 'per thread' state</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">lua_State</span> &#123;</span></span><br><span class="line">  CommonHeader;</span><br><span class="line">  <span class="keyword">unsigned</span> short nci;  <span class="comment">/* number of items in 'ci' list */</span></span><br><span class="line">  lu_byte status;</span><br><span class="line">  StkId top;  <span class="comment">/* first free slot in the stack */</span></span><br><span class="line">  global_State *l_G;</span><br><span class="line">  CallInfo *ci;  <span class="comment">/* call info for current function */</span></span><br><span class="line">  <span class="keyword">const</span> Instruction *oldpc;  <span class="comment">/* last pc traced */</span></span><br><span class="line">  StkId stack_last;  <span class="comment">/* last free slot in the stack */</span></span><br><span class="line">  StkId <span class="built_in">stack</span>;  <span class="comment">/* stack base */</span></span><br><span class="line">  UpVal *openupval;  <span class="comment">/* list of open upvalues in this stack */</span></span><br><span class="line">  GCObject *gclist;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">lua_State</span> *<span class="title">twups</span>;</span>  <span class="comment">/* list of threads with open upvalues */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">lua_longjmp</span> *<span class="title">errorJmp</span>;</span>  <span class="comment">/* current error recover point */</span></span><br><span class="line">  CallInfo base_ci;  <span class="comment">/* CallInfo for first level (C calling Lua) */</span></span><br><span class="line">  <span class="keyword">volatile</span> lua_Hook hook;</span><br><span class="line">  <span class="keyword">ptrdiff_t</span> errfunc;  <span class="comment">/* current error handling function (stack index) */</span></span><br><span class="line">  <span class="keyword">int</span> stacksize;</span><br><span class="line">  <span class="keyword">int</span> basehookcount;</span><br><span class="line">  <span class="keyword">int</span> hookcount;</span><br><span class="line">  <span class="keyword">unsigned</span> short nny;  <span class="comment">/* number of non-yieldable calls in stack */</span></span><br><span class="line">  <span class="keyword">unsigned</span> short nCcalls;  <span class="comment">/* number of nested C calls */</span></span><br><span class="line">  l_signalT hookmask;</span><br><span class="line">  lu_byte allowhook;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h2 id="二-核心结构体分析"><a href="#二-核心结构体分析" class="headerlink" title="二. 核心结构体分析"></a>二. 核心结构体分析</h2><p>&emsp;&emsp;写过Lua的demo程序，都不会陌生这个API</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">lua_State* <span class="title">luaL_newstate</span><span class="params">()</span></span></span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;在使用Lua时，首先需要调用该API生成栈，之后再加载文件或是直接填写逻辑。如果说Lua虚拟机执行指令模拟的是CPU的运作，那么Lua栈模拟的就是可执行文件加载在内存的堆栈的操作。在Lua内部参数的传递是通过Lua栈，Lua与C等外部进行交互的时候也是使用的栈。<code>lua_State</code>中保存了大量信息，直接看结构体源码可能就会陷进去了，所以我们可以先分个类。</p>
+<p>&emsp;&emsp;设想如果是自己写一个保存脚本执行信息的栈结构体，那可能需要以下几方面内容</p>
+<ul>
+<li>全局存储信息，起到类似全局变量之类的效果</li>
+<li>栈信息，毫无疑问需要上下限索引、计数等</li>
+<li>函数相关，用链表或者其他形式去把所有函数存储起来并且能够获取到</li>
+<li>GC相关，用于垃圾回收</li>
+<li>函数跟踪调试，给出对外的接口以便于调试代码以及打印情况</li>
+<li>异常抛出处理，用于处理异常情况</li>
+</ul>
+<p>&emsp;&emsp;而Lua的栈结构体基本也就包括了这几块。首先看看整体的源码</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">** `per thread' state</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">lua_State</span> &#123;</span></span><br><span class="line">  CommonHeader;</span><br><span class="line">  lu_byte status;</span><br><span class="line">  StkId top;  <span class="comment">/* first free slot in the stack */</span></span><br><span class="line">  StkId base;  <span class="comment">/* base of current function */</span></span><br><span class="line">  global_State *l_G;</span><br><span class="line">  CallInfo *ci;  <span class="comment">/* call info for current function */</span></span><br><span class="line">  <span class="keyword">const</span> Instruction *savedpc;  <span class="comment">/* `savedpc' of current function */</span></span><br><span class="line">  StkId stack_last;  <span class="comment">/* last free slot in the stack */</span></span><br><span class="line">  StkId <span class="built_in">stack</span>;  <span class="comment">/* stack base */</span></span><br><span class="line">  CallInfo *end_ci;  <span class="comment">/* points after end of ci array*/</span></span><br><span class="line">  CallInfo *base_ci;  <span class="comment">/* array of CallInfo's */</span></span><br><span class="line">  <span class="keyword">int</span> stacksize;</span><br><span class="line">  <span class="keyword">int</span> size_ci;  <span class="comment">/* size of array `base_ci' */</span></span><br><span class="line">  <span class="keyword">unsigned</span> short nCcalls;  <span class="comment">/* number of nested C calls */</span></span><br><span class="line">  lu_byte hookmask;</span><br><span class="line">  lu_byte allowhook;</span><br><span class="line">  <span class="keyword">int</span> basehookcount;</span><br><span class="line">  <span class="keyword">int</span> hookcount;</span><br><span class="line">  lua_Hook hook;</span><br><span class="line">  TValue l_gt;  <span class="comment">/* table of globals */</span></span><br><span class="line">  TValue env;  <span class="comment">/* temporary place for environments */</span></span><br><span class="line">  GCObject *openupval;  <span class="comment">/* list of open upvalues in this stack */</span></span><br><span class="line">  GCObject *gclist;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">lua_longjmp</span> *<span class="title">errorJmp</span>;</span>  <span class="comment">/* current error recover point */</span></span><br><span class="line">  <span class="keyword">ptrdiff_t</span> errfunc;  <span class="comment">/* current error handling function (stack index) */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+
 
 <p>&emsp;&emsp;<code>lua_State</code>中的<code>CallInfo</code>保存当前调用函数的信息，定义如下：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">** Information about a call.</span></span><br><span class="line"><span class="comment">** When a thread yields, 'func' is adjusted to pretend that the</span></span><br><span class="line"><span class="comment">** top function has only the yielded values in its stack; in that</span></span><br><span class="line"><span class="comment">** case, the actual 'func' value is saved in field 'extra'.</span></span><br><span class="line"><span class="comment">** When a function calls another with a continuation, 'extra' keeps</span></span><br><span class="line"><span class="comment">** the function index so that, in case of errors, the continuation</span></span><br><span class="line"><span class="comment">** function can be called with the correct top.</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">CallInfo</span> &#123;</span></span><br><span class="line">  StkId func;  <span class="comment">/* function index in the stack */</span></span><br><span class="line">  StkId	top;  <span class="comment">/* top for this function */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">CallInfo</span> *<span class="title">previous</span>, *<span class="title">next</span>;</span>  <span class="comment">/* dynamic call link */</span></span><br><span class="line">  <span class="keyword">union</span> &#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> &#123;</span>  <span class="comment">/* only for Lua functions */</span></span><br><span class="line">      StkId base;  <span class="comment">/* base for this function */</span></span><br><span class="line">      <span class="keyword">const</span> Instruction *savedpc;</span><br><span class="line">    &#125; l;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> &#123;</span>  <span class="comment">/* only for C functions */</span></span><br><span class="line">      lua_KFunction k;  <span class="comment">/* continuation in case of yields */</span></span><br><span class="line">      <span class="keyword">ptrdiff_t</span> old_errfunc;</span><br><span class="line">      lua_KContext ctx;  <span class="comment">/* context info. in case of yields */</span></span><br><span class="line">    &#125; c;</span><br><span class="line">  &#125; u;</span><br><span class="line">  <span class="keyword">ptrdiff_t</span> extra;</span><br><span class="line">  short nresults;  <span class="comment">/* expected number of results from this function */</span></span><br><span class="line">  <span class="keyword">unsigned</span> short callstatus;</span><br><span class="line">&#125; CallInfo;</span><br></pre></td></tr></table></figure>
@@ -418,7 +433,7 @@
 <p>&emsp;&emsp;<code>lua_State</code>和<code>CallInfo</code>初始化主要在<code>stack_init()</code>函数中执行。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">stack_init</span><span class="params">(lua_State *L1, lua_State *L)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i;</span><br><span class="line">    CallInfo *ci;</span><br><span class="line">    <span class="comment">/* initialize stack array */</span></span><br><span class="line">    L1-&gt;<span class="built_in">stack</span> = luaM_newvector(L, BASIC_STACK_SIZE, TValue);</span><br><span class="line">    L1-&gt;stacksize = BASIC_STACK_SIZE;</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; BASIC_STACK_SIZE; i++)</span><br><span class="line">        setnilvalue(L1-&gt;<span class="built_in">stack</span> + i); <span class="comment">/* erase new stack */</span></span><br><span class="line">    L1-&gt;top = L1-&gt;<span class="built_in">stack</span>;</span><br><span class="line">    L1-&gt;stack_last = L1-&gt;<span class="built_in">stack</span> + L1-&gt;stacksize - EXTRA_STACK;</span><br><span class="line">    <span class="comment">/* initialize first ci */</span></span><br><span class="line">    ci = &amp;L1-&gt;base_ci;</span><br><span class="line">    ci-&gt;next = ci-&gt;previous = <span class="literal">NULL</span>;</span><br><span class="line">    ci-&gt;callstatus = <span class="number">0</span>;</span><br><span class="line">    ci-&gt;func = L1-&gt;top;</span><br><span class="line">    setnilvalue(L1-&gt;top++); <span class="comment">/* 'function' entry for this 'ci' */</span></span><br><span class="line">    ci-&gt;top = L1-&gt;top + LUA_MINSTACK;</span><br><span class="line">    L1-&gt;ci = ci;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<h2 id=""><a href="#" class="headerlink" title=""></a></h2>
+
       
     </div>
     
@@ -467,7 +482,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="https://ty-chen.github.io/lua-struct-md/" title="Lua源码剖析（二）基本结构体">https://ty-chen.github.io/lua-struct-md/</a>
+    <a href="https://ty-chen.github.io/lua-struct-md/" title="Lua源码剖析（二）核心结构体">https://ty-chen.github.io/lua-struct-md/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>
@@ -718,7 +733,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-核心结构体分析"><span class="nav-text">二. 核心结构体分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#"><span class="nav-text"></span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-核心结构体分析"><span class="nav-text">二. 核心结构体分析</span></a></li></ol></div>
             
 
           </div>
@@ -752,7 +767,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">189.9k</span>
+    <span title="Site words total count">190.2k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
