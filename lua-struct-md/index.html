@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;无论是和静态语言交互，还是内部的API，永远少不了lua_State，这就是Lua最核心的栈结构体，也是本文的重点介绍对象。由于该结构体涉及到了众多功能，因此这里不会详细到每一个变量的作用都展开说明，而是站在脚本语言设计和开发者的角度看，设计一个栈结构体，需要哪些部分，留下一个比较系统性的框架概念即可。">
 <meta property="article:published_time" content="2023-01-15T13:04:51.000Z">
-<meta property="article:modified_time" content="2023-01-25T12:00:21.708Z">
+<meta property="article:modified_time" content="2023-01-27T15:20:05.640Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Lua">
 <meta property="article:tag" content="虚拟机">
@@ -305,8 +305,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2023-01-25T20:00:21+08:00" content="2023-01-25">
-                2023-01-25
+              <time itemprop="dateUpdated" datetime="2023-01-27T23:20:05+08:00" content="2023-01-27">
+                2023-01-27
               </time>
             </span>
           
@@ -430,7 +430,7 @@
 
 <p>&emsp;&emsp;对应结构体<code>global_State</code>主要包含几方面的全局内容 </p>
 <ul>
-<li>字符串的哈希表</li>
+<li>字符串的哈希表(下一讲中会详细说明)</li>
 <li>原表、上值等</li>
 <li>内存分配函数</li>
 <li>GC相关的众多链表及相应变量（后续在GC一文详细展开说明）</li>
@@ -793,7 +793,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">191.7k</span>
+    <span title="Site words total count">192.4k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>

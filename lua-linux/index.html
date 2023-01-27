@@ -79,14 +79,14 @@
 
 
 
-<meta name="description" content="一. 前言&amp;emsp;&amp;emsp;Lua是一种脚本语言，在游戏、嵌入式等领域有着众多应用。Lua的源码体量较小，但是有着诸多精彩之处，值得认真品鉴。在阅读了众多源码分析的文章和博客后，笔者发现不少博客有着一些亮点，但是不能做到由浅入深且让人提纲挈领，亦存在种种缺陷之处，因此才有了本系列的源码分析文章。本系列文章大致覆盖内容如下。">
+<meta name="description" content="一. 前言&amp;emsp;&amp;emsp;Lua是一种脚本语言，在游戏、嵌入式等领域有着众多应用。Lua的源码体量较小，但是有着诸多精彩之处，值得认真品鉴。在阅读了众多源码分析的文章和博客后，笔者发现不少博客、书籍有着诸多亮点，但是不能做到由浅入深且让人提纲挈领，亦存在种种缺陷之处，因此才有了本系列的源码分析文章。本系列文章不能代替读者自己去阅读源码，但是可以引导读者从高维度俯瞰源码，做到边思考边学习，从">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Lua源码剖析（一）开篇">
 <meta property="og:url" content="https://ty-chen.github.io/lua-linux/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
-<meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;Lua是一种脚本语言，在游戏、嵌入式等领域有着众多应用。Lua的源码体量较小，但是有着诸多精彩之处，值得认真品鉴。在阅读了众多源码分析的文章和博客后，笔者发现不少博客有着一些亮点，但是不能做到由浅入深且让人提纲挈领，亦存在种种缺陷之处，因此才有了本系列的源码分析文章。本系列文章大致覆盖内容如下。">
+<meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;Lua是一种脚本语言，在游戏、嵌入式等领域有着众多应用。Lua的源码体量较小，但是有着诸多精彩之处，值得认真品鉴。在阅读了众多源码分析的文章和博客后，笔者发现不少博客、书籍有着诸多亮点，但是不能做到由浅入深且让人提纲挈领，亦存在种种缺陷之处，因此才有了本系列的源码分析文章。本系列文章不能代替读者自己去阅读源码，但是可以引导读者从高维度俯瞰源码，做到边思考边学习，从">
 <meta property="article:published_time" content="2023-01-13T16:20:57.000Z">
-<meta property="article:modified_time" content="2023-01-25T04:27:38.468Z">
+<meta property="article:modified_time" content="2023-01-27T18:42:51.625Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Lua">
 <meta property="article:tag" content="脚本语言">
@@ -305,8 +305,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2023-01-25T12:27:38+08:00" content="2023-01-25">
-                2023-01-25
+              <time itemprop="dateUpdated" datetime="2023-01-28T02:42:51+08:00" content="2023-01-28">
+                2023-01-28
               </time>
             </span>
           
@@ -369,7 +369,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  2.4k
+                  2.5k
                 </span>
               
 
@@ -406,12 +406,12 @@
       
 
       
-        <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;Lua是一种脚本语言，在游戏、嵌入式等领域有着众多应用。Lua的源码体量较小，但是有着诸多精彩之处，值得认真品鉴。在阅读了众多源码分析的文章和博客后，笔者发现不少博客有着一些亮点，但是不能做到由浅入深且让人提纲挈领，亦存在种种缺陷之处，因此才有了本系列的源码分析文章。本系列文章大致覆盖内容如下。</p>
+        <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>&emsp;&emsp;Lua是一种脚本语言，在游戏、嵌入式等领域有着众多应用。Lua的源码体量较小，但是有着诸多精彩之处，值得认真品鉴。在阅读了众多源码分析的文章和博客后，笔者发现不少博客、书籍有着诸多亮点，但是不能做到由浅入深且让人提纲挈领，亦存在种种缺陷之处，因此才有了本系列的源码分析文章。本系列文章不能代替读者自己去阅读源码，但是可以引导读者从高维度俯瞰源码，做到边思考边学习，从而不至于望而无所裨益，而是以Lua源码为借鉴，去激发自己的灵感，产生更多的思路。本系列文章大致覆盖内容如下。</p>
 <a id="more"></a>
 
 <p>&emsp;&emsp;首先开篇，即本文，会介绍什么是脚本语言，其设计意图和权衡取舍。</p>
 <p>&emsp;&emsp;其次，就Lua的重要结构体、基本数据结构、Lua虚拟机、Lua环境、gc回收等Lua特色等方面来分析Lua的实现，从而做到系统性的充分了解。</p>
-<p>&emsp;&emsp;最后，会对Lua的一些库进行介绍，并对Lua的性能监控、性能优化进行分析探讨，做到入源码而超越源码，从高纬度洞悉掌握，而非沉溺于源码之中迷失了方向。</p>
+<p>&emsp;&emsp;最后，会对Lua的一些库进行介绍，并对Lua的性能监控、性能优化进行分析探讨，做到入源码而超越源码，从高维度洞悉掌握，而非沉溺于源码之中迷失了方向。</p>
 <h2 id="二-何为脚本语言"><a href="#二-何为脚本语言" class="headerlink" title="二. 何为脚本语言"></a>二. 何为脚本语言</h2><p>&emsp;&emsp;设想有一个以C++开发的大型游戏项目，作为一个开发者，难免会遇到一系列的不良体验，可能包括</p>
 <ul>
 <li>上手难度大，容易出现错误导致宕机</li>
@@ -809,7 +809,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">191.7k</span>
+    <span title="Site words total count">192.4k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
