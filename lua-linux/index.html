@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;Lua是一种脚本语言，在游戏、嵌入式等领域有着众多应用。Lua的源码体量较小，但是有着诸多精彩之处，值得认真品鉴。在阅读了众多源码分析的文章和博客后，笔者发现不少博客、书籍有着诸多亮点，但是不能做到由浅入深且让人提纲挈领，亦存在种种缺陷之处，因此才有了本系列的源码分析文章。本系列文章不能代替读者自己去阅读源码，但是可以引导读者从高维度俯瞰源码，做到边思考边学习，从">
 <meta property="article:published_time" content="2023-01-13T16:20:57.000Z">
-<meta property="article:modified_time" content="2023-01-27T18:42:51.625Z">
+<meta property="article:modified_time" content="2023-01-28T07:30:11.637Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Lua">
 <meta property="article:tag" content="脚本语言">
@@ -305,7 +305,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2023-01-28T02:42:51+08:00" content="2023-01-28">
+              <time itemprop="dateUpdated" datetime="2023-01-28T15:30:11+08:00" content="2023-01-28">
                 2023-01-28
               </time>
             </span>
@@ -369,7 +369,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  2.5k
+                  3.1k
                 </span>
               
 
@@ -385,7 +385,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  8
+                  11
                 </span>
               
             </div>
@@ -464,7 +464,22 @@
 </ul>
 <h3 id="5-3-内存处理"><a href="#5-3-内存处理" class="headerlink" title="5.3 内存处理"></a>5.3 内存处理</h3><p>&emsp;&emsp;如果仅生成不释放，那么执行脚本的沙盒的空间会随着使用的增加而增长，因此如何释放、何时释放、释放权交给脚本编写者还是由沙盒内核心逻辑进行，都是很重要的问题，后续也会专门写文章分析Lua是如何进行内存管理和回收的。</p>
 <h3 id="5-4-使用和扩展"><a href="#5-4-使用和扩展" class="headerlink" title="5.4 使用和扩展"></a>5.4 使用和扩展</h3><p>&emsp;&emsp;一个成熟的脚本语言，肯定需要考虑如何提供给大家使用，以及如何去不断地更新、并且支持大家一起去扩展其功能。常见的使用方法无外乎脚本编辑或者UI编辑，二者的取舍主要是面向群体的不同。如何不断更新，其实主要涉及到模块和模块之间耦合关系的问题，在设计之初就应该考虑到如何解耦各模块并留出扩展槽接口。</p>
-<h2 id="六-总结"><a href="#六-总结" class="headerlink" title="六. 总结"></a>六. 总结</h2><p>&emsp;&emsp;看完本文，不会告诉你Lua或者Python是如何具体实现的，但是一定会给你如何设计并实现一门脚本语言的思路和入手着手点。由此再去看源码，你就不会局限于源码中一行一段的逻辑，而是高屋建瓴的站在脚本语言设计者的角度去思考，这就是本文希望能带给你的全部收获，可能也是最重要的东西。</p>
+<h2 id="六-实现的问题"><a href="#六-实现的问题" class="headerlink" title="六. 实现的问题"></a>六. 实现的问题</h2><p>&emsp;&emsp;在实际工程实现的初始阶段，还需要考虑诸如源文件的划分以及代码风格等问题，保持良好的统一才是成功的项目。下面简单介绍一下Lua的选用，仅作参考。</p>
+<p>&emsp;&emsp;Lua wiki上有介绍各个源文件的具体作用（参考文献5），大致包括</p>
+<ul>
+<li>功能函数实现（调试、I/O、内存分配、垃圾回收）</li>
+<li>基本数据结构（栈、数据对象、字符串、函数、表）</li>
+<li>脚本解析和字节码生成</li>
+<li>字节码执行</li>
+<li>独立库</li>
+<li>C API</li>
+<li>可执行的解析器，字节码编译器</li>
+</ul>
+<p>&emsp;&emsp;Lua的代码风格比较统一，不一定符合大家平日开发的习惯，但是没有好坏对错之言。值得一提的点是Lua的内部模块暴露出来的API以<code>luaX_xxx</code>风格命名，即 <code>lua</code>后跟一个大写字母表识内部模块名，而后由下划线加若干小写字母描述方法名。供外部程序使用的API则使用<code>lua_xxx的</code>命名风格。此外，除了供库开发用的<code>luaL</code>系列 API外，其它都属于内部 API，禁止被外部程序使用（参考文献5）。</p>
+<p>&emsp;&emsp;具体命名参考规则及各源文件主要功能如下</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">luaA_ - lapi.c  - Lua API. Implements the bulk of the Lua C API (lua_* functions).</span><br><span class="line">luaB_ - lbaselib.c - (base functions)</span><br><span class="line">luaC_ - lgc.c - <span class="function">incremental garbage <span class="title">collector</span> <span class="params">(memory management)</span></span></span><br><span class="line">luaD_ - ldo.c - stack and Call structure of Lua. Handles function calling (luaD_call / luaD_pcall), growing the stack, coroutine handling, ...</span><br><span class="line">luaE_ - lstate.c - global state. Includes functions for opening and closing Lua states (lua_newstate/lua_close) and threads (luaE_newthread / luaE_freethread).</span><br><span class="line">luaF_ - lfunc.c - auxiliary functions to manipulate prototypes <span class="keyword">and</span> closures</span><br><span class="line">luaG_ - ldebug.c - debug interface. </span><br><span class="line">luaH_ - ltable.c - <span class="function">Lua <span class="title">tables</span> <span class="params">(hash)</span></span></span><br><span class="line">luaI_ - lauxlib.c - defines the luaL_* functions</span><br><span class="line">luaK_ - lcode.c - code generator <span class="keyword">for</span> Lua. Used by lparser.c</span><br><span class="line">luaL_ - lauxlib.c/h, linit.c (<span class="keyword">public</span> functions)</span><br><span class="line">luaM_ - lmem.c - interface to the memory manager. This implements luaM_realloc / luaM_growaux_, which wrap the memory allocation functions.</span><br><span class="line">luaO_ - lobject.c - some generic functions over Lua objects. Includes datatype &lt;-&gt; string conversions, raw equality test (luaO_rawequalObj), and log base 2 (luaO_log2)</span><br><span class="line">luaP_ - lopcodes.c - opcodes for Lua virtual machine. Defines names and information on all opcodes (via tables luaP_opnames and luaP_opmodes).</span><br><span class="line">luaS_ - lstring.c - <span class="function"><span class="built_in">string</span> <span class="title">table</span> <span class="params">(keeps all strings handled by Lua)</span></span></span><br><span class="line">luaT_ - ltm.c - tag methods. Implements accessing metamethods from objects.</span><br><span class="line">luaU_ - lundump.c - load precompiled Lua chunks. </span><br><span class="line">luaV_ - lvm.c - Lua virtual machine. Executes bytecodes (luaV_execute). </span><br><span class="line">luaX_ - llex.c - lexical analyzer. Used by lparser.c.</span><br><span class="line">luaY_ - lparser.c - Lua parser.</span><br><span class="line">luaZ_ - lzio.c - a generic buffered input stream interface.</span><br><span class="line">lua_  - lapi.c/h + luaconf.h, debug.c</span><br><span class="line">luai_ - luaconf.h</span><br><span class="line">luaopen_ - luaconf.h + libraries (lbaselib.c, ldblib.c, liolib.c, lmathlib.c,</span><br><span class="line">                                  loadlib.c, loslib.c, lstrlib.c, ltablib.c)</span><br></pre></td></tr></table></figure>
+
+<h2 id="七-总结"><a href="#七-总结" class="headerlink" title="七. 总结"></a>七. 总结</h2><p>&emsp;&emsp;看完本文，不会告诉你Lua或者Python是如何具体实现的，但是一定会给你如何设计并实现一门脚本语言的思路和入手着手点。由此再去看源码，你就不会局限于源码中一行一段的逻辑，而是高屋建瓴的站在脚本语言设计者的角度去思考，这就是本文希望能带给你的全部收获，可能也是最重要的东西。</p>
 <h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><ol>
 <li><p><a href="https://github.com/lichuang/Lua-Source-Internal" target="_blank" rel="noopener">Lua-Source-Internal</a></p>
 </li>
@@ -473,6 +488,10 @@
 <li><p>《A Look at the Design of Lua》</p>
 </li>
 <li><p>《游戏编程模式》</p>
+</li>
+<li><p><a href="http://lua-users.org/wiki/LuaSource" target="_blank" rel="noopener">http://lua-users.org/wiki/LuaSource</a></p>
+</li>
+<li><p>《Lua 源码欣赏》</p>
 </li>
 </ol>
 
@@ -690,7 +709,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">49</span>
+                  <span class="site-state-item-count">50</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -712,7 +731,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">79</span>
+                  <span class="site-state-item-count">80</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -775,7 +794,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-何为脚本语言"><span class="nav-text">二. 何为脚本语言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-指令集"><span class="nav-text">三. 指令集</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-虚拟机"><span class="nav-text">四. 虚拟机</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-取舍"><span class="nav-text">五. 取舍</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-值"><span class="nav-text">5.1 值</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-指令和栈"><span class="nav-text">5.2 指令和栈</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-内存处理"><span class="nav-text">5.3 内存处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-4-使用和扩展"><span class="nav-text">5.4 使用和扩展</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#六-总结"><span class="nav-text">六. 总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-何为脚本语言"><span class="nav-text">二. 何为脚本语言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-指令集"><span class="nav-text">三. 指令集</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-虚拟机"><span class="nav-text">四. 虚拟机</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-取舍"><span class="nav-text">五. 取舍</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-值"><span class="nav-text">5.1 值</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-指令和栈"><span class="nav-text">5.2 指令和栈</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-内存处理"><span class="nav-text">5.3 内存处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-4-使用和扩展"><span class="nav-text">5.4 使用和扩展</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#六-实现的问题"><span class="nav-text">六. 实现的问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#七-总结"><span class="nav-text">七. 总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
@@ -809,7 +828,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">192.4k</span>
+    <span title="Site words total count">194.8k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
