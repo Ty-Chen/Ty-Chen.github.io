@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;前文中我们详细讲解了Lua数值结构的设计和实现思路，本文则完善配套于数值结构的各种操作处理函数。">
 <meta property="article:published_time" content="2023-01-26T16:48:45.000Z">
-<meta property="article:modified_time" content="2023-02-01T14:16:24.329Z">
+<meta property="article:modified_time" content="2023-02-05T15:08:22.584Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Lua">
 <meta property="article:tag" content="数据类型">
@@ -305,8 +305,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2023-02-01T22:16:24+08:00" content="2023-02-01">
-                2023-02-01
+              <time itemprop="dateUpdated" datetime="2023-02-05T23:08:22+08:00" content="2023-02-05">
+                2023-02-05
               </time>
             </span>
           
@@ -369,7 +369,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1.1k
+                  1.2k
                 </span>
               
 
@@ -449,6 +449,7 @@
 <p>&emsp;&emsp;然后我们来考虑插入的事情，先回顾以下表的两个存储结构。对于array来说其实就是一系列的TValue，索引为数字。而Node则为k/v键值对，其中k考虑到哈希冲突的问题所以涉及了链表结构，对于同哈希的则存于链表之中。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Table</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    TValue *<span class="built_in">array</span>;  <span class="comment">/* array part */</span></span><br><span class="line">    Node *node;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">union</span> TKey &#123;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    TValuefields;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">Node</span> *<span class="title">next</span>;</span>  <span class="comment">/* for chaining */</span></span><br><span class="line">  &#125; nk;</span><br><span class="line">  TValue tvk;</span><br><span class="line">&#125; TKey;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">Node</span> &#123;</span></span><br><span class="line">  TValue i_val;</span><br><span class="line">  TKey i_key;</span><br><span class="line">&#125; Node;</span><br></pre></td></tr></table></figure>
 
+<p>&emsp;&emsp;如果仅使用拉链法解决哈希冲突，当然是可行的，但是会带来一个问题：存在大量的空间浪费，因为必然有些哈希字段是未被模到的，所以如何合理使用这些没有哈希到的空桶就可以节约内存。</p>
 
       
     </div>
@@ -664,7 +665,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">50</span>
+                  <span class="site-state-item-count">51</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -783,7 +784,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">196.7k</span>
+    <span title="Site words total count">197.7k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>

@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/kulamati128.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/kulamati32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/kulamati16.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="定义定义一：趋势趋势，指股市在任意时刻，或者任意时间段内的走势，包括有上涨、下跌、横盘三种。 定义二：时间维度时间维度，指的是观察股票采取的时间参考系，如以30分钟&#x2F;小时&#x2F;4小时&#x2F;8小时&#x2F;日线&#x2F;周线等级别，即不同的时间维度。 定义三：相邻时间维度相邻时间维度，指的是时间参考系接近的范围，如1小时级别的相邻时间维度为30分钟参考系和2&#x2F;4小时参考系。 定义四：买卖点买卖点，指的是正确的买入和卖出时机">
+<meta property="og:type" content="article">
+<meta property="og:title" content="趋势论">
+<meta property="og:url" content="https://ty-chen.github.io/%E8%B6%8B%E5%8A%BF%E8%AE%BA/index.html">
+<meta property="og:site_name" content="Ty-Chen&#39;s Home">
+<meta property="og:description" content="定义定义一：趋势趋势，指股市在任意时刻，或者任意时间段内的走势，包括有上涨、下跌、横盘三种。 定义二：时间维度时间维度，指的是观察股票采取的时间参考系，如以30分钟&#x2F;小时&#x2F;4小时&#x2F;8小时&#x2F;日线&#x2F;周线等级别，即不同的时间维度。 定义三：相邻时间维度相邻时间维度，指的是时间参考系接近的范围，如1小时级别的相邻时间维度为30分钟参考系和2&#x2F;4小时参考系。 定义四：买卖点买卖点，指的是正确的买入和卖出时机">
+<meta property="article:published_time" content="2023-02-03T14:28:11.230Z">
+<meta property="article:modified_time" content="2023-02-03T17:07:02.409Z">
+<meta property="article:author" content="Ty Chen">
+<meta property="article:tag" content="for excellence">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"hide","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://ty-chen.github.io/趋势论/"/>
+
+
+
+
+
+  <title>趋势论 | Ty-Chen's Home</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Ty-Chen's Home</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Collecting, sharing and creating knowledge</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://ty-chen.github.io/%E8%B6%8B%E5%8A%BF%E8%AE%BA/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Ty Chen">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/me.JPG">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ty-Chen's Home">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">趋势论</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2023-02-03T22:28:11+08:00">
+                2023-02-03
+              </time>
+            
+
+            
+
+            
+          </span>
+          
+            <span class="post-updated">
+              &nbsp; | &nbsp; 更新于
+              <time itemprop="dateUpdated" datetime="2023-02-04T01:07:02+08:00" content="2023-02-04">
+                2023-02-04
+              </time>
+            </span>
+          
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/%E8%B6%8B%E5%8A%BF%E8%AE%BA/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/%E8%B6%8B%E5%8A%BF%E8%AE%BA/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">访问次数：
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>次
+            </span>
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  986
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  3
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h2><h3 id="定义一：趋势"><a href="#定义一：趋势" class="headerlink" title="定义一：趋势"></a>定义一：趋势</h3><p>趋势，指股市在任意时刻，或者任意时间段内的走势，包括有上涨、下跌、横盘三种。</p>
+<h3 id="定义二：时间维度"><a href="#定义二：时间维度" class="headerlink" title="定义二：时间维度"></a>定义二：时间维度</h3><p>时间维度，指的是观察股票采取的时间参考系，如以30分钟/小时/4小时/8小时/日线/周线等级别，即不同的时间维度。</p>
+<h3 id="定义三：相邻时间维度"><a href="#定义三：相邻时间维度" class="headerlink" title="定义三：相邻时间维度"></a>定义三：相邻时间维度</h3><p>相邻时间维度，指的是时间参考系接近的范围，如1小时级别的相邻时间维度为30分钟参考系和2/4小时参考系。</p>
+<h3 id="定义四：买卖点"><a href="#定义四：买卖点" class="headerlink" title="定义四：买卖点"></a>定义四：买卖点</h3><p>买卖点，指的是正确的买入和卖出时机。</p>
+<h2 id="公理"><a href="#公理" class="headerlink" title="公理"></a>公理</h2><h3 id="公理一：趋势固定性"><a href="#公理一：趋势固定性" class="headerlink" title="公理一：趋势固定性"></a>公理一：趋势固定性</h3><p>股市在任意观察维度的任意时刻，只有上涨、下跌、横盘三种趋势。</p>
+<h3 id="公理二：趋势包含性"><a href="#公理二：趋势包含性" class="headerlink" title="公理二：趋势包含性"></a>公理二：趋势包含性</h3><p>多个低时间维度的趋势组成一个相邻高时间维度的趋势，跨越多个层级维度的情况下，低时间维度的趋势不具有意义或者意义有限。</p>
+<h3 id="公理三：趋势完美性"><a href="#公理三：趋势完美性" class="headerlink" title="公理三：趋势完美性"></a>公理三：趋势完美性</h3><p>在同一个时间维度观测下，不存在只涨不跌或者只跌不涨的股票，所有的走势终将走尽并改变为另外两种走势之一，骗线也无法在很大的时间维度持续，因为会受到监管、处罚或者强制破产。</p>
+<h3 id="公理四：预测局限性"><a href="#公理四：预测局限性" class="headerlink" title="公理四：预测局限性"></a>公理四：预测局限性</h3><p>股市的走向没有百分百精准的预测方法。</p>
+<h3 id="公理五：操作局限性"><a href="#公理五：操作局限性" class="headerlink" title="公理五：操作局限性"></a>公理五：操作局限性</h3><p>人类的买卖操作无法按照技术理论百分百的执行，容易受心态和环境因素影响。</p>
+<h3 id="公理六：技术指标局限性"><a href="#公理六：技术指标局限性" class="headerlink" title="公理六：技术指标局限性"></a>公理六：技术指标局限性</h3><p>技术理论和技术指标，由于大多来自经验统计、广为人知且被庄家亦可利用，所以存在着骗线和不准的可能性，不能百分之百相信。</p>
+<h2 id="原则"><a href="#原则" class="headerlink" title="原则"></a>原则</h2><h3 id="原则一：不预测原则"><a href="#原则一：不预测原则" class="headerlink" title="原则一：不预测原则"></a>原则一：不预测原则</h3><p>因为</p>
+<p>​    公理一 &amp; 公理三</p>
+<p>所以：</p>
+<ol>
+<li>猜测和预测是徒劳的，正确的做法应该是<strong>根据当前的趋势进行操作</strong>。如果<strong>当前趋势不应该有操作，那就不做操作</strong>。</li>
+<li>不猜测不预测，而是写好条件分支语句，<strong>不论后续走到哪种分支，都有对应的处理方案可以解决</strong>，剩下的就只是执行。</li>
+</ol>
+<h3 id="原则二：买卖点选取原则"><a href="#原则二：买卖点选取原则" class="headerlink" title="原则二：买卖点选取原则"></a>原则二：买卖点选取原则</h3><p>因为</p>
+<ol>
+<li>公理五 —-&gt; 操作越多错误可能性越大，不按技术指标执行，错误可能性越大。</li>
+<li>公理六 —-&gt; 单个技术指标可能存在错误，多指标同时指向同趋势则错误概率大大减小，单指标多维度指向同趋势亦可。</li>
+<li>公理二 —-&gt; 选定某时间维度作为操作维度，则有意义的仅是相邻两个至少数几个时间维度，而其他的并无意义。同时，操作频率应该和选定的时间维度保持一致。</li>
+<li>公理三</li>
+</ol>
+<p>所以</p>
+<ol>
+<li>最好减少买卖点，放大操作的时间维度</li>
+<li>相邻多时间维度按技术指标得出同趋势，则可视作较为可靠的机会</li>
+<li>对买卖点吹毛求疵，不够完美的机会宁愿放弃，只做最稳妥的操作机会</li>
+</ol>
+<h3 id="原则三：顺势不逆势原则"><a href="#原则三：顺势不逆势原则" class="headerlink" title="原则三：顺势不逆势原则"></a>原则三：顺势不逆势原则</h3><p>因为</p>
+<p>​    公理二 &amp; 公理三 &amp; 公理五&amp; 公理六</p>
+<p>所以</p>
+<p>​    相邻一到两个较高时间维度判断出的走向应予以极大的重视，低时间维度的操作不应违背其走向。例如日线、周线利好，根据小时线开空是绝对不被允许的。</p>
+<h2 id="可参考的买卖点技术指标"><a href="#可参考的买卖点技术指标" class="headerlink" title="可参考的买卖点技术指标"></a>可参考的买卖点技术指标</h2><h3 id="指标一：均线"><a href="#指标一：均线" class="headerlink" title="指标一：均线"></a>指标一：均线</h3><h3 id="指标二：背驰"><a href="#指标二：背驰" class="headerlink" title="指标二：背驰"></a>指标二：背驰</h3><h3 id="指标三：线段"><a href="#指标三：线段" class="headerlink" title="指标三：线段"></a>指标三：线段</h3><h3 id="指标四：波浪理论"><a href="#指标四：波浪理论" class="headerlink" title="指标四：波浪理论"></a>指标四：波浪理论</h3><h2 id="操作经验点"><a href="#操作经验点" class="headerlink" title="操作经验点"></a>操作经验点</h2><h3 id="现货-amp-杠杆"><a href="#现货-amp-杠杆" class="headerlink" title="现货&amp;杠杆"></a>现货&amp;杠杆</h3><h3 id="二买和一卖的把握"><a href="#二买和一卖的把握" class="headerlink" title="二买和一卖的把握"></a>二买和一卖的把握</h3><h3 id="盘整的趋势和做法"><a href="#盘整的趋势和做法" class="headerlink" title="盘整的趋势和做法"></a>盘整的趋势和做法</h3><h3 id="对锁"><a href="#对锁" class="headerlink" title="对锁"></a>对锁</h3><h3 id="滚仓"><a href="#滚仓" class="headerlink" title="滚仓"></a>滚仓</h3>
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>坚持原创，坚持分享，谢谢鼓励和支持</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.png" alt="Ty Chen 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="Ty Chen 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    Ty Chen
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://ty-chen.github.io/%E8%B6%8B%E5%8A%BF%E8%AE%BA/" title="趋势论">https://ty-chen.github.io/%E8%B6%8B%E5%8A%BF%E8%AE%BA/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/lua-vm-md/" rel="next" title="Lua源码剖析（五）虚拟机">
+                <i class="fa fa-chevron-left"></i> Lua源码剖析（五）虚拟机
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/me.JPG"
+                alt="Ty Chen" />
+            
+              <p class="site-author-name" itemprop="name">Ty Chen</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">51</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">9</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">80</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/Ty-Chen" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:tianyuch@hotmail.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                Friends
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://lishouxian.cn/" title="Stanleylsx" target="_blank">Stanleylsx</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#定义"><span class="nav-text">定义</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#定义一：趋势"><span class="nav-text">定义一：趋势</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#定义二：时间维度"><span class="nav-text">定义二：时间维度</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#定义三：相邻时间维度"><span class="nav-text">定义三：相邻时间维度</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#定义四：买卖点"><span class="nav-text">定义四：买卖点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#公理"><span class="nav-text">公理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#公理一：趋势固定性"><span class="nav-text">公理一：趋势固定性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#公理二：趋势包含性"><span class="nav-text">公理二：趋势包含性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#公理三：趋势完美性"><span class="nav-text">公理三：趋势完美性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#公理四：预测局限性"><span class="nav-text">公理四：预测局限性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#公理五：操作局限性"><span class="nav-text">公理五：操作局限性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#公理六：技术指标局限性"><span class="nav-text">公理六：技术指标局限性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#原则"><span class="nav-text">原则</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#原则一：不预测原则"><span class="nav-text">原则一：不预测原则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#原则二：买卖点选取原则"><span class="nav-text">原则二：买卖点选取原则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#原则三：顺势不逆势原则"><span class="nav-text">原则三：顺势不逆势原则</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#可参考的买卖点技术指标"><span class="nav-text">可参考的买卖点技术指标</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#指标一：均线"><span class="nav-text">指标一：均线</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#指标二：背驰"><span class="nav-text">指标二：背驰</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#指标三：线段"><span class="nav-text">指标三：线段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#指标四：波浪理论"><span class="nav-text">指标四：波浪理论</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#操作经验点"><span class="nav-text">操作经验点</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#现货-amp-杠杆"><span class="nav-text">现货&amp;杠杆</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二买和一卖的把握"><span class="nav-text">二买和一卖的把握</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#盘整的趋势和做法"><span class="nav-text">盘整的趋势和做法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#对锁"><span class="nav-text">对锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#滚仓"><span class="nav-text">滚仓</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2020 &mdash; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ty Chen</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">Site words total count&#58;</span>
+    
+    <span title="Site words total count">197.7k</span>
+  
+  <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
+</div>
+
+
+
+
+
+
+
+
+
+        
+<div class="busuanzi-count">
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+	</script>
+
+  
+    <span class="site-uv">
+      你是来访的第
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      位同学
+    </span>
+  
+
+  
+    <span class="site-pv">
+      访问次数：
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item=>{
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'aTqo2eFkO2Bn0AGX008uKDV7-gzGzoHsz',
+        appKey: 'uJ6nxqW7RHWpAILCtttkJfJu',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
