@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 前言&amp;emsp;&amp;emsp;前文中我们详细讲解了Lua数值结构的设计和实现思路，本文则完善配套于数值结构的各种操作处理函数。">
 <meta property="article:published_time" content="2023-01-26T16:48:45.000Z">
-<meta property="article:modified_time" content="2023-02-06T15:30:32.063Z">
+<meta property="article:modified_time" content="2023-02-07T14:00:53.523Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Lua">
 <meta property="article:tag" content="数据类型">
@@ -305,8 +305,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2023-02-06T23:30:32+08:00" content="2023-02-06">
-                2023-02-06
+              <time itemprop="dateUpdated" datetime="2023-02-07T22:00:53+08:00" content="2023-02-07">
+                2023-02-07
               </time>
             </span>
           
@@ -369,7 +369,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  2k
+                  2.4k
                 </span>
               
 
@@ -385,7 +385,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  9
+                  10
                 </span>
               
             </div>
@@ -488,8 +488,18 @@
 </ul>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> TValue* <span class="title">newkey</span><span class="params">(lua_State* L, Table* t, <span class="keyword">const</span> TValue* key)</span> </span>&#123;</span><br><span class="line">    Node* mp = mainposition(t, key);</span><br><span class="line">    <span class="keyword">if</span> (!ttisnil(gval(mp)) || mp == dummynode) &#123;</span><br><span class="line">        Node* othern;</span><br><span class="line">        Node* n = getfreepos(t);  <span class="comment">/* get a free place */</span></span><br><span class="line">        <span class="keyword">if</span> (n == <span class="literal">NULL</span>) &#123;  <span class="comment">/* cannot find a free place? */</span></span><br><span class="line">            rehash(L, t, key);  <span class="comment">/* grow table */</span></span><br><span class="line">            <span class="keyword">return</span> luaH_set(L, t, key);  <span class="comment">/* re-insert key into grown table */</span></span><br><span class="line">        &#125;</span><br><span class="line">        lua_assert(n != dummynode);</span><br><span class="line">        othern = mainposition(t, key2tval(mp));</span><br><span class="line">        <span class="keyword">if</span> (othern != mp) &#123;  <span class="comment">/* is colliding node out of its main position? */</span></span><br><span class="line">          <span class="comment">/* yes; move colliding node into free position */</span></span><br><span class="line">            <span class="keyword">while</span> (gnext(othern) != mp) othern = gnext(othern);  <span class="comment">/* find previous */</span></span><br><span class="line">            gnext(othern) = n;  <span class="comment">/* redo the chain with `n' in place of `mp' */</span></span><br><span class="line">            *n = *mp;  <span class="comment">/* copy colliding node into free pos. (mp-&gt;next also goes) */</span></span><br><span class="line">            gnext(mp) = <span class="literal">NULL</span>;  <span class="comment">/* now `mp' is free */</span></span><br><span class="line">            setnilvalue(gval(mp));</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;  <span class="comment">/* colliding node is in its own main position */</span></span><br><span class="line">          <span class="comment">/* new node will go into free position */</span></span><br><span class="line">            gnext(n) = gnext(mp);  <span class="comment">/* chain new position */</span></span><br><span class="line">            gnext(mp) = n;</span><br><span class="line">            mp = n;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    gkey(mp)-&gt;value = key-&gt;value; gkey(mp)-&gt;tt = key-&gt;tt;</span><br><span class="line">    luaC_barriert(L, t, key);</span><br><span class="line">    lua_assert(ttisnil(gval(mp)));</span><br><span class="line">    <span class="keyword">return</span> gval(mp);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>&emsp;&emsp;至此，剩下的问题<code>rehash()</code>了。</p>
-<h2 id="四-总结"><a href="#四-总结" class="headerlink" title="四. 总结"></a>四. 总结</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><ol>
+<p>&emsp;&emsp;至此，剩下的问题<code>rehash()</code>了。重新分配大小的逻辑其实说起来很简单，先计算当前需要多少，然后按需分配。但是由于这里存在整数数组和k/v数组，所以如何取舍二者间的关系就是很重要的事了。对于Lua来说，有这么一个判定：希望在调整过后，数组在每一个2次方位置，其容纳的元素数量都超过了该范围的50%。不难想到想做到这个效果可以先按次方统计到一个数组，然后计算前缀和去比较即可。所以rehash()实现逻辑为</p>
+<ul>
+<li>调用<code>numusearray()</code>统计整数数组部分</li>
+<li>调用<code>numusehash()</code>统计k/v部分</li>
+<li>调用<code>computesizes()</code>去计算分配多大的整数数组合适</li>
+<li>调用<code>resize()</code>完成实际分配</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">rehash</span><span class="params">(lua_State* L, Table* t, <span class="keyword">const</span> TValue* ek)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> nasize, na;</span><br><span class="line">    <span class="keyword">int</span> nums[MAXBITS + <span class="number">1</span>];  <span class="comment">/* nums[i] = number of keys between 2^(i-1) and 2^i */</span></span><br><span class="line">    <span class="keyword">int</span> i;</span><br><span class="line">    <span class="keyword">int</span> totaluse;</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt;= MAXBITS; i++) nums[i] = <span class="number">0</span>;  <span class="comment">/* reset counts */</span></span><br><span class="line">    nasize = numusearray(t, nums);  <span class="comment">/* count keys in array part */</span></span><br><span class="line">    totaluse = nasize;  <span class="comment">/* all those keys are integer keys */</span></span><br><span class="line">    totaluse += numusehash(t, nums, &amp;nasize);  <span class="comment">/* count keys in hash part */</span></span><br><span class="line">    <span class="comment">/* count extra key */</span></span><br><span class="line">    nasize += countint(ek, nums);</span><br><span class="line">    totaluse++;</span><br><span class="line">    <span class="comment">/* compute new size for array part */</span></span><br><span class="line">    na = computesizes(nums, &amp;nasize);</span><br><span class="line">    <span class="comment">/* resize the table to new computed sizes */</span></span><br><span class="line">    resize(L, t, nasize, totaluse - na);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>每个函数的实现其实都相对简单，这里就不展开讨论了。</p>
+<h2 id="四-总结"><a href="#四-总结" class="headerlink" title="四. 总结"></a>四. 总结</h2><p>本篇文章详细介绍了数值结构体相关操作的实现和思路，希望能有所启发。</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><ol>
 <li><p><a href="https://github.com/lichuang/Lua-Source-Internal" target="_blank" rel="noopener">Lua-Source-Internal</a></p>
 </li>
 <li><p>《A No Frills Introduction to Lua 5.1 VM Instructions》</p>
@@ -833,7 +843,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">197.6k</span>
+    <span title="Site words total count">198k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>

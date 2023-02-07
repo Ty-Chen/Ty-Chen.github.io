@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;脚本语言，即动态语言，其相较于静态语言如C&#x2F;C++&#x2F;GO等，一大区别即不需要经过计算机的预处理、编译、汇编、链接，而是由虚拟机代为完成上述过程。虚拟机模拟真实的步骤，首先将脚本语言转化为特定的opcode（各脚本语言自行定义），接着放在虚拟机中逐个执行，模拟了CPU及内存的基本功能。Lua作为一门嵌入式语言，其虚拟机附着于宿主环境中而非单独存在，其核心问题主要包括">
 <meta property="article:published_time" content="2023-01-28T14:16:46.000Z">
-<meta property="article:modified_time" content="2023-01-28T16:50:59.036Z">
+<meta property="article:modified_time" content="2023-02-07T14:06:07.872Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="CPU">
 <meta property="article:tag" content="Lua">
@@ -305,8 +305,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2023-01-29T00:50:59+08:00" content="2023-01-29">
-                2023-01-29
+              <time itemprop="dateUpdated" datetime="2023-02-07T22:06:07+08:00" content="2023-02-07">
+                2023-02-07
               </time>
             </span>
           
@@ -369,7 +369,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1.7k
+                  1.6k
                 </span>
               
 
@@ -414,20 +414,20 @@
 </ul>
 <a id="more"></a>
 
-<p>&emsp;&emsp;本文将就以上三方面进行详细剖析，源码版本为Lua5.3.4。Lua脚本的加载、编译和执行通过函数<code>luaL_doFile()</code>进行，本文就由此函数开始展开分析。该函数实际是一个宏定义，如下所示：</p>
+<p>&emsp;&emsp;本文将就以上三方面进行主要流程和思路分析，对于详细细节如语法、词法分析，闭包加载等后续文章详谈。</p>
+<h2 id="二-opcode的生成"><a href="#二-opcode的生成" class="headerlink" title="二. opcode的生成"></a>二. opcode的生成</h2><p>&emsp;&emsp;从源码生成opcode，需要以下步骤：</p>
+<ul>
+<li>初始化Lua虚拟机数据结构</li>
+<li>读取Lua脚本文件内容</li>
+<li>依次对Lua脚本文件进行词法分析、语法分析、语义分析，最后生成该文件的Lua虚拟机指令。注意以上的过程仅需要一次遍历，这是Lua解释器做的非常好的地方</li>
+</ul>
+<p>&emsp;&emsp;Lua脚本的加载、编译和执行通过函数<code>luaL_doFile()</code>进行，该函数实际是一个宏定义，如下所示：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// lauxlib.h</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> luaL_dofile(L, fn) \</span></span><br><span class="line">    (luaL_loadfile(L, fn) || lua_pcall(L, <span class="number">0</span>, LUA_MULTRET, <span class="number">0</span>))</span><br></pre></td></tr></table></figure>
 
 <p>&emsp;&emsp;主要做了两件事：</p>
 <ul>
 <li>调用<code>luaL_loadfile(L, fn)</code>生成opcode</li>
 <li>调用<code>lua_pcall()</code>执行</li>
-</ul>
-<p>&emsp;&emsp;下面几节就详细展开进行叙述，并补充<code>LuaJIT</code>的实现方式的不同之处。</p>
-<h2 id="二-opcode的生成"><a href="#二-opcode的生成" class="headerlink" title="二. opcode的生成"></a>二. opcode的生成</h2><p>&emsp;&emsp;从源码生成opcode，需要以下步骤：</p>
-<ul>
-<li>初始化Lua虚拟机数据结构</li>
-<li>读取Lua脚本文件内容</li>
-<li>依次对Lua脚本文件进行词法分析、语法分析、语义分析,最后生成该文件的Lua虚拟机指令.注意以上的过程仅需要一次遍历,这是Lua解释器做的非常好的地方</li>
 </ul>
 <p>&emsp;&emsp;<code>luaL_loadfile()</code>最终调用<code>f_parser()</code>函数，对<code>Lua</code>代码进行语法语义分析。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ldo.c</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">f_parser</span> <span class="params">(lua_State *L, <span class="keyword">void</span> *ud)</span> </span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    LClosure *cl;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">SParser</span> *<span class="title">p</span> = <span class="title">cast</span>(<span class="title">struct</span> <span class="title">SParser</span> *, <span class="title">ud</span>);</span></span><br><span class="line">    <span class="keyword">int</span> c = zgetc(p-&gt;z);  <span class="comment">/* read first character */</span></span><br><span class="line">    <span class="keyword">if</span> (c == LUA_SIGNATURE[<span class="number">0</span>]) &#123;</span><br><span class="line">        checkmode(L, p-&gt;mode, <span class="string">"binary"</span>);</span><br><span class="line">        cl = luaU_undump(L, p-&gt;z, p-&gt;name);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> &#123;</span><br><span class="line">        checkmode(L, p-&gt;mode, <span class="string">"text"</span>);</span><br><span class="line">        cl = luaY_parser(L, p-&gt;z, &amp;p-&gt;buff, &amp;p-&gt;dyd, p-&gt;name, c);</span><br><span class="line">    &#125;</span><br><span class="line">    lua_assert(cl-&gt;nupvalues == cl-&gt;p-&gt;sizeupvalues);</span><br><span class="line">    luaF_initupvals(L, cl);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -791,7 +791,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">197.6k</span>
+    <span title="Site words total count">198k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
