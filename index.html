@@ -300,8 +300,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2023-03-01T20:36:26+08:00" content="2023-03-01">
-                2023-03-01
+              <time itemprop="dateUpdated" datetime="2023-03-06T22:48:31+08:00" content="2023-03-06">
+                2023-03-06
               </time>
             </span>
           
@@ -359,7 +359,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  113
+                  222
                 </span>
               
 
@@ -399,7 +399,11 @@
         
           
             <h2 id="一-简介"><a href="#一-简介" class="headerlink" title="一. 简介"></a>一. 简介</h2><p>&emsp;&emsp;前文中，我们先后介绍了Lua总体设计的思路，栈结构体及执行逻辑，基本数据结构极其实现，虚拟机的执行逻辑等，但是尚未涉及到脚本如何加载并转化为一个一个的字节码从而执行的过程。本文就此进行分析讨论。</p>
-<h2 id="二-基础结构体"><a href="#二-基础结构体" class="headerlink" title="二. 基础结构体"></a>二. 基础结构体</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">token</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="keyword">int</span> nType;</span><br><span class="line">    <span class="keyword">void</span>* data;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="二-基础结构体"><a href="#二-基础结构体" class="headerlink" title="二. 基础结构体"></a>二. 基础结构体</h2><p>&emsp;&emsp;所有的词，都可以解释为一个类型及其对应的数据，即如下形式。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Token</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="keyword">int</span> nType;</span><br><span class="line">    <span class="keyword">void</span>* data;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;根据前文中已经封装的数据类型，这里的data我们可以替换为一个联合，即要么是数字，要么是字符串。这样简单的结构体就足够表达所有可能读到的词了。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">union</span> SematicInfo</span><br><span class="line">&#123;</span><br><span class="line">    lua_Number r;</span><br><span class="line">    TString *ts;    </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Toke</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="keyword">int</span> nType;</span><br><span class="line">    SematicInfo data;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 
 
@@ -2359,7 +2363,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">198.1k</span>
+    <span title="Site words total count">198.2k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
