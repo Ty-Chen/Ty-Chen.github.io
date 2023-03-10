@@ -300,8 +300,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2023-03-09T23:55:12+08:00" content="2023-03-09">
-                2023-03-09
+              <time itemprop="dateUpdated" datetime="2023-03-10T19:19:05+08:00" content="2023-03-10">
+                2023-03-10
               </time>
             </span>
           
@@ -397,30 +397,14 @@
 
       
         
-          
-            <h2 id="一-简介"><a href="#一-简介" class="headerlink" title="一. 简介"></a>一. 简介</h2><p>&emsp;&emsp;前文中，我们先后介绍了Lua总体设计的思路，栈结构体及执行逻辑，基本数据结构极其实现，虚拟机的执行逻辑等，但是尚未涉及到脚本如何加载并转化为一个一个的字节码从而执行的过程。本文就此进行分析讨论。脚本语言的编译可以分为词法分析、语法分析阶段。词法分析阶段顾名思义就是将脚本加载并进行解析，分解为一个一个的基础的词并保存起来，由于后面的语法分析使用。而语法分析就是分析解释这些词的合理性及逻辑，并生成对应的字节码。这些字节码则将交给虚拟机去挨个执行，从而实现脚本的逻辑功能。</p>
-<h2 id="二-基础结构体"><a href="#二-基础结构体" class="headerlink" title="二. 基础结构体"></a>二. 基础结构体</h2><p>&emsp;&emsp;词法分析的大致功能包括了加载、解析，因此其总的状态管理类至少需要包括：</p>
-<ul>
-<li>文件名、当前读取的字符、行号</li>
-<li>一个用于保存当前已读取的内容的缓存，读取完毕之后才转化为一个词，即token。这里缓存区可以预先申请一块大小，然后记录当前用了多少以及总大小，如果全部用尽还没有完成一个token的读取，则重新分配缓冲区。</li>
-<li>当前的token</li>
-</ul>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Buffer</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="keyword">void</span>* buff;</span><br><span class="line">    <span class="keyword">int</span>   nUsedSize;</span><br><span class="line">    <span class="keyword">int</span>   nBuffSize;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">LexState</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    TString* FileName;</span><br><span class="line">    <span class="keyword">int</span> nCurrent;</span><br><span class="line">    <span class="keyword">int</span> nCurrentLine;</span><br><span class="line">    Buffer *buf;</span><br><span class="line">    Token t;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>&emsp;&emsp;除此之外，读取的文件如果一次性全读完或者按字节来读和操作，效率均会有所影响，比较合适的是建立一块缓冲区域，每次从缓冲区域读取，缓冲区用尽则从文件继续读。除了缓冲区的数据块<code>pData</code>以外，尚需要一个指针指向当前读的字符，以及一个变量来存储还剩多少字节可读。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">FileIO</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="keyword">int</span> nUnreadSize;</span><br><span class="line">    <span class="keyword">char</span>* pCurr;</span><br><span class="line">    <span class="keyword">void</span>* pData;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">LexState</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    TString* FileName;</span><br><span class="line">    <span class="keyword">int</span>      nCurrent;</span><br><span class="line">    <span class="keyword">int</span>      nCurrentLine;</span><br><span class="line">    Buffer*  buf;</span><br><span class="line">    <span class="built_in">FileIO</span>*  pIO;</span><br><span class="line">    Token    t;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>&emsp;&emsp;现在我们有了文件缓冲区，当前token的状态及读取缓冲区，但是我们还需要一个很重要的东西：当前函数的信息记录。</p>
-<p>&emsp;&emsp;所有的词，都可以解释为一个类型及其对应的数据，即如下形式。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Token</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="keyword">int</span> nType;</span><br><span class="line">    <span class="keyword">void</span>* data;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>&emsp;&emsp;根据前文中已经封装的数据类型，这里的data我们可以替换为一个联合，即要么是数字，要么是字符串。这样简单的结构体就足够表达所有可能读到的词了。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">union</span> SematicInfo</span><br><span class="line">&#123;</span><br><span class="line">    lua_Number r;</span><br><span class="line">    TString *ts;    </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Toke</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="keyword">int</span> nType;</span><br><span class="line">    SematicInfo data;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2>
-          
+          <h2 id="一-简介"><a href="#一-简介" class="headerlink" title="一. 简介"></a>一. 简介</h2><p>&emsp;&emsp;前文中，我们先后介绍了Lua总体设计的思路，栈结构体及执行逻辑，基本数据结构极其实现，虚拟机的执行逻辑等，但是尚未涉及到脚本如何加载并转化为一个一个的字节码从而执行的过程。本文就此进行分析讨论。脚本语言的编译可以分为词法分析、语法分析阶段。词法分析阶段顾名思义就是将脚本加载并进行解析，分解为一个一个的基础的词并保存起来，由于后面的语法分析使用。而语法分析就是分析解释这些词的合理性及逻辑，并生成对应的字节码。这些字节码则将交给虚拟机去挨个执行，从而实现脚本的逻辑功能。</p>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/lua-lexer/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
