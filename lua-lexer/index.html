@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;前文中，我们先后介绍了Lua总体设计的思路，栈结构体及执行逻辑，基本数据结构极其实现，虚拟机的执行逻辑等，但是尚未涉及到脚本如何加载并转化为一个一个的字节码从而执行的过程。本文就此进行分析讨论。脚本语言的编译可以分为词法分析、语法分析阶段。词法分析阶段顾名思义就是将脚本加载并进行解析，分解为一个一个的基础的词并保存起来，由于后面的语法分析使用。而语法分析就是分析解">
 <meta property="article:published_time" content="2023-02-13T17:03:04.000Z">
-<meta property="article:modified_time" content="2023-03-10T11:19:05.946Z">
+<meta property="article:modified_time" content="2023-03-11T15:58:28.404Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Lua">
 <meta property="article:tag" content="脚本语言">
@@ -306,8 +306,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2023-03-10T19:19:05+08:00" content="2023-03-10">
-                2023-03-10
+              <time itemprop="dateUpdated" datetime="2023-03-11T23:58:28+08:00" content="2023-03-11">
+                2023-03-11
               </time>
             </span>
           
@@ -370,7 +370,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  703
+                  836
                 </span>
               
 
@@ -386,7 +386,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  2
+                  3
                 </span>
               
             </div>
@@ -421,7 +421,8 @@
 <p>&emsp;&emsp;除此之外，读取的文件如果一次性全读完或者按字节来读和操作，效率均会有所影响，比较合适的是建立一块缓冲区域，每次从缓冲区域读取，缓冲区用尽则从文件继续读。除了缓冲区的数据块<code>pData</code>以外，尚需要一个指针指向当前读的字符，以及一个变量来存储还剩多少字节可读。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">FileIO</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="keyword">int</span> nUnreadSize;</span><br><span class="line">    <span class="keyword">char</span>* pCurr;</span><br><span class="line">    <span class="keyword">void</span>* pData;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">LexState</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    TString* FileName;</span><br><span class="line">    <span class="keyword">int</span>      nCurrent;</span><br><span class="line">    <span class="keyword">int</span>      nCurrentLine;</span><br><span class="line">    Buffer*  buf;</span><br><span class="line">    <span class="built_in">FileIO</span>*  pIO;</span><br><span class="line">    Token    t;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>&emsp;&emsp;现在我们有了文件缓冲区，当前token的状态及读取缓冲区，但是我们还需要一个很重要的东西：当前函数的信息记录。</p>
+<p>&emsp;&emsp;现在我们有了文件缓冲区，当前token的状态及读取缓冲区，但是我们还需要一个很重要的东西：当前函数的信息记录。lua脚本设计为多级函数的关系，而整个文件初始就是一个函数。前文中我们已经详细叙述了闭包<code>Closure</code>和函数原型<code>Proto</code>，而文件解析编译的任务中自然也包括了<code>Proto</code>的新建和填充，供以最终生成<code>Closure</code>以及执行<code>Proto</code>中的众多指令。</p>
+<p>&emsp;&emsp;这里当然可以直接再<code>LexState</code>中加入<code>Proto</code>链表，后续语法解析完，实际调用函数的时候生成<code>Closure</code>并装载对应的<code>Proto</code>从而执行。</p>
 <p>&emsp;&emsp;所有的词，都可以解释为一个类型及其对应的数据，即如下形式。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Token</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="keyword">int</span> nType;</span><br><span class="line">    <span class="keyword">void</span>* data;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
@@ -762,7 +763,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">198.7k</span>
+    <span title="Site words total count">198.8k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
