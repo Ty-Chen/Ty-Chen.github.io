@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;前文中，我们先后介绍了Lua总体设计的思路，栈结构体及执行逻辑，基本数据结构极其实现，虚拟机的执行逻辑等，但是尚未涉及到脚本如何加载并转化为一个一个的字节码从而执行的过程。本文就此进行分析讨论。脚本语言的编译可以分为词法分析、语法分析阶段。词法分析阶段顾名思义就是将脚本加载并进行解析，分解为一个一个的基础的词并保存起来，由于后面的语法分析使用。而语法分析就是分析解">
 <meta property="article:published_time" content="2023-02-13T17:03:04.000Z">
-<meta property="article:modified_time" content="2023-03-22T14:05:02.537Z">
+<meta property="article:modified_time" content="2023-03-28T15:49:13.233Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Lua">
 <meta property="article:tag" content="脚本语言">
@@ -306,8 +306,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2023-03-22T22:05:02+08:00" content="2023-03-22">
-                2023-03-22
+              <time itemprop="dateUpdated" datetime="2023-03-28T23:49:13+08:00" content="2023-03-28">
+                2023-03-28
               </time>
             </span>
           
@@ -370,7 +370,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1k
+                  1.1k
                 </span>
               
 
@@ -386,7 +386,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  3
+                  4
                 </span>
               
             </div>
@@ -424,13 +424,20 @@
 <p>&emsp;&emsp;现在我们有了文件缓冲区，当前token的状态及读取缓冲区，但是我们还需要一个很重要的东西：当前函数的信息记录。lua脚本设计为多级函数的关系，而整个文件初始就是一个函数。前文中我们已经详细叙述了闭包<code>Closure</code>和函数原型<code>Proto</code>，而文件解析编译的任务中自然也包括了<code>Proto</code>的新建和填充，供以最终生成<code>Closure</code>以及执行<code>Proto</code>中的众多指令。</p>
 <p>&emsp;&emsp;这里当然可以直接再<code>LexState</code>中加入<code>Proto</code>链表，后续语法解析完，实际调用函数的时候生成<code>Closure</code>并装载对应的<code>Proto</code>从而执行。但是在词法、语法解析的过程中，我们需要存储诸多的中间变量以及当前的状态信息，这些东西用一个结构体来统一保存，并在<code>Proto</code>成功解析完成后清除。我们取名为<code>FuncState</code>。</p>
 <p>&emsp;&emsp;所以这里我们主要关心的是，在词法解析过程中需要哪些中间变量来存储状态呢？</p>
+<p>首先肯定需要一个Proto，作为最终存储的函数内容，然后就是Proto对应的一些记录</p>
 <ul>
-<li>首先肯定需要一个Proto，作为最终存储的函数内容，然后就是Proto对应的一些记录<ul>
 <li>函数中的常量，需要集中存储，当然也就是一个Table</li>
-<li>常数和内部嵌套Proto的数量当然也要考虑在内。</li>
+<li>常数、内部嵌套Proto以及局部变量的数量当然也要记录</li>
+<li>上值的记录：</li>
 </ul>
-</li>
-<li></li>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">FuncState</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    Proto* p;</span><br><span class="line">    Table* h;</span><br><span class="line">    <span class="keyword">int</span> nk;</span><br><span class="line">    <span class="keyword">int</span> np;</span><br><span class="line">    <span class="keyword">int</span> nlocvars;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>然后需要考虑翻译为字节码的过程中，需要记录的东西</p>
+<ul>
+<li>首先当然要记录当前所在的解析位置以及上一步解析的位置</li>
+<li>目前空闲的寄存器也要记录，便于生成字节码的时候</li>
 </ul>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">FuncState</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
@@ -778,7 +785,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">199k</span>
+    <span title="Site words total count">199.1k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
