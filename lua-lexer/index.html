@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;前文中，我们先后介绍了Lua总体设计的思路，栈结构体及执行逻辑，基本数据结构极其实现，虚拟机的执行逻辑等，但是尚未涉及到脚本如何加载并转化为一个一个的字节码从而执行的过程。本文就此进行分析讨论。脚本语言的编译可以分为词法分析、语法分析阶段。词法分析阶段顾名思义就是将脚本加载并进行解析，分解为一个一个的基础的词并保存起来，由于后面的语法分析使用。而语法分析就是分析解">
 <meta property="article:published_time" content="2023-02-13T17:03:04.000Z">
-<meta property="article:modified_time" content="2023-07-06T15:05:01.518Z">
+<meta property="article:modified_time" content="2023-07-08T04:16:35.481Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Lua">
 <meta property="article:tag" content="脚本语言">
@@ -306,8 +306,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2023-07-06T23:05:01+08:00" content="2023-07-06">
-                2023-07-06
+              <time itemprop="dateUpdated" datetime="2023-07-08T12:16:35+08:00" content="2023-07-08">
+                2023-07-08
               </time>
             </span>
           
@@ -472,6 +472,7 @@
 <li>标记符，如注释、字符串、下划线等</li>
 <li>操作符，如表的操作符<code>. [ ]:</code>、数字的加减乘除、字符串连接等</li>
 </ul>
+<p>除了符号之外的，数字直接读取多位直至操作符结束，字符串同理。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
 
