@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;前文中，我们先后介绍了Lua总体设计的思路，栈结构体及执行逻辑，基本数据结构极其实现，虚拟机的执行逻辑等，但是尚未涉及到脚本如何加载并转化为一个一个的字节码从而执行的过程。本文就此进行分析讨论。脚本语言的编译可以分为词法分析、语法分析阶段。词法分析阶段顾名思义就是将脚本加载并进行解析，分解为一个一个的基础的词并保存起来，由于后面的语法分析使用。而语法分析就是分析解">
 <meta property="article:published_time" content="2023-02-13T17:03:04.000Z">
-<meta property="article:modified_time" content="2023-07-11T13:26:15.611Z">
+<meta property="article:modified_time" content="2023-07-12T14:45:06.447Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Lua">
 <meta property="article:tag" content="脚本语言">
@@ -306,8 +306,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2023-07-11T21:26:15+08:00" content="2023-07-11">
-                2023-07-11
+              <time itemprop="dateUpdated" datetime="2023-07-12T22:45:06+08:00" content="2023-07-12">
+                2023-07-12
               </time>
             </span>
           
@@ -370,7 +370,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1.8k
+                  1.9k
                 </span>
               
 
@@ -473,7 +473,7 @@
 <li>操作符，如表的操作符<code>. [ ]:</code>、数字的加减乘除、字符串连接等</li>
 </ul>
 <p>除了符号之外的，数字直接读取多位直至操作符结束，字符串同理。当读取完成且没有问题，则返回此次读取的token类型，并保存<code>seminfo</code>。完成了token的读取后，就需要进入下一阶段：对token的解析分析。</p>
-<p>这里涉及到一个概念：代码块。一个函数当然是一个代码块，函数中多级调用可以视为多级代码块，而一个脚本本身，也可以是做一个代码块，所以脚本本身定义的函数、变量，相当于是在一个大的隐藏函数内部进行的定义。</p>
+<p>这里涉及到一个概念：代码块。一个函数当然是一个代码块，函数中多级调用可以视为多级代码块，而一个脚本本身，也可以是做一个代码块，所以脚本本身定义的函数、变量，相当于是在一个大的隐藏函数内部进行的定义。因此对各种代码块，均可以用统一封装函数解析，我们取名<code>chunk()</code></p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
 
@@ -810,7 +810,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">199.8k</span>
+    <span title="Site words total count">199.9k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
