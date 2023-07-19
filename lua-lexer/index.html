@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;前文中，我们先后介绍了Lua总体设计的思路，栈结构体及执行逻辑，基本数据结构极其实现，虚拟机的执行逻辑等，但是尚未涉及到脚本如何加载并转化为一个一个的字节码从而执行的过程。本文就此进行分析讨论。脚本语言的编译可以分为词法分析、语法分析阶段。词法分析阶段顾名思义就是将脚本加载并进行解析，分解为一个一个的基础的词并保存起来，由于后面的语法分析使用。而语法分析就是分析解">
 <meta property="article:published_time" content="2023-02-13T17:03:04.000Z">
-<meta property="article:modified_time" content="2023-07-18T14:19:56.635Z">
+<meta property="article:modified_time" content="2023-07-19T11:52:22.386Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Lua">
 <meta property="article:tag" content="脚本语言">
@@ -306,8 +306,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2023-07-18T22:19:56+08:00" content="2023-07-18">
-                2023-07-18
+              <time itemprop="dateUpdated" datetime="2023-07-19T19:52:22+08:00" content="2023-07-19">
+                2023-07-19
               </time>
             </span>
           
@@ -478,6 +478,7 @@
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">chunk</span> <span class="params">(LexState *ls)</span> </span>&#123;</span><br><span class="line">  <span class="comment">/* chunk -&gt; &#123; stat [`;'] &#125; */</span></span><br><span class="line">  <span class="keyword">int</span> islast = <span class="number">0</span>;</span><br><span class="line">...</span><br><span class="line">  <span class="keyword">while</span> (!islast &amp;&amp; !block_follow(ls-&gt;t.token)) &#123;</span><br><span class="line">    islast = statement(ls);</span><br><span class="line">    testnext(ls, <span class="string">';'</span>);</span><br><span class="line">...</span><br><span class="line">    ls-&gt;fs-&gt;freereg = ls-&gt;fs-&gt;nactvar;  <span class="comment">/* free registers */</span></span><br><span class="line">  &#125;</span><br><span class="line">...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>下面需要考虑的就是如何去根据token的类型进行相应的处理。</p>
+<p>首先我们要对token进行一个分类：</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2>
       
     </div>
