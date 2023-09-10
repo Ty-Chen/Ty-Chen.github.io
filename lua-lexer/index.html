@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;前文中，我们先后介绍了Lua总体设计的思路，栈结构体及执行逻辑，基本数据结构极其实现，虚拟机的执行逻辑等，但是尚未涉及到脚本如何加载并转化为一个一个的字节码从而执行的过程。本文就此进行分析讨论。脚本语言的编译可以分为词法分析、语法分析阶段。词法分析阶段顾名思义就是将脚本加载并进行解析，分解为一个一个的基础的词并保存起来，由于后面的语法分析使用。而语法分析就是分析解">
 <meta property="article:published_time" content="2023-02-13T17:03:04.000Z">
-<meta property="article:modified_time" content="2023-09-09T08:10:04.311Z">
+<meta property="article:modified_time" content="2023-09-09T14:05:31.341Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Lua">
 <meta property="article:tag" content="脚本语言">
@@ -306,7 +306,7 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2023-09-09T16:10:04+08:00" content="2023-09-09">
+              <time itemprop="dateUpdated" datetime="2023-09-09T22:05:31+08:00" content="2023-09-09">
                 2023-09-09
               </time>
             </span>
@@ -370,7 +370,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  3.2k
+                  3.6k
                 </span>
               
 
@@ -386,7 +386,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  12
+                  14
                 </span>
               
             </div>
@@ -520,14 +520,38 @@
 <p>对应的解析则是<code>luaX_next()</code>读取首个<code>token</code>，然后<code>chunk()</code>中循环执行<code>statement()</code>逻辑，根据读到的token调用对应的函数</p>
 <ul>
 <li>首先<code>luaX_next()</code>读到“a”，对应<code>TK_NAME</code>，走<code>statement()</code>的<code>default</code>分支，调用<code>exprstat()</code><ul>
-<li>调用<code>primaryexp()</code><ul>
-<li>调用<code>prefixecp()</code>，该函数针对当前token类型为NAME或者括号进行检测，对于NAME，进一步调用<code>singlevar()</code><ul>
+<li>调用<code>primaryexp()</code>进行default分支表达式的检测<ul>
+<li>调用<code>prefixexp()</code>，该函数针对当前token类型为NAME或者括号进行检测，对于NAME，进一步调用<code>singlevar()</code><ul>
 <li>调用<code>singlevar()</code><ul>
-<li><h2 id="调用str-checkname"><a href="#调用str-checkname" class="headerlink" title="调用str_checkname()"></a>调用<code>str_checkname()</code></h2></li>
+<li>调用<code>str_checkname()</code>，确认是<code>TK_NAME</code>后，调用<code>luaX_next()</code>读取下个<code>token</code></li>
+<li>调用<code>singlevaraux()</code>判断NAME的类型属于哪一类，包括GLOBAL/UPVAL/LOCAL<ul>
+<li>如果当前函数层级为NULL，则说明是最外层了，即脚本本身，那么该NAME一定是VGLOBAL，调用<code>init_exp()</code>初始化<code>VGLOBAL</code>并返回</li>
+<li>函数层级不为NULL，则调用<code>searchvar()</code>查看当前层级是否已有该<code>NAME</code>，有的话则返回对应位置，找不到返回-1<ul>
+<li>找到了则调用<code>Init_exp()</code>初始化该表达式为<code>VLOCAL</code>类型，对于<code>local</code>还需要调用<code>markupval()</code>进行<code>gc object</code>的记录，然后返回<code>VLOCAL</code></li>
+<li>找不到，则递归调用<code>singlevaraux()</code>，查看上级，即<code>fs-&gt;prev</code>的情况。<ul>
+<li>递归多级后如果返回的是VGLOBAL，则照葫芦画瓢返回VGLOBAL即可</li>
+<li>如果是某一级别的VLOCAL，那么该级别则为VUPVAL，这里就需要做一些操作了。<ul>
+<li>首先调用<code>indexupvalue()</code>取出信息赋值给表达式的info字段</li>
+<li>k字段赋值<code>VUPVAL</code></li>
+<li>返回<code>VUPVALL</code></li>
 </ul>
 </li>
 </ul>
 </li>
+</ul>
+</li>
+</ul>
+</li>
+<li>对于VGLOBAL，则调用<code>luaK_stringK()</code>将其添加到对应的proto的变量列表中</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>完成<code>prefixexp()</code>的调用后，进入后面是否有<code>.[:(</code>等衔接符的检测，此处没有则直接跳过</li>
+</ul>
+</li>
+<li>如果<code>primaryexp()</code>的结果表示表达式类型是<code>VCALL</code>，则调用<code>getcode()</code>，否则调用<code>assignment()</code><ul>
+<li><h2 id="assignment-主要处理NAME后的token，按照语法规定，这里只允许是-quot-quot-或者-quot-quot-，别的则抛出异常"><a href="#assignment-主要处理NAME后的token，按照语法规定，这里只允许是-quot-quot-或者-quot-quot-，别的则抛出异常" class="headerlink" title="assignment()主要处理NAME后的token，按照语法规定，这里只允许是&quot;,&quot;或者&quot;=&quot;，别的则抛出异常"></a>assignment()主要处理NAME后的token，按照语法规定，这里只允许是<code>&quot;,&quot;</code>或者<code>&quot;=&quot;</code>，别的则抛出异常</h2></li>
 </ul>
 </li>
 </ul>
@@ -832,7 +856,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-基础结构体"><span class="nav-text">二. 基础结构体</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-解析逻辑"><span class="nav-text">三. 解析逻辑</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#调用str-checkname"><span class="nav-text">调用str_checkname()</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-基础结构体"><span class="nav-text">二. 基础结构体</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-解析逻辑"><span class="nav-text">三. 解析逻辑</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#assignment-主要处理NAME后的token，按照语法规定，这里只允许是-quot-quot-或者-quot-quot-，别的则抛出异常"><span class="nav-text">assignment()主要处理NAME后的token，按照语法规定，这里只允许是&quot;,&quot;或者&quot;&#x3D;&quot;，别的则抛出异常</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
@@ -866,7 +890,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">201.2k</span>
+    <span title="Site words total count">201.6k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
