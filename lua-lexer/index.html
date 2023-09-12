@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;前文中，我们先后介绍了Lua总体设计的思路，栈结构体及执行逻辑，基本数据结构极其实现，虚拟机的执行逻辑等，但是尚未涉及到脚本如何加载并转化为一个一个的字节码从而执行的过程。本文就此进行分析讨论。脚本语言的编译可以分为词法分析、语法分析阶段。词法分析阶段顾名思义就是将脚本加载并进行解析，分解为一个一个的基础的词并保存起来，由于后面的语法分析使用。而语法分析就是分析解">
 <meta property="article:published_time" content="2023-02-13T17:03:04.000Z">
-<meta property="article:modified_time" content="2023-09-09T14:05:31.341Z">
+<meta property="article:modified_time" content="2023-09-12T14:25:12.015Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Lua">
 <meta property="article:tag" content="脚本语言">
@@ -306,8 +306,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2023-09-09T22:05:31+08:00" content="2023-09-09">
-                2023-09-09
+              <time itemprop="dateUpdated" datetime="2023-09-12T22:25:12+08:00" content="2023-09-12">
+                2023-09-12
               </time>
             </span>
           
@@ -370,7 +370,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  3.6k
+                  3.7k
                 </span>
               
 
@@ -551,7 +551,19 @@
 </ul>
 </li>
 <li>如果<code>primaryexp()</code>的结果表示表达式类型是<code>VCALL</code>，则调用<code>getcode()</code>，否则调用<code>assignment()</code><ul>
-<li><h2 id="assignment-主要处理NAME后的token，按照语法规定，这里只允许是-quot-quot-或者-quot-quot-，别的则抛出异常"><a href="#assignment-主要处理NAME后的token，按照语法规定，这里只允许是-quot-quot-或者-quot-quot-，别的则抛出异常" class="headerlink" title="assignment()主要处理NAME后的token，按照语法规定，这里只允许是&quot;,&quot;或者&quot;=&quot;，别的则抛出异常"></a>assignment()主要处理NAME后的token，按照语法规定，这里只允许是<code>&quot;,&quot;</code>或者<code>&quot;=&quot;</code>，别的则抛出异常</h2></li>
+<li>assignment()主要处理NAME后的token，按照语法规定，这里只允许是<code>&quot;,&quot;</code>或者<code>&quot;=&quot;</code>，别的则抛出异常<ul>
+<li>对于”,”，则嵌套调用<code>primaryexp()+assignment()</code>进行递归处理</li>
+<li>对于”=“，说明<code>NAME</code>走到了赋值了<ul>
+<li>首先当然是调用<code>checknext()</code>检查是不是”=“</li>
+<li>然后调用<code>explist1()</code>检测表达式另一边有几个赋值的值<ul>
+<li>首先调用expr()，实际调用<code>subexpr()</code></li>
+<li>然后循环调用<code>testnext()</code>检测”,“，检测到了则调用<code>luaK_exp2nextreg()</code>和<code>expr()</code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -856,7 +868,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-基础结构体"><span class="nav-text">二. 基础结构体</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-解析逻辑"><span class="nav-text">三. 解析逻辑</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#assignment-主要处理NAME后的token，按照语法规定，这里只允许是-quot-quot-或者-quot-quot-，别的则抛出异常"><span class="nav-text">assignment()主要处理NAME后的token，按照语法规定，这里只允许是&quot;,&quot;或者&quot;&#x3D;&quot;，别的则抛出异常</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-基础结构体"><span class="nav-text">二. 基础结构体</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-解析逻辑"><span class="nav-text">三. 解析逻辑</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
@@ -890,7 +902,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">201.6k</span>
+    <span title="Site words total count">201.7k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
