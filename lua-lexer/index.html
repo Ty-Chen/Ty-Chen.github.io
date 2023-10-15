@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;前文中，我们先后介绍了Lua总体设计的思路，栈结构体及执行逻辑，基本数据结构极其实现，虚拟机的执行逻辑等，但是尚未涉及到脚本如何加载并转化为一个一个的字节码从而执行的过程。本文就此进行分析讨论。脚本语言的编译可以分为词法分析、语法分析阶段。词法分析阶段顾名思义就是将脚本加载并进行解析，分解为一个一个的基础的词并保存起来，由于后面的语法分析使用。而语法分析就是分析解">
 <meta property="article:published_time" content="2023-02-13T17:03:04.000Z">
-<meta property="article:modified_time" content="2023-10-14T13:53:53.366Z">
+<meta property="article:modified_time" content="2023-10-15T13:03:49.529Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Lua">
 <meta property="article:tag" content="脚本语言">
@@ -306,8 +306,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2023-10-14T21:53:53+08:00" content="2023-10-14">
-                2023-10-14
+              <time itemprop="dateUpdated" datetime="2023-10-15T21:03:49+08:00" content="2023-10-15">
+                2023-10-15
               </time>
             </span>
           
@@ -370,7 +370,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  3.7k
+                  3.8k
                 </span>
               
 
@@ -517,11 +517,11 @@
 <p>假设一个简单的脚本里有如下语句</p>
 <figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">a = <span class="number">1</span></span><br><span class="line">b = <span class="number">2</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> a &lt; b <span class="keyword">then</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">"b large"</span>)</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">"a large"</span>)</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
 
-<p>对应的解析则是<code>luaX_next()</code>读取首个<code>token</code>，然后<code>chunk()</code>中循环执行<code>statement()</code>逻辑，根据读到的token调用对应的函数</p>
+<p>对应的解析则是<code>luaX_next()</code>读取首个<code>token</code>，然后<code>chunk()</code>中循环执行<code>statement()</code>逻辑，根据读到的<code>token</code>调用对应的函数</p>
 <ul>
-<li>首先<code>luaX_next()</code>读到“a”，对应<code>TK_NAME</code>，走<code>statement()</code>的<code>default</code>分支，调用<code>exprstat()</code><ul>
+<li>首先<code>luaX_next()</code>读到“a”，对应<code>TK_NAME</code>，走<code>statement()</code>的<code>default</code>分支，调用<code>exprstat()</code>，该函数专门处理各种非关键字的表达式解析<ul>
 <li>调用<code>primaryexp()</code>进行<code>default</code>分支表达式的检测<ul>
-<li>调用<code>prefixexp()</code>，该函数针对当前token类型为<code>NAME</code>或者括号进行检测，对于<code>NAME</code>，进一步调用<code>singlevar()</code><ul>
+<li>调用<code>prefixexp()</code>，该函数针对当前<code>token</code>类型为<code>NAME</code>或者括号进行检测，对于<code>NAME</code>，进一步调用<code>singlevar()</code><ul>
 <li>调用<code>singlevar()</code>检查<code>Name</code>的类型<ul>
 <li>调用<code>str_checkname()</code>，确认是<code>TK_NAME</code>后，调用<code>luaX_next()</code>读取下个<code>token</code></li>
 <li>调用<code>singlevaraux()</code>判断<code>NAME</code>的类型属于哪一类，包括<code>GLOBAL/UPVAL/LOCAL</code><ul>
@@ -556,7 +556,7 @@
 <li>对于”=“，说明<code>NAME</code>走到了赋值了<ul>
 <li>首先当然是调用<code>checknext()</code>检查是不是”=“</li>
 <li>然后调用<code>explist1()</code>检测表达式另一边有几个赋值的值<ul>
-<li>首先调用expr()，实际调用<code>subexpr()</code>函数，对操作符进行判断及处理<ul>
+<li>首先调用<code>expr()</code>，实际调用<code>subexpr()</code>函数，对操作符进行判断及处理<ul>
 <li>调用<code>getunopr()</code>获取当前操作符的类型</li>
 <li>如果是<code>NOUNOPR</code>，则需要继续读取后续的进行判断，否则调用<code>syimpleexp()</code></li>
 <li>获取二元操作符<code>getbinnopr()</code></li>
