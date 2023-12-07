@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;前文中，我们先后介绍了Lua总体设计的思路，栈结构体及执行逻辑，基本数据结构极其实现，虚拟机的执行逻辑等，但是尚未涉及到脚本如何加载并转化为一个一个的字节码从而执行的过程。本文就此进行分析讨论。脚本语言的编译可以分为词法分析、语法分析阶段。词法分析阶段顾名思义就是将脚本加载并进行解析，分解为一个一个的基础的词并保存起来，由于后面的语法分析使用。而语法分析就是分析解">
 <meta property="article:published_time" content="2023-02-13T17:03:04.000Z">
-<meta property="article:modified_time" content="2023-12-06T11:49:20.899Z">
+<meta property="article:modified_time" content="2023-12-07T11:56:40.559Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Lua">
 <meta property="article:tag" content="脚本语言">
@@ -306,8 +306,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2023-12-06T19:49:20+08:00" content="2023-12-06">
-                2023-12-06
+              <time itemprop="dateUpdated" datetime="2023-12-07T19:56:40+08:00" content="2023-12-07">
+                2023-12-07
               </time>
             </span>
           
@@ -576,7 +576,10 @@
 <li>首先调用<code>luaK_setoneret()</code>，对表达式为VCALL或者VVARARG进行赋值，此处我们是VNUM所以并无操作</li>
 <li>然后调用<code>luaK_storevar()</code>，对于VGLOBAL，处理如下<ul>
 <li>调用<code>luaK_exp2anyreg()</code><ul>
-<li><h2 id="调用luaK-dischargevars-，区分expkind，调用luaK-codeABx-或者luaK-codeABC-赋值OpCode。"><a href="#调用luaK-dischargevars-，区分expkind，调用luaK-codeABx-或者luaK-codeABC-赋值OpCode。" class="headerlink" title="调用luaK_dischargevars()，区分expkind，调用luaK_codeABx()或者luaK_codeABC()赋值OpCode。"></a>调用<code>luaK_dischargevars()</code>，区分<code>expkind</code>，调用<code>luaK_codeABx()</code>或者<code>luaK_codeABC()</code>赋值<code>OpCode</code>。</h2></li>
+<li>调用<code>luaK_dischargevars()</code>，区分<code>expkind</code>，调用<code>luaK_codeABx()</code>或者<code>luaK_codeABC()</code>赋值<code>OpCode</code>。<ul>
+<li>luaK_codeABx和luaK_codeABC区别在于机器码对应的寄存器数量不同，实际最后均调用luaK_code</li>
+</ul>
+</li>
 <li>调用<code>luaK_exp2nextreg()</code></li>
 </ul>
 </li>
@@ -895,7 +898,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-基础结构体"><span class="nav-text">二. 基础结构体</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-解析逻辑"><span class="nav-text">三. 解析逻辑</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#调用luaK-dischargevars-，区分expkind，调用luaK-codeABx-或者luaK-codeABC-赋值OpCode。"><span class="nav-text">调用luaK_dischargevars()，区分expkind，调用luaK_codeABx()或者luaK_codeABC()赋值OpCode。</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-基础结构体"><span class="nav-text">二. 基础结构体</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-解析逻辑"><span class="nav-text">三. 解析逻辑</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
