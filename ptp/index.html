@@ -79,14 +79,14 @@
 
 
 
-<meta name="description" content="一. 简介">
+<meta name="description" content="一. 简介&amp;emsp;&amp;emsp;早在1985年，业界就提出了NTP(Network Time Protocol)(RFC1305)协议，可以将多台终端的时间同步在500us-50ms的精确度范围以内。在1992年，业界又有了SNTP（Simple Network Time Protocol）协议（RFC2030)，可以将多台终端的时间同步在50-150ms的精确度范围以内。之后在2002年，终于">
 <meta property="og:type" content="article">
 <meta property="og:title" content="ptp协议分析">
 <meta property="og:url" content="https://ty-chen.github.io/ptp/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
-<meta property="og:description" content="一. 简介">
+<meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;早在1985年，业界就提出了NTP(Network Time Protocol)(RFC1305)协议，可以将多台终端的时间同步在500us-50ms的精确度范围以内。在1992年，业界又有了SNTP（Simple Network Time Protocol）协议（RFC2030)，可以将多台终端的时间同步在50-150ms的精确度范围以内。之后在2002年，终于">
 <meta property="article:published_time" content="2024-03-22T02:16:24.000Z">
-<meta property="article:modified_time" content="2024-03-22T02:39:52.717Z">
+<meta property="article:modified_time" content="2024-03-24T13:37:24.166Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="ptp">
 <meta property="article:tag" content="分布式">
@@ -304,8 +304,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2024-03-22T10:39:52+08:00" content="2024-03-22">
-                2024-03-22
+              <time itemprop="dateUpdated" datetime="2024-03-24T21:37:24+08:00" content="2024-03-24">
+                2024-03-24
               </time>
             </span>
           
@@ -368,7 +368,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  177
+                  520
                 </span>
               
 
@@ -384,7 +384,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  1
+                  2
                 </span>
               
             </div>
@@ -405,9 +405,26 @@
       
 
       
-        <h2 id="一-简介"><a href="#一-简介" class="headerlink" title="一. 简介"></a>一. 简介</h2><a id="more"></a>
+        <h2 id="一-简介"><a href="#一-简介" class="headerlink" title="一. 简介"></a>一. 简介</h2><p>&emsp;&emsp;早在1985年，业界就提出了NTP(Network Time Protocol)(RFC1305)协议，可以将多台终端的时间同步在500us-50ms的精确度范围以内。在1992年，业界又有了SNTP（Simple Network Time Protocol）协议（RFC2030)，可以将多台终端的时间同步在50-150ms的精确度范围以内。之后在2002年，终于又有了更高精度的时间同步协议：PTP（Precision Time Protocol）(RFC1588)，精度提高到了10ns-100us。后续2008年又提出了v2版本，进一步将精度提升到了1ns-500ns的时间范围内，这就是目前通用的纳秒级高精度时间同步协议了，也就是本文的重点分析内容。</p>
+ <a id="more"></a>
 
-<p>早在1985年，业界就提出了NTP(Network Time Protocol)(RFC1305)协议，可以将多台终端的时间同步在500us-50ms的精确度范围以内。在1992年，业界又有了SNTP（Simple Network Time Protocol）协议（RFC2030)，可以将多台终端的时间同步在50-150ms的精确度范围以内。之后在2002年，终于又有了更高精度的时间同步协议：PTP（Precision Time Protocol）(RFC1588)，精度提高到了10ns-100us。后续2008年又提出了v2版本，进一步将精度提升到了1ns-500ns的时间范围内，这就是目前通用的纳秒级高精度时间同步协议了，也就是本文的重点分析内容。</p>
+<h2 id="二-实现介绍"><a href="#二-实现介绍" class="headerlink" title="二. 实现介绍"></a>二. 实现介绍</h2><p>&emsp;&emsp;&emsp; PTP的设计原理并不复杂：由一个绝对领导权的master发布时间并对slave们进行时间同步。精髓在于通过带上时间戳的请求及回复，了解双向链路各自的时延情况。</p>
+<p>总体来说，一共会有四条消息，时序如下</p>
+<ul>
+<li>T1时间，master发送sync message给slave，收到的时间是T2</li>
+<li>master发送 sync follow up message</li>
+<li>T3时间，slave发送delay request message，收到的时间是T4</li>
+<li>master发送delay respond message</li>
+</ul>
+<p>假设master相对slave时间偏差为<code>Toffset</code>，则<code>T1 + Delay + Toffset == T2</code>， 即 <code>T2 - T1 == Delay + Toffset</code>。我们想知道时间偏差，需要将时延的因素给去掉。</p>
+<p>另一方面，<code>T3 + Delay - Toffset == T4</code>, 即 <code>T4 - T3 == Delay - Toffset</code></p>
+<p>所以 <code>Delay == ((T2 - T1) + (T4 - T3)) / 2</code></p>
+<p>时间偏差 <code>Toffset == ((T2 - T1) - (T4 - T3)) / 2</code></p>
+<p>对于slave，则应该将时间更新为<code>time - Toffset</code></p>
+<p>这里实际上在实现机制上存在两种：可以将follow up消息包含在sync message中一起发过去，省略一条消息，这种称之为One-Step Clock，反之则是Two-Step Clock。</p>
+<p>为什么需要两种：两步对于那些T1时间创建而并未发送的包有奇效。</p>
+<p>BMCA(Best Master Clock Algorithm)：确保只有一个grand master的存在，其实现机制类似于raft的leader election。 </p>
+<h2 id="三-实现优化"><a href="#三-实现优化" class="headerlink" title="三. 实现优化"></a>三. 实现优化</h2><p>可以通过netmap实现kernal bypass进行效率优化。</p>
 
       
     </div>
@@ -702,7 +719,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-实现介绍"><span class="nav-text">二. 实现介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-实现优化"><span class="nav-text">三. 实现优化</span></a></li></ol></div>
             
 
           </div>
@@ -736,7 +753,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">202.2k</span>
+    <span title="Site words total count">202.5k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
