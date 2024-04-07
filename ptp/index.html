@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 简介&amp;emsp;&amp;emsp;早在1985年，业界就提出了NTP(Network Time Protocol)(RFC1305)协议，可以将多台终端的时间同步在500us-50ms的精确度范围以内。在1992年，业界又有了SNTP（Simple Network Time Protocol）协议（RFC2030)，可以将多台终端的时间同步在50-150ms的精确度范围以内。之后在2002年，终于">
 <meta property="article:published_time" content="2024-03-22T02:16:24.000Z">
-<meta property="article:modified_time" content="2024-03-24T13:37:24.166Z">
+<meta property="article:modified_time" content="2024-04-07T14:35:57.273Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="ptp">
 <meta property="article:tag" content="分布式">
@@ -304,8 +304,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2024-03-24T21:37:24+08:00" content="2024-03-24">
-                2024-03-24
+              <time itemprop="dateUpdated" datetime="2024-04-07T22:35:57+08:00" content="2024-04-07">
+                2024-04-07
               </time>
             </span>
           
@@ -368,7 +368,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  520
+                  569
                 </span>
               
 
@@ -425,6 +425,7 @@
 <p>为什么需要两种：两步对于那些T1时间创建而并未发送的包有奇效。</p>
 <p>BMCA(Best Master Clock Algorithm)：确保只有一个grand master的存在，其实现机制类似于raft的leader election。 </p>
 <h2 id="三-实现优化"><a href="#三-实现优化" class="headerlink" title="三. 实现优化"></a>三. 实现优化</h2><p>可以通过netmap实现kernal bypass进行效率优化。</p>
+<h2 id="四-智能网卡使用方案"><a href="#四-智能网卡使用方案" class="headerlink" title="四. 智能网卡使用方案"></a>四. 智能网卡使用方案</h2><p>参考思科手册，发现思科的智能网卡支持PPS和PTP两种模式，其中对于PTP多为slave，对部分产品亦可作为master。</p>
 
       
     </div>
@@ -719,7 +720,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-实现介绍"><span class="nav-text">二. 实现介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-实现优化"><span class="nav-text">三. 实现优化</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-实现介绍"><span class="nav-text">二. 实现介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-实现优化"><span class="nav-text">三. 实现优化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-智能网卡使用方案"><span class="nav-text">四. 智能网卡使用方案</span></a></li></ol></div>
             
 
           </div>
@@ -753,7 +754,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">202.5k</span>
+    <span title="Site words total count">202.6k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
