@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/kulamati128.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/kulamati32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/kulamati16.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="linux,timestamp," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="一. 简介">
+<meta property="og:type" content="article">
+<meta property="og:title" content="linux网络编程时间抽详解">
+<meta property="og:url" content="https://ty-chen.github.io/linuxts-md/index.html">
+<meta property="og:site_name" content="Ty-Chen&#39;s Home">
+<meta property="og:description" content="一. 简介">
+<meta property="article:published_time" content="2024-04-18T12:15:19.000Z">
+<meta property="article:modified_time" content="2024-04-18T12:48:20.889Z">
+<meta property="article:author" content="Ty Chen">
+<meta property="article:tag" content="linux">
+<meta property="article:tag" content="timestamp">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"hide","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://ty-chen.github.io/linuxts-md/"/>
+
+
+
+
+
+  <title>linux网络编程时间抽详解 | Ty-Chen's Home</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Ty-Chen's Home</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Collecting, sharing and creating knowledge</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://ty-chen.github.io/linuxts-md/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Ty Chen">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/me.JPG">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ty-Chen's Home">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">linux网络编程时间抽详解</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2024-04-18T20:15:19+08:00">
+                2024-04-18
+              </time>
+            
+
+            
+
+            
+          </span>
+          
+            <span class="post-updated">
+              &nbsp; | &nbsp; 更新于
+              <time itemprop="dateUpdated" datetime="2024-04-18T20:48:20+08:00" content="2024-04-18">
+                2024-04-18
+              </time>
+            </span>
+          
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BC%96%E7%A8%8B%E9%9A%8F%E7%AC%94/" itemprop="url" rel="index">
+                    <span itemprop="name">编程随笔</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/linuxts-md/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/linuxts-md/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">访问次数：
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>次
+            </span>
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  6k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  37
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="一-简介"><a href="#一-简介" class="headerlink" title="一. 简介"></a>一. 简介</h2> <a id="more"></a>
+
+<h1 id="Timestamping"><a href="#Timestamping" class="headerlink" title="Timestamping"></a>Timestamping</h1><h2 id="1-Control-Interfaces"><a href="#1-Control-Interfaces" class="headerlink" title="1. Control Interfaces"></a>1. Control Interfaces</h2><p>The interfaces for receiving network packages timestamps are:</p>
+<ul>
+<li><p>SO_TIMESTAMP</p>
+<p>Generates a timestamp for each incoming packet in (not necessarily monotonic) system time. Reports the timestamp via recvmsg() in a control message in usec resolution. SO_TIMESTAMP is defined as SO_TIMESTAMP_NEW or SO_TIMESTAMP_OLD based on the architecture type and time_t representation of libc. Control message format is in struct __kernel_old_timeval for SO_TIMESTAMP_OLD and in struct __kernel_sock_timeval for SO_TIMESTAMP_NEW options respectively.</p>
+</li>
+<li><p>SO_TIMESTAMPNS</p>
+<p>Same timestamping mechanism as SO_TIMESTAMP, but reports the timestamp as struct timespec in nsec resolution. SO_TIMESTAMPNS is defined as SO_TIMESTAMPNS_NEW or SO_TIMESTAMPNS_OLD based on the architecture type and time_t representation of libc. Control message format is in struct timespec for SO_TIMESTAMPNS_OLD and in struct __kernel_timespec for SO_TIMESTAMPNS_NEW options respectively.</p>
+</li>
+<li><p>IP_MULTICAST_LOOP + SO_TIMESTAMP[NS]</p>
+<p>Only for multicast:approximate transmit timestamp obtained by reading the looped packet receive timestamp.</p>
+</li>
+<li><p>SO_TIMESTAMPING</p>
+<p>Generates timestamps on reception, transmission or both. Supports multiple timestamp sources, including hardware. Supports generating timestamps for stream sockets.</p>
+</li>
+</ul>
+<h3 id="1-1-SO-TIMESTAMP-also-SO-TIMESTAMP-OLD-and-SO-TIMESTAMP-NEW"><a href="#1-1-SO-TIMESTAMP-also-SO-TIMESTAMP-OLD-and-SO-TIMESTAMP-NEW" class="headerlink" title="1.1 SO_TIMESTAMP (also SO_TIMESTAMP_OLD and SO_TIMESTAMP_NEW)"></a>1.1 SO_TIMESTAMP (also SO_TIMESTAMP_OLD and SO_TIMESTAMP_NEW)</h3><p>This socket option enables timestamping of datagrams on the reception path. Because the destination socket, if any, is not known early in the network stack, the feature has to be enabled for all packets. The same is true for all early receive timestamp options.</p>
+<p>For interface details, see man 7 socket.</p>
+<p>Always use SO_TIMESTAMP_NEW timestamp to always get timestamp in struct __kernel_sock_timeval format.</p>
+<p>SO_TIMESTAMP_OLD returns incorrect timestamps after the year 2038 on 32 bit machines.</p>
+<h3 id="1-2-SO-TIMESTAMPNS-also-SO-TIMESTAMPNS-OLD-and-SO-TIMESTAMPNS-NEW"><a href="#1-2-SO-TIMESTAMPNS-also-SO-TIMESTAMPNS-OLD-and-SO-TIMESTAMPNS-NEW" class="headerlink" title="1.2 SO_TIMESTAMPNS (also SO_TIMESTAMPNS_OLD and SO_TIMESTAMPNS_NEW)"></a>1.2 SO_TIMESTAMPNS (also SO_TIMESTAMPNS_OLD and SO_TIMESTAMPNS_NEW)</h3><p>This option is identical to SO_TIMESTAMP except for the returned data type. Its struct timespec allows for higher resolution (ns) timestamps than the timeval of SO_TIMESTAMP (ms).</p>
+<p>Always use SO_TIMESTAMPNS_NEW timestamp to always get timestamp in struct __kernel_timespec format.</p>
+<p>SO_TIMESTAMPNS_OLD returns incorrect timestamps after the year 2038 on 32 bit machines.</p>
+<h3 id="1-3-SO-TIMESTAMPING-also-SO-TIMESTAMPING-OLD-and-SO-TIMESTAMPING-NEW"><a href="#1-3-SO-TIMESTAMPING-also-SO-TIMESTAMPING-OLD-and-SO-TIMESTAMPING-NEW" class="headerlink" title="1.3 SO_TIMESTAMPING (also SO_TIMESTAMPING_OLD and SO_TIMESTAMPING_NEW)"></a>1.3 SO_TIMESTAMPING (also SO_TIMESTAMPING_OLD and SO_TIMESTAMPING_NEW)</h3><p>Supports multiple types of timestamp requests. As a result, this socket option takes a bitmap of flags, not a boolean. In:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">err &#x3D; setsockopt(fd, SOL_SOCKET, SO_TIMESTAMPING, &amp;val, sizeof(val));</span><br></pre></td></tr></table></figure>
+
+<p>val is an integer with any of the following bits set. Setting other bit returns EINVAL and does not change the current state.</p>
+<p>The socket option configures timestamp generation for individual sk_buffs (1.3.1), timestamp reporting to the socket’s error queue (1.3.2) and options (1.3.3). Timestamp generation can also be enabled for individual sendmsg calls using cmsg (1.3.4).</p>
+<h4 id="1-3-1-Timestamp-Generation"><a href="#1-3-1-Timestamp-Generation" class="headerlink" title="1.3.1 Timestamp Generation"></a>1.3.1 Timestamp Generation</h4><p>Some bits are requests to the stack to try to generate timestamps. Any combination of them is valid. Changes to these bits apply to newly created packets, not to packets already in the stack. As a result, it is possible to selectively request timestamps for a subset of packets (e.g., for sampling) by embedding an send() call within two setsockopt calls, one to enable timestamp generation and one to disable it. Timestamps may also be generated for reasons other than being requested by a particular socket, such as when receive timestamping is enabled system wide, as explained earlier.</p>
+<ul>
+<li><p>SOF_TIMESTAMPING_RX_HARDWARE:</p>
+<p>Request rx timestamps generated by the network adapter.</p>
+</li>
+<li><p>SOF_TIMESTAMPING_RX_SOFTWARE:</p>
+<p>Request rx timestamps when data enters the kernel. These timestamps are generated just after a device driver hands a packet to the kernel receive stack.</p>
+</li>
+<li><p>SOF_TIMESTAMPING_TX_HARDWARE:</p>
+<p>Request tx timestamps generated by the network adapter. This flag can be enabled via both socket options and control messages.</p>
+</li>
+<li><p>SOF_TIMESTAMPING_TX_SOFTWARE:</p>
+<p>Request tx timestamps when data leaves the kernel. These timestamps are generated in the device driver as close as possible, but always prior to, passing the packet to the network interface. Hence, they require driver support and may not be available for all devices. This flag can be enabled via both socket options and control messages.</p>
+</li>
+<li><p>SOF_TIMESTAMPING_TX_SCHED:</p>
+<p>Request tx timestamps prior to entering the packet scheduler. Kernel transmit latency is, if long, often dominated by queuing delay. The difference between this timestamp and one taken at SOF_TIMESTAMPING_TX_SOFTWARE will expose this latency independent of protocol processing. The latency incurred in protocol processing, if any, can be computed by subtracting a userspace timestamp taken immediately before send() from this timestamp. On machines with virtual devices where a transmitted packet travels through multiple devices and, hence, multiple packet schedulers, a timestamp is generated at each layer. This allows for fine grained measurement of queuing delay. This flag can be enabled via both socket options and control messages.</p>
+</li>
+<li><p>SOF_TIMESTAMPING_TX_ACK:</p>
+<p>Request tx timestamps when all data in the send buffer has been acknowledged. This only makes sense for reliable protocols. It is currently only implemented for TCP. For that protocol, it may over-report measurement, because the timestamp is generated when all data up to and including the buffer at send() was acknowledged: the cumulative acknowledgment. The mechanism ignores SACK and FACK. This flag can be enabled via both socket options and control messages.</p>
+</li>
+</ul>
+<h4 id="1-3-2-Timestamp-Reporting"><a href="#1-3-2-Timestamp-Reporting" class="headerlink" title="1.3.2 Timestamp Reporting"></a>1.3.2 Timestamp Reporting</h4><p>The other three bits control which timestamps will be reported in a generated control message. Changes to the bits take immediate effect at the timestamp reporting locations in the stack. Timestamps are only reported for packets that also have the relevant timestamp generation request set.</p>
+<ul>
+<li><p>SOF_TIMESTAMPING_SOFTWARE:</p>
+<p>Report any software timestamps when available.</p>
+</li>
+<li><p>SOF_TIMESTAMPING_SYS_HARDWARE:</p>
+<p>This option is deprecated and ignored.</p>
+</li>
+<li><p>SOF_TIMESTAMPING_RAW_HARDWARE:</p>
+<p>Report hardware timestamps as generated by SOF_TIMESTAMPING_TX_HARDWARE when available.</p>
+</li>
+</ul>
+<h4 id="1-3-3-Timestamp-Options"><a href="#1-3-3-Timestamp-Options" class="headerlink" title="1.3.3 Timestamp Options"></a>1.3.3 Timestamp Options</h4><p>The interface supports the options</p>
+<ul>
+<li><p>SOF_TIMESTAMPING_OPT_ID:</p>
+<p>Generate a unique identifier along with each packet. A process can have multiple concurrent timestamping requests outstanding. Packets can be reordered in the transmit path, for instance in the packet scheduler. In that case timestamps will be queued onto the error queue out of order from the original send() calls. It is not always possible to uniquely match timestamps to the original send() calls based on timestamp order or payload inspection alone, then.This option associates each packet at send() with a unique identifier and returns that along with the timestamp. The identifier is derived from a per-socket u32 counter (that wraps). For datagram sockets, the counter increments with each sent packet. For stream sockets, it increments with every byte. For stream sockets, also set SOF_TIMESTAMPING_OPT_ID_TCP, see the section below.The counter starts at zero. It is initialized the first time that the socket option is enabled. It is reset each time the option is enabled after having been disabled. Resetting the counter does not change the identifiers of existing packets in the system.This option is implemented only for transmit timestamps. There, the timestamp is always looped along with a struct sock_extended_err. The option modifies field ee_data to pass an id that is unique among all possibly concurrently outstanding timestamp requests for that socket.</p>
+</li>
+<li><p>SOF_TIMESTAMPING_OPT_ID_TCP:</p>
+<p>Pass this modifier along with SOF_TIMESTAMPING_OPT_ID for new TCP timestamping applications. SOF_TIMESTAMPING_OPT_ID defines how the counter increments for stream sockets, but its starting point is not entirely trivial. This option fixes that.For stream sockets, if SOF_TIMESTAMPING_OPT_ID is set, this should always be set too. On datagram sockets the option has no effect.A reasonable expectation is that the counter is reset to zero with the system call, so that a subsequent write() of N bytes generates a timestamp with counter N-1. SOF_TIMESTAMPING_OPT_ID_TCP implements this behavior under all conditions.SOF_TIMESTAMPING_OPT_ID without modifier often reports the same, especially when the socket option is set when no data is in transmission. If data is being transmitted, it may be off by the length of the output queue (SIOCOUTQ).The difference is due to being based on snd_una versus write_seq. snd_una is the offset in the stream acknowledged by the peer. This depends on factors outside of process control, such as network RTT. write_seq is the last byte written by the process. This offset is not affected by external inputs.The difference is subtle and unlikely to be noticed when configured at initial socket creation, when no data is queued or sent. But SOF_TIMESTAMPING_OPT_ID_TCP behavior is more robust regardless of when the socket option is set.</p>
+</li>
+<li><p>SOF_TIMESTAMPING_OPT_CMSG:</p>
+<p>Support recv() cmsg for all timestamped packets. Control messages are already supported unconditionally on all packets with receive timestamps and on IPv6 packets with transmit timestamp. This option extends them to IPv4 packets with transmit timestamp. One use case is to correlate packets with their egress device, by enabling socket option IP_PKTINFO simultaneously.</p>
+</li>
+<li><p>SOF_TIMESTAMPING_OPT_TSONLY:</p>
+<p>Applies to transmit timestamps only. Makes the kernel return the timestamp as a cmsg alongside an empty packet, as opposed to alongside the original packet. This reduces the amount of memory charged to the socket’s receive budget (SO_RCVBUF) and delivers the timestamp even if sysctl net.core.tstamp_allow_data is 0. This option disables SOF_TIMESTAMPING_OPT_CMSG.</p>
+</li>
+<li><p>SOF_TIMESTAMPING_OPT_STATS:</p>
+<p>Optional stats that are obtained along with the transmit timestamps. It must be used together with SOF_TIMESTAMPING_OPT_TSONLY. When the transmit timestamp is available, the stats are available in a separate control message of type SCM_TIMESTAMPING_OPT_STATS, as a list of TLVs (struct nlattr) of types. These stats allow the application to associate various transport layer stats with the transmit timestamps, such as how long a certain block of data was limited by peer’s receiver window.</p>
+</li>
+<li><p>SOF_TIMESTAMPING_OPT_PKTINFO:</p>
+<p>Enable the SCM_TIMESTAMPING_PKTINFO control message for incoming packets with hardware timestamps. The message contains struct scm_ts_pktinfo, which supplies the index of the real interface which received the packet and its length at layer 2. A valid (non-zero) interface index will be returned only if CONFIG_NET_RX_BUSY_POLL is enabled and the driver is using NAPI. The struct contains also two other fields, but they are reserved and undefined.</p>
+</li>
+<li><p>SOF_TIMESTAMPING_OPT_TX_SWHW:</p>
+<p>Request both hardware and software timestamps for outgoing packets when SOF_TIMESTAMPING_TX_HARDWARE and SOF_TIMESTAMPING_TX_SOFTWARE are enabled at the same time. If both timestamps are generated, two separate messages will be looped to the socket’s error queue, each containing just one timestamp.</p>
+</li>
+</ul>
+<p>New applications are encouraged to pass SOF_TIMESTAMPING_OPT_ID to disambiguate timestamps and SOF_TIMESTAMPING_OPT_TSONLY to operate regardless of the setting of sysctl net.core.tstamp_allow_data.</p>
+<p>An exception is when a process needs additional cmsg data, for instance SOL_IP/IP_PKTINFO to detect the egress network interface. Then pass option SOF_TIMESTAMPING_OPT_CMSG. This option depends on having access to the contents of the original packet, so cannot be combined with SOF_TIMESTAMPING_OPT_TSONLY.</p>
+<h4 id="1-3-4-Enabling-timestamps-via-control-messages"><a href="#1-3-4-Enabling-timestamps-via-control-messages" class="headerlink" title="1.3.4. Enabling timestamps via control messages"></a>1.3.4. Enabling timestamps via control messages</h4><p>In addition to socket options, timestamp generation can be requested per write via cmsg, only for SOF_TIMESTAMPING_TX_* (see Section 1.3.1). Using this feature, applications can sample timestamps per sendmsg() without paying the overhead of enabling and disabling timestamps via setsockopt:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">struct msghdr *msg;</span><br><span class="line">...</span><br><span class="line">cmsg                         &#x3D; CMSG_FIRSTHDR(msg);</span><br><span class="line">cmsg-&gt;cmsg_level             &#x3D; SOL_SOCKET;</span><br><span class="line">cmsg-&gt;cmsg_type              &#x3D; SO_TIMESTAMPING;</span><br><span class="line">cmsg-&gt;cmsg_len               &#x3D; CMSG_LEN(sizeof(__u32));</span><br><span class="line">*((__u32 *) CMSG_DATA(cmsg)) &#x3D; SOF_TIMESTAMPING_TX_SCHED |</span><br><span class="line">                               SOF_TIMESTAMPING_TX_SOFTWARE |</span><br><span class="line">                               SOF_TIMESTAMPING_TX_ACK;</span><br><span class="line">err &#x3D; sendmsg(fd, msg, 0);</span><br></pre></td></tr></table></figure>
+
+<p>The SOF_TIMESTAMPING_TX_* flags set via cmsg will override the SOF_TIMESTAMPING_TX_* flags set via setsockopt.</p>
+<p>Moreover, applications must still enable timestamp reporting via setsockopt to receive timestamps:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">__u32 val &#x3D; SOF_TIMESTAMPING_SOFTWARE |</span><br><span class="line">            SOF_TIMESTAMPING_OPT_ID &#x2F;* or any other flag *&#x2F;;</span><br><span class="line">err &#x3D; setsockopt(fd, SOL_SOCKET, SO_TIMESTAMPING, &amp;val, sizeof(val));</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-4-Bytestream-Timestamps"><a href="#1-4-Bytestream-Timestamps" class="headerlink" title="1.4 Bytestream Timestamps"></a>1.4 Bytestream Timestamps</h3><p>The SO_TIMESTAMPING interface supports timestamping of bytes in a bytestream. Each request is interpreted as a request for when the entire contents of the buffer has passed a timestamping point. That is, for streams option SOF_TIMESTAMPING_TX_SOFTWARE will record when all bytes have reached the device driver, regardless of how many packets the data has been converted into.</p>
+<p>In general, bytestreams have no natural delimiters and therefore correlating a timestamp with data is non-trivial. A range of bytes may be split across segments, any segments may be merged (possibly coalescing sections of previously segmented buffers associated with independent send() calls). Segments can be reordered and the same byte range can coexist in multiple segments for protocols that implement retransmissions.</p>
+<p>It is essential that all timestamps implement the same semantics, regardless of these possible transformations, as otherwise they are incomparable. Handling “rare” corner cases differently from the simple case (a 1:1 mapping from buffer to skb) is insufficient because performance debugging often needs to focus on such outliers.</p>
+<p>In practice, timestamps can be correlated with segments of a bytestream consistently, if both semantics of the timestamp and the timing of measurement are chosen correctly. This challenge is no different from deciding on a strategy for IP fragmentation. There, the definition is that only the first fragment is timestamped. For bytestreams, we chose that a timestamp is generated only when all bytes have passed a point. SOF_TIMESTAMPING_TX_ACK as defined is easy to implement and reason about. An implementation that has to take into account SACK would be more complex due to possible transmission holes and out of order arrival.</p>
+<p>On the host, TCP can also break the simple 1:1 mapping from buffer to skbuff as a result of Nagle, cork, autocork, segmentation and GSO. The implementation ensures correctness in all cases by tracking the individual last byte passed to send(), even if it is no longer the last byte after an skbuff extend or merge operation. It stores the relevant sequence number in skb_shinfo(skb)-&gt;tskey. Because an skbuff has only one such field, only one timestamp can be generated.</p>
+<p>In rare cases, a timestamp request can be missed if two requests are collapsed onto the same skb. A process can detect this situation by enabling SOF_TIMESTAMPING_OPT_ID and comparing the byte offset at send time with the value returned for each timestamp. It can prevent the situation by always flushing the TCP stack in between requests, for instance by enabling TCP_NODELAY and disabling TCP_CORK and autocork. After linux-4.7, a better way to prevent coalescing is to use MSG_EOR flag at sendmsg() time.</p>
+<p>These precautions ensure that the timestamp is generated only when all bytes have passed a timestamp point, assuming that the network stack itself does not reorder the segments. The stack indeed tries to avoid reordering. The one exception is under administrator control: it is possible to construct a packet scheduler configuration that delays segments from the same stream differently. Such a setup would be unusual.</p>
+<h2 id="2-Data-Interfaces"><a href="#2-Data-Interfaces" class="headerlink" title="2 Data Interfaces"></a>2 Data Interfaces</h2><p>Timestamps are read using the ancillary data feature of recvmsg(). See man 3 cmsg for details of this interface. The socket manual page (man 7 socket) describes how timestamps generated with SO_TIMESTAMP and SO_TIMESTAMPNS records can be retrieved.</p>
+<h3 id="2-1-SCM-TIMESTAMPING-records"><a href="#2-1-SCM-TIMESTAMPING-records" class="headerlink" title="2.1 SCM_TIMESTAMPING records"></a>2.1 SCM_TIMESTAMPING records</h3><p>These timestamps are returned in a control message with cmsg_level SOL_SOCKET, cmsg_type SCM_TIMESTAMPING, and payload of type</p>
+<p>For SO_TIMESTAMPING_OLD:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">struct scm_timestamping &#123;</span><br><span class="line">        struct timespec ts[3];</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>For SO_TIMESTAMPING_NEW:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">struct scm_timestamping64 &#123;</span><br><span class="line">        struct __kernel_timespec ts[3];</span><br></pre></td></tr></table></figure>
+
+<p>Always use SO_TIMESTAMPING_NEW timestamp to always get timestamp in struct scm_timestamping64 format.</p>
+<p>SO_TIMESTAMPING_OLD returns incorrect timestamps after the year 2038 on 32 bit machines.</p>
+<p>The structure can return up to three timestamps. This is a legacy feature. At least one field is non-zero at any time. Most timestamps are passed in ts[0]. Hardware timestamps are passed in ts[2].</p>
+<p>ts[1] used to hold hardware timestamps converted to system time. Instead, expose the hardware clock device on the NIC directly as a HW PTP clock source, to allow time conversion in userspace and optionally synchronize system time with a userspace PTP stack such as linuxptp. For the PTP clock API, see <a href="https://www.kernel.org/doc/html/next/driver-api/ptp.html" target="_blank" rel="noopener">PTP hardware clock infrastructure for Linux</a>.</p>
+<p>Note that if the SO_TIMESTAMP or SO_TIMESTAMPNS option is enabled together with SO_TIMESTAMPING using SOF_TIMESTAMPING_SOFTWARE, a false software timestamp will be generated in the recvmsg() call and passed in ts[0] when a real software timestamp is missing. This happens also on hardware transmit timestamps.</p>
+<h4 id="2-1-1-Transmit-timestamps-with-MSG-ERRQUEUE"><a href="#2-1-1-Transmit-timestamps-with-MSG-ERRQUEUE" class="headerlink" title="2.1.1 Transmit timestamps with MSG_ERRQUEUE"></a>2.1.1 Transmit timestamps with MSG_ERRQUEUE</h4><p>For transmit timestamps the outgoing packet is looped back to the socket’s error queue with the send timestamp(s) attached. A process receives the timestamps by calling recvmsg() with flag MSG_ERRQUEUE set and with a msg_control buffer sufficiently large to receive the relevant metadata structures. The recvmsg call returns the original outgoing data packet with two ancillary messages attached.</p>
+<p>A message of cm_level SOL_IP(V6) and cm_type IP(V6)_RECVERR embeds a struct sock_extended_err. This defines the error type. For timestamps, the ee_errno field is ENOMSG. The other ancillary message will have cm_level SOL_SOCKET and cm_type SCM_TIMESTAMPING. This embeds the struct scm_timestamping.</p>
+<h5 id="2-1-1-2-Timestamp-types"><a href="#2-1-1-2-Timestamp-types" class="headerlink" title="2.1.1.2 Timestamp types"></a>2.1.1.2 Timestamp types</h5><p>The semantics of the three struct timespec are defined by field ee_info in the extended error structure. It contains a value of type SCM_TSTAMP_* to define the actual timestamp passed in scm_timestamping.</p>
+<p>The SCM_TSTAMP_* types are 1:1 matches to the SOF_TIMESTAMPING_* control fields discussed previously, with one exception. For legacy reasons, SCM_TSTAMP_SND is equal to zero and can be set for both SOF_TIMESTAMPING_TX_HARDWARE and SOF_TIMESTAMPING_TX_SOFTWARE. It is the first if ts[2] is non-zero, the second otherwise, in which case the timestamp is stored in ts[0].</p>
+<h5 id="2-1-1-3-Fragmentation"><a href="#2-1-1-3-Fragmentation" class="headerlink" title="2.1.1.3 Fragmentation"></a>2.1.1.3 Fragmentation</h5><p>Fragmentation of outgoing datagrams is rare, but is possible, e.g., by explicitly disabling PMTU discovery. If an outgoing packet is fragmented, then only the first fragment is timestamped and returned to the sending socket.</p>
+<h5 id="2-1-1-4-Packet-Payload"><a href="#2-1-1-4-Packet-Payload" class="headerlink" title="2.1.1.4 Packet Payload"></a>2.1.1.4 Packet Payload</h5><p>The calling application is often not interested in receiving the whole packet payload that it passed to the stack originally: the socket error queue mechanism is just a method to piggyback the timestamp on. In this case, the application can choose to read datagrams with a smaller buffer, possibly even of length 0. The payload is truncated accordingly. Until the process calls recvmsg() on the error queue, however, the full packet is queued, taking up budget from SO_RCVBUF.</p>
+<h5 id="2-1-1-5-Blocking-Read"><a href="#2-1-1-5-Blocking-Read" class="headerlink" title="2.1.1.5 Blocking Read"></a>2.1.1.5 Blocking Read</h5><p>Reading from the error queue is always a non-blocking operation. To block waiting on a timestamp, use poll or select. poll() will return POLLERR in pollfd.revents if any data is ready on the error queue. There is no need to pass this flag in pollfd.events. This flag is ignored on request. See also man 2 poll.</p>
+<h4 id="2-1-2-Receive-timestamps"><a href="#2-1-2-Receive-timestamps" class="headerlink" title="2.1.2 Receive timestamps"></a>2.1.2 Receive timestamps</h4><p>On reception, there is no reason to read from the socket error queue. The SCM_TIMESTAMPING ancillary data is sent along with the packet data on a normal recvmsg(). Since this is not a socket error, it is not accompanied by a message SOL_IP(V6)/IP(V6)_RECVERROR. In this case, the meaning of the three fields in struct scm_timestamping is implicitly defined. ts[0] holds a software timestamp if set, ts[1] is again deprecated and ts[2] holds a hardware timestamp if set.</p>
+<h2 id="3-Hardware-Timestamping-configuration-SIOCSHWTSTAMP-and-SIOCGHWTSTAMP"><a href="#3-Hardware-Timestamping-configuration-SIOCSHWTSTAMP-and-SIOCGHWTSTAMP" class="headerlink" title="3. Hardware Timestamping configuration: SIOCSHWTSTAMP and SIOCGHWTSTAMP"></a>3. Hardware Timestamping configuration: SIOCSHWTSTAMP and SIOCGHWTSTAMP</h2><p>Hardware time stamping must also be initialized for each device driver that is expected to do hardware time stamping. The parameter is defined in include/uapi/linux/net_tstamp.h as:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">struct hwtstamp_config &#123;</span><br><span class="line">        int flags;      &#x2F;* no flags defined right now, must be zero *&#x2F;</span><br><span class="line">        int tx_type;    &#x2F;* HWTSTAMP_TX_* *&#x2F;</span><br><span class="line">        int rx_filter;  &#x2F;* HWTSTAMP_FILTER_* *&#x2F;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>Desired behavior is passed into the kernel and to a specific device by calling ioctl(SIOCSHWTSTAMP) with a pointer to a struct ifreq whose ifr_data points to a struct hwtstamp_config. The tx_type and rx_filter are hints to the driver what it is expected to do. If the requested fine-grained filtering for incoming packets is not supported, the driver may time stamp more than just the requested types of packets.</p>
+<p>Drivers are free to use a more permissive configuration than the requested configuration. It is expected that drivers should only implement directly the most generic mode that can be supported. For example if the hardware can support HWTSTAMP_FILTER_PTP_V2_EVENT, then it should generally always upscale HWTSTAMP_FILTER_PTP_V2_L2_SYNC, and so forth, as HWTSTAMP_FILTER_PTP_V2_EVENT is more generic (and more useful to applications).</p>
+<p>A driver which supports hardware time stamping shall update the struct with the actual, possibly more permissive configuration. If the requested packets cannot be time stamped, then nothing should be changed and ERANGE shall be returned (in contrast to EINVAL, which indicates that SIOCSHWTSTAMP is not supported at all).</p>
+<p>Only a processes with admin rights may change the configuration. User space is responsible to ensure that multiple processes don’t interfere with each other and that the settings are reset.</p>
+<p>Any process can read the actual configuration by passing this structure to ioctl(SIOCGHWTSTAMP) in the same way. However, this has not been implemented in all drivers.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;* possible values for hwtstamp_config-&gt;tx_type *&#x2F;</span><br><span class="line">enum &#123;</span><br><span class="line">        &#x2F;*</span><br><span class="line">        * no outgoing packet will need hardware time stamping;</span><br><span class="line">        * should a packet arrive which asks for it, no hardware</span><br><span class="line">        * time stamping will be done</span><br><span class="line">        *&#x2F;</span><br><span class="line">        HWTSTAMP_TX_OFF,</span><br><span class="line"></span><br><span class="line">        &#x2F;*</span><br><span class="line">        * enables hardware time stamping for outgoing packets;</span><br><span class="line">        * the sender of the packet decides which are to be</span><br><span class="line">        * time stamped by setting SOF_TIMESTAMPING_TX_SOFTWARE</span><br><span class="line">        * before sending the packet</span><br><span class="line">        *&#x2F;</span><br><span class="line">        HWTSTAMP_TX_ON,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">&#x2F;* possible values for hwtstamp_config-&gt;rx_filter *&#x2F;</span><br><span class="line">enum &#123;</span><br><span class="line">        &#x2F;* time stamp no incoming packet at all *&#x2F;</span><br><span class="line">        HWTSTAMP_FILTER_NONE,</span><br><span class="line"></span><br><span class="line">        &#x2F;* time stamp any incoming packet *&#x2F;</span><br><span class="line">        HWTSTAMP_FILTER_ALL,</span><br><span class="line"></span><br><span class="line">        &#x2F;* return value: time stamp all packets requested plus some others *&#x2F;</span><br><span class="line">        HWTSTAMP_FILTER_SOME,</span><br><span class="line"></span><br><span class="line">        &#x2F;* PTP v1, UDP, any kind of event packet *&#x2F;</span><br><span class="line">        HWTSTAMP_FILTER_PTP_V1_L4_EVENT,</span><br><span class="line"></span><br><span class="line">        &#x2F;* for the complete list of values, please check</span><br><span class="line">        * the include file include&#x2F;uapi&#x2F;linux&#x2F;net_tstamp.h</span><br><span class="line">        *&#x2F;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-1-Hardware-Timestamping-Implementation-Device-Drivers"><a href="#3-1-Hardware-Timestamping-Implementation-Device-Drivers" class="headerlink" title="3.1 Hardware Timestamping Implementation: Device Drivers"></a>3.1 Hardware Timestamping Implementation: Device Drivers</h3><p>A driver which supports hardware time stamping must support the SIOCSHWTSTAMP ioctl and update the supplied struct hwtstamp_config with the actual values as described in the section on SIOCSHWTSTAMP. It should also support SIOCGHWTSTAMP.</p>
+<p>Time stamps for received packets must be stored in the skb. To get a pointer to the shared time stamp structure of the skb call skb_hwtstamps(). Then set the time stamps in the structure:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">struct skb_shared_hwtstamps &#123;</span><br><span class="line">        &#x2F;* hardware time stamp transformed into duration</span><br><span class="line">        * since arbitrary point in time</span><br><span class="line">        *&#x2F;</span><br><span class="line">        ktime_t     hwtstamp;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>Time stamps for outgoing packets are to be generated as follows:</p>
+<ul>
+<li><p>In hard_start_xmit(), check if (skb_shinfo(skb)-&gt;tx_flags &amp; SKBTX_HW_TSTAMP) is set no-zero. If yes, then the driver is expected to do hardware time stamping.</p>
+</li>
+<li><p>If this is possible for the skb and requested, then declare that the driver is doing the time stamping by setting the flag SKBTX_IN_PROGRESS in skb_shinfo(skb)-&gt;tx_flags , e.g. with:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">skb_shinfo(skb)-&gt;tx_flags |&#x3D; SKBTX_IN_PROGRESS;</span><br></pre></td></tr></table></figure>
+
+<p>You might want to keep a pointer to the associated skb for the next step and not free the skb. A driver not supporting hardware time stamping doesn’t do that. A driver must never touch sk_buff::tstamp! It is used to store software generated time stamps by the network subsystem.</p>
+</li>
+<li><p>Driver should call <a href="https://www.kernel.org/doc/html/next/networking/kapi.html#c.skb_tx_timestamp" target="_blank" rel="noopener"><code>skb_tx_timestamp()</code></a> as close to passing sk_buff to hardware as possible. <a href="https://www.kernel.org/doc/html/next/networking/kapi.html#c.skb_tx_timestamp" target="_blank" rel="noopener"><code>skb_tx_timestamp()</code></a> provides a software time stamp if requested and hardware timestamping is not possible (SKBTX_IN_PROGRESS not set).</p>
+</li>
+<li><p>As soon as the driver has sent the packet and/or obtained a hardware time stamp for it, it passes the time stamp back by calling <a href="https://www.kernel.org/doc/html/next/networking/kapi.html#c.skb_tstamp_tx" target="_blank" rel="noopener"><code>skb_tstamp_tx()</code></a> with the original skb, the raw hardware time stamp. <a href="https://www.kernel.org/doc/html/next/networking/kapi.html#c.skb_tstamp_tx" target="_blank" rel="noopener"><code>skb_tstamp_tx()</code></a> clones the original skb and adds the timestamps, therefore the original skb has to be freed now. If obtaining the hardware time stamp somehow fails, then the driver should not fall back to software time stamping. The rationale is that this would occur at a later time in the processing pipeline than other software time stamping and therefore could lead to unexpected deltas between time stamps.</p>
+</li>
+</ul>
+<h3 id="3-2-Special-considerations-for-stacked-PTP-Hardware-Clocks"><a href="#3-2-Special-considerations-for-stacked-PTP-Hardware-Clocks" class="headerlink" title="3.2 Special considerations for stacked PTP Hardware Clocks"></a>3.2 Special considerations for stacked PTP Hardware Clocks</h3><p>There are situations when there may be more than one PHC (PTP Hardware Clock) in the data path of a packet. The kernel has no explicit mechanism to allow the user to select which PHC to use for timestamping Ethernet frames. Instead, the assumption is that the outermost PHC is always the most preferable, and that kernel drivers collaborate towards achieving that goal. Currently there are 3 cases of stacked PHCs, detailed below:</p>
+<h4 id="3-2-1-DSA-Distributed-Switch-Architecture-switches"><a href="#3-2-1-DSA-Distributed-Switch-Architecture-switches" class="headerlink" title="3.2.1 DSA (Distributed Switch Architecture) switches"></a>3.2.1 DSA (Distributed Switch Architecture) switches</h4><p>These are Ethernet switches which have one of their ports connected to an (otherwise completely unaware) host Ethernet interface, and perform the role of a port multiplier with optional forwarding acceleration features. Each DSA switch port is visible to the user as a standalone (virtual) network interface, and its network I/O is performed, under the hood, indirectly through the host interface (redirecting to the host port on TX, and intercepting frames on RX).</p>
+<p>When a DSA switch is attached to a host port, PTP synchronization has to suffer, since the switch’s variable queuing delay introduces a path delay jitter between the host port and its PTP partner. For this reason, some DSA switches include a timestamping clock of their own, and have the ability to perform network timestamping on their own MAC, such that path delays only measure wire and PHY propagation latencies. Timestamping DSA switches are supported in Linux and expose the same ABI as any other network interface (save for the fact that the DSA interfaces are in fact virtual in terms of network I/O, they do have their own PHC). It is typical, but not mandatory, for all interfaces of a DSA switch to share the same PHC.</p>
+<p>By design, PTP timestamping with a DSA switch does not need any special handling in the driver for the host port it is attached to. However, when the host port also supports PTP timestamping, DSA will take care of intercepting the <code>.ndo_eth_ioctl</code> calls towards the host port, and block attempts to enable hardware timestamping on it. This is because the SO_TIMESTAMPING API does not allow the delivery of multiple hardware timestamps for the same packet, so anybody else except for the DSA switch port must be prevented from doing so.</p>
+<p>In the generic layer, DSA provides the following infrastructure for PTP timestamping:</p>
+<ul>
+<li><code>.port_txtstamp()</code>: a hook called prior to the transmission of packets with a hardware TX timestamping request from user space. This is required for two-step timestamping, since the hardware timestamp becomes available after the actual MAC transmission, so the driver must be prepared to correlate the timestamp with the original packet so that it can re-enqueue the packet back into the socket’s error queue. To save the packet for when the timestamp becomes available, the driver can call <code>skb_clone_sk</code> , save the clone pointer in skb-&gt;cb and enqueue a tx skb queue. Typically, a switch will have a PTP TX timestamp register (or sometimes a FIFO) where the timestamp becomes available. In case of a FIFO, the hardware might store key-value pairs of PTP sequence ID/message type/domain number and the actual timestamp. To perform the correlation correctly between the packets in a queue waiting for timestamping and the actual timestamps, drivers can use a BPF classifier (<code>ptp_classify_raw</code>) to identify the PTP transport type, and <code>ptp_parse_header</code> to interpret the PTP header fields. There may be an IRQ that is raised upon this timestamp’s availability, or the driver might have to poll after invoking <code>dev_queue_xmit()</code> towards the host interface. One-step TX timestamping do not require packet cloning, since there is no follow-up message required by the PTP protocol (because the TX timestamp is embedded into the packet by the MAC), and therefore user space does not expect the packet annotated with the TX timestamp to be re-enqueued into its socket’s error queue.</li>
+<li><code>.port_rxtstamp()</code>: On RX, the BPF classifier is run by DSA to identify PTP event messages (any other packets, including PTP general messages, are not timestamped). The original (and only) timestampable skb is provided to the driver, for it to annotate it with a timestamp, if that is immediately available, or defer to later. On reception, timestamps might either be available in-band (through metadata in the DSA header, or attached in other ways to the packet), or out-of-band (through another RX timestamping FIFO). Deferral on RX is typically necessary when retrieving the timestamp needs a sleepable context. In that case, it is the responsibility of the DSA driver to call <code>netif_rx()</code> on the freshly timestamped skb.</li>
+</ul>
+<h4 id="3-2-2-Ethernet-PHYs"><a href="#3-2-2-Ethernet-PHYs" class="headerlink" title="3.2.2 Ethernet PHYs"></a>3.2.2 Ethernet PHYs</h4><p>These are devices that typically fulfill a Layer 1 role in the network stack, hence they do not have a representation in terms of a network interface as DSA switches do. However, PHYs may be able to detect and timestamp PTP packets, for performance reasons: timestamps taken as close as possible to the wire have the potential to yield a more stable and precise synchronization.</p>
+<p>A PHY driver that supports PTP timestamping must create a <code>struct mii_timestamper</code> and add a pointer to it in <code>phydev-&gt;mii_ts</code>. The presence of this pointer will be checked by the networking stack.</p>
+<p>Since PHYs do not have network interface representations, the timestamping and ethtool ioctl operations for them need to be mediated by their respective MAC driver. Therefore, as opposed to DSA switches, modifications need to be done to each individual MAC driver for PHY timestamping support. This entails:</p>
+<ul>
+<li><p>Checking, in <code>.ndo_eth_ioctl</code>, whether <code>phy_has_hwtstamp(netdev-&gt;phydev)</code> is true or not. If it is, then the MAC driver should not process this request but instead pass it on to the PHY using <code>phy_mii_ioctl()</code>.</p>
+</li>
+<li><p>On RX, special intervention may or may not be needed, depending on the function used to deliver skb’s up the network stack. In the case of plain <code>netif_rx()</code> and similar, MAC drivers must check whether <code>skb_defer_rx_timestamp(skb)</code> is necessary or not - and if it is, don’t call <code>netif_rx()</code> at all. If <code>CONFIG_NETWORK_PHY_TIMESTAMPING</code> is enabled, and <code>skb-&gt;dev-&gt;phydev-&gt;mii_ts</code> exists, its <code>.rxtstamp()</code> hook will be called now, to determine, using logic very similar to DSA, whether deferral for RX timestamping is necessary. Again like DSA, it becomes the responsibility of the PHY driver to send the packet up the stack when the timestamp is available.</p>
+<p>For other skb receive functions, such as <code>napi_gro_receive</code> and <code>netif_receive_skb</code>, the stack automatically checks whether <code>skb_defer_rx_timestamp()</code> is necessary, so this check is not needed inside the driver.</p>
+</li>
+<li><p>On TX, again, special intervention might or might not be needed. The function that calls the <code>mii_ts-&gt;txtstamp()</code> hook is named <code>skb_clone_tx_timestamp()</code>. This function can either be called directly (case in which explicit MAC driver support is indeed needed), but the function also piggybacks from the <code>skb_tx_timestamp()</code> call, which many MAC drivers already perform for software timestamping purposes. Therefore, if a MAC supports software timestamping, it does not need to do anything further at this stage.</p>
+</li>
+</ul>
+<h4 id="3-2-3-MII-bus-snooping-devices"><a href="#3-2-3-MII-bus-snooping-devices" class="headerlink" title="3.2.3 MII bus snooping devices"></a>3.2.3 MII bus snooping devices</h4><p>These perform the same role as timestamping Ethernet PHYs, save for the fact that they are discrete devices and can therefore be used in conjunction with any PHY even if it doesn’t support timestamping. In Linux, they are discoverable and attachable to a <code>struct phy_device</code> through Device Tree, and for the rest, they use the same mii_ts infrastructure as those. See Documentation/devicetree/bindings/ptp/timestamper.txt for more details.</p>
+<h4 id="3-2-4-Other-caveats-for-MAC-drivers"><a href="#3-2-4-Other-caveats-for-MAC-drivers" class="headerlink" title="3.2.4 Other caveats for MAC drivers"></a>3.2.4 Other caveats for MAC drivers</h4><p>Stacked PHCs, especially DSA (but not only) - since that doesn’t require any modification to MAC drivers, so it is more difficult to ensure correctness of all possible code paths - is that they uncover bugs which were impossible to trigger before the existence of stacked PTP clocks. One example has to do with this line of code, already presented earlier:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">skb_shinfo(skb)-&gt;tx_flags |&#x3D; SKBTX_IN_PROGRESS;</span><br></pre></td></tr></table></figure>
+
+<p>Any TX timestamping logic, be it a plain MAC driver, a DSA switch driver, a PHY driver or a MII bus snooping device driver, should set this flag. But a MAC driver that is unaware of PHC stacking might get tripped up by somebody other than itself setting this flag, and deliver a duplicate timestamp. For example, a typical driver design for TX timestamping might be to split the transmission part into 2 portions:</p>
+<ol>
+<li>“TX”: checks whether PTP timestamping has been previously enabled through the <code>.ndo_eth_ioctl</code> (“<code>priv-&gt;hwtstamp_tx_enabled == true</code>“) and the current skb requires a TX timestamp (“<code>skb_shinfo(skb)-&gt;tx_flags &amp; SKBTX_HW_TSTAMP</code>“). If this is true, it sets the “<code>skb_shinfo(skb)-&gt;tx_flags |= SKBTX_IN_PROGRESS</code>“ flag. Note: as described above, in the case of a stacked PHC system, this condition should never trigger, as this MAC is certainly not the outermost PHC. But this is not where the typical issue is. Transmission proceeds with this packet.</li>
+<li>“TX confirmation”: Transmission has finished. The driver checks whether it is necessary to collect any TX timestamp for it. Here is where the typical issues are: the MAC driver takes a shortcut and only checks whether “<code>skb_shinfo(skb)-&gt;tx_flags &amp; SKBTX_IN_PROGRESS</code>“ was set. With a stacked PHC system, this is incorrect because this MAC driver is not the only entity in the TX data path who could have enabled SKBTX_IN_PROGRESS in the first place.</li>
+</ol>
+<p>The correct solution for this problem is for MAC drivers to have a compound check in their “TX confirmation” portion, not only for “<code>skb_shinfo(skb)-&gt;tx_flags &amp; SKBTX_IN_PROGRESS</code>“, but also for “<code>priv-&gt;hwtstamp_tx_enabled == true</code>“. Because the rest of the system ensures that PTP timestamping is not enabled for anything other than the outermost PHC, this enhanced check will avoid delivering a duplicated TX timestamp to user space.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;arpa/inet.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;linux/net_tstamp.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;time.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">die</span><span class="params">(<span class="keyword">char</span>* s)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    perror(s);</span><br><span class="line">    <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">scan_cb_buf</span><span class="params">(struct msghdr * msg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">cmsghdr</span> * <span class="title">cmsg</span>;</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"scan_cb_buf...\n"</span>);</span><br><span class="line"></span><br><span class="line">    cmsg = CMSG_FIRSTHDR(msg);</span><br><span class="line">    <span class="keyword">if</span>(!cmsg)</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"INITIAL CMSG_FIRSTHDR(msg) == NULL\n"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (; cmsg; cmsg = CMSG_NXTHDR(msg, cmsg)) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"!\n"</span>);</span><br><span class="line">        <span class="keyword">if</span> (cmsg-&gt;cmsg_level != SOL_SOCKET)</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"!!\n"</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">switch</span> (cmsg-&gt;cmsg_type) &#123;</span><br><span class="line">            <span class="keyword">case</span> SO_TIMESTAMPNS:</span><br><span class="line">            <span class="keyword">case</span> SO_TIMESTAMPING: &#123;</span><br><span class="line">                <span class="class"><span class="keyword">struct</span> <span class="title">timespec</span> *<span class="title">stamp</span> =</span></span><br><span class="line"><span class="class">                   (<span class="title">struct</span> <span class="title">timespec</span> *)<span class="title">CMSG_DATA</span>(<span class="title">cmsg</span>);</span></span><br><span class="line">                <span class="built_in">printf</span>(<span class="string">"ts[0] %ld.%06ld\n"</span>,</span><br><span class="line">                    (<span class="keyword">long</span>)stamp[<span class="number">0</span>].tv_sec, (<span class="keyword">long</span>)stamp[<span class="number">0</span>].tv_nsec);</span><br><span class="line">                <span class="built_in">printf</span>(<span class="string">"ts[1] %ld.%06ld\n"</span>,</span><br><span class="line">                    (<span class="keyword">long</span>)stamp[<span class="number">1</span>].tv_sec, (<span class="keyword">long</span>)stamp[<span class="number">1</span>].tv_nsec);</span><br><span class="line">                <span class="built_in">printf</span>(<span class="string">"ts[2] %ld.%06ld\n"</span>,</span><br><span class="line">                    (<span class="keyword">long</span>)stamp[<span class="number">2</span>].tv_sec, (<span class="keyword">long</span>)stamp[<span class="number">2</span>].tv_nsec);</span><br><span class="line">            &#125;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">default</span>:</span><br><span class="line">                <span class="built_in">printf</span>(<span class="string">"???\n"</span>);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">timespec</span> <span class="title">tp</span>;</span></span><br><span class="line"></span><br><span class="line">        clock_gettime(CLOCK_REALTIME, &amp;tp);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"CLOCK_REALTIME ts %ld.%06ld\n"</span>, (<span class="keyword">long</span>)tp.tv_sec, (<span class="keyword">long</span>)tp.tv_nsec);</span><br><span class="line"></span><br><span class="line">        clock_gettime(CLOCK_MONOTONIC, &amp;tp);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"CLOCK_MONOTONIC ts %ld.%06ld\n"</span>, (<span class="keyword">long</span>)tp.tv_sec, (<span class="keyword">long</span>)tp.tv_nsec);</span><br><span class="line"></span><br><span class="line">        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &amp;tp);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"CLOCK_PROCESS_CPUTIME_ID ts %ld.%06ld\n"</span>, (<span class="keyword">long</span>)tp.tv_sec, (<span class="keyword">long</span>)tp.tv_nsec);</span><br><span class="line"></span><br><span class="line">        clock_gettime(CLOCK_THREAD_CPUTIME_ID, &amp;tp);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"CLOCK_THREAD_CPUTIME_ID ts %ld.%06ld\n"</span>, (<span class="keyword">long</span>)tp.tv_sec, (<span class="keyword">long</span>)tp.tv_nsec);</span><br><span class="line">   </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>* argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">char</span>* destination_ip = <span class="string">"10.0.0.1"</span>;</span><br><span class="line">    <span class="keyword">int</span> destination_port = <span class="number">1234</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> sock;</span><br><span class="line">    <span class="keyword">if</span> ((sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        die(<span class="string">"socket()"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> timestamp_flags =  SOF_TIMESTAMPING_TX_SOFTWARE | SOF_TIMESTAMPING_SOFTWARE;</span><br><span class="line">                        <span class="comment">//SOF_TIMESTAMPING_RX_HARDWARE</span></span><br><span class="line">                        <span class="comment">//| SOF_TIMESTAMPING_RAW_HARDWARE </span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (setsockopt(sock, SOL_SOCKET, SO_TIMESTAMPING, &amp;timestamp_flags, <span class="keyword">sizeof</span>(timestamp_flags)) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        die(<span class="string">"setsockopt()"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">si_server</span>;</span></span><br><span class="line">    <span class="built_in">memset</span>(&amp;si_server, <span class="number">0</span>, <span class="keyword">sizeof</span>(si_server));</span><br><span class="line">    si_server.sin_family = AF_INET;</span><br><span class="line">    si_server.sin_port = htons(destination_port);</span><br><span class="line">    <span class="keyword">if</span> (inet_aton(destination_ip, &amp;si_server.sin_addr) == <span class="number">0</span>) &#123;</span><br><span class="line">        die(<span class="string">"inet_aton()"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">int</span> buffer_len = <span class="number">256</span>;</span><br><span class="line">    <span class="keyword">char</span> <span class="built_in">buffer</span>[buffer_len];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">int</span> n_packets = <span class="number">3</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n_packets; ++i) &#123;</span><br><span class="line">        <span class="built_in">sprintf</span>(<span class="built_in">buffer</span>, <span class="string">"Packet %d"</span>, i);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (</span><br><span class="line">            sendto(sock, <span class="built_in">buffer</span>, buffer_len, <span class="number">0</span>, (<span class="keyword">const</span> struct sockaddr*) &amp;si_server, </span><br><span class="line">                <span class="keyword">sizeof</span>(si_server)) &lt; <span class="number">0</span></span><br><span class="line">        ) &#123;</span><br><span class="line">            die(<span class="string">"sendto()"</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Obtain the sent packet timestamp.</span></span><br><span class="line">        <span class="keyword">char</span> data[<span class="number">256</span>];</span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">msghdr</span> <span class="title">msg</span>;</span></span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">iovec</span> <span class="title">entry</span>;</span></span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">from_addr</span>;</span></span><br><span class="line">        <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">            <span class="class"><span class="keyword">struct</span> <span class="title">cmsghdr</span> <span class="title">cm</span>;</span></span><br><span class="line">            <span class="keyword">char</span> control[<span class="number">512</span>];</span><br><span class="line">        &#125; control;</span><br><span class="line">        <span class="keyword">int</span> res;</span><br><span class="line"></span><br><span class="line">        <span class="built_in">memset</span>(&amp;msg, <span class="number">0</span>, <span class="keyword">sizeof</span>(msg));</span><br><span class="line">        msg.msg_iov = &amp;entry;</span><br><span class="line">        msg.msg_iovlen = <span class="number">1</span>;</span><br><span class="line">        entry.iov_base = data;</span><br><span class="line">        entry.iov_len = <span class="keyword">sizeof</span>(data);</span><br><span class="line">        msg.msg_name = (<span class="keyword">caddr_t</span>)&amp;from_addr;</span><br><span class="line">        msg.msg_namelen = <span class="keyword">sizeof</span>(from_addr);</span><br><span class="line">        msg.msg_control = &amp;control;</span><br><span class="line">        msg.msg_controllen = <span class="keyword">sizeof</span>(control);   </span><br><span class="line">     </span><br><span class="line">        <span class="keyword">if</span> (recvmsg(sock, &amp;msg, MSG_ERRQUEUE) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">            die(<span class="string">"recvmsg()"</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        scan_cb_buf(&amp;msg);</span><br><span class="line">        </span><br><span class="line">        <span class="comment">/*</span></span><br><span class="line"><span class="comment">        struct cmsghdr *cmsg;</span></span><br><span class="line"><span class="comment">        struct timeval timestamp;</span></span><br><span class="line"><span class="comment">        </span></span><br><span class="line"><span class="comment">        for (cmsg = CMSG_FIRSTHDR(&amp;msg); cmsg != NULL; cmsg = CMSG_NXTHDR(&amp;msg, cmsg)) &#123;</span></span><br><span class="line"><span class="comment">            if (cmsg-&gt;cmsg_level == SOL_SOCKET &amp;&amp; cmsg-&gt;cmsg_type == SCM_TIMESTAMPING) &#123;</span></span><br><span class="line"><span class="comment">                memcpy(&amp;timestamp, CMSG_DATA(cmsg), sizeof(struct timeval));</span></span><br><span class="line"><span class="comment">                printf("Timestamp : %ld : %09ld\n", timestamp.tv_sec, timestamp.tv_usec);</span></span><br><span class="line"><span class="comment">            &#125;</span></span><br><span class="line"><span class="comment">        &#125;</span></span><br><span class="line"><span class="comment">        */</span></span><br><span class="line">        <span class="comment">//printf("receive message : %s\n", );</span></span><br><span class="line"></span><br><span class="line">        </span><br><span class="line">        sleep(<span class="number">1</span>);</span><br><span class="line">    &#125; </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>坚持原创，坚持分享，谢谢鼓励和支持</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.png" alt="Ty Chen 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="Ty Chen 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    Ty Chen
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://ty-chen.github.io/linuxts-md/" title="linux网络编程时间抽详解">https://ty-chen.github.io/linuxts-md/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/linux/" rel="tag"># linux</a>
+          
+            <a href="/tags/timestamp/" rel="tag"># timestamp</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/ptp/" rel="next" title="ptp协议分析">
+                <i class="fa fa-chevron-left"></i> ptp协议分析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/me.JPG"
+                alt="Ty Chen" />
+            
+              <p class="site-author-name" itemprop="name">Ty Chen</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">53</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">9</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">86</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/Ty-Chen" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:tianyuch@hotmail.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                Friends
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://lishouxian.cn/" title="Stanleylsx" target="_blank">Stanleylsx</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Timestamping"><span class="nav-text">Timestamping</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Control-Interfaces"><span class="nav-text">1. Control Interfaces</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-SO-TIMESTAMP-also-SO-TIMESTAMP-OLD-and-SO-TIMESTAMP-NEW"><span class="nav-text">1.1 SO_TIMESTAMP (also SO_TIMESTAMP_OLD and SO_TIMESTAMP_NEW)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-SO-TIMESTAMPNS-also-SO-TIMESTAMPNS-OLD-and-SO-TIMESTAMPNS-NEW"><span class="nav-text">1.2 SO_TIMESTAMPNS (also SO_TIMESTAMPNS_OLD and SO_TIMESTAMPNS_NEW)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-SO-TIMESTAMPING-also-SO-TIMESTAMPING-OLD-and-SO-TIMESTAMPING-NEW"><span class="nav-text">1.3 SO_TIMESTAMPING (also SO_TIMESTAMPING_OLD and SO_TIMESTAMPING_NEW)</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-1-Timestamp-Generation"><span class="nav-text">1.3.1 Timestamp Generation</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-2-Timestamp-Reporting"><span class="nav-text">1.3.2 Timestamp Reporting</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-3-Timestamp-Options"><span class="nav-text">1.3.3 Timestamp Options</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-4-Enabling-timestamps-via-control-messages"><span class="nav-text">1.3.4. Enabling timestamps via control messages</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-Bytestream-Timestamps"><span class="nav-text">1.4 Bytestream Timestamps</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Data-Interfaces"><span class="nav-text">2 Data Interfaces</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-SCM-TIMESTAMPING-records"><span class="nav-text">2.1 SCM_TIMESTAMPING records</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-1-Transmit-timestamps-with-MSG-ERRQUEUE"><span class="nav-text">2.1.1 Transmit timestamps with MSG_ERRQUEUE</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#2-1-1-2-Timestamp-types"><span class="nav-text">2.1.1.2 Timestamp types</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-1-1-3-Fragmentation"><span class="nav-text">2.1.1.3 Fragmentation</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-1-1-4-Packet-Payload"><span class="nav-text">2.1.1.4 Packet Payload</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-1-1-5-Blocking-Read"><span class="nav-text">2.1.1.5 Blocking Read</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-2-Receive-timestamps"><span class="nav-text">2.1.2 Receive timestamps</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Hardware-Timestamping-configuration-SIOCSHWTSTAMP-and-SIOCGHWTSTAMP"><span class="nav-text">3. Hardware Timestamping configuration: SIOCSHWTSTAMP and SIOCGHWTSTAMP</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-Hardware-Timestamping-Implementation-Device-Drivers"><span class="nav-text">3.1 Hardware Timestamping Implementation: Device Drivers</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-Special-considerations-for-stacked-PTP-Hardware-Clocks"><span class="nav-text">3.2 Special considerations for stacked PTP Hardware Clocks</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-1-DSA-Distributed-Switch-Architecture-switches"><span class="nav-text">3.2.1 DSA (Distributed Switch Architecture) switches</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-2-Ethernet-PHYs"><span class="nav-text">3.2.2 Ethernet PHYs</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-3-MII-bus-snooping-devices"><span class="nav-text">3.2.3 MII bus snooping devices</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-4-Other-caveats-for-MAC-drivers"><span class="nav-text">3.2.4 Other caveats for MAC drivers</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2020 &mdash; <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ty Chen</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">Site words total count&#58;</span>
+    
+    <span title="Site words total count">208.9k</span>
+  
+  <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
+</div>
+
+
+
+
+
+
+
+
+
+        
+<div class="busuanzi-count">
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+	</script>
+
+  
+    <span class="site-uv">
+      你是来访的第
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      位同学
+    </span>
+  
+
+  
+    <span class="site-pv">
+      访问次数：
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item=>{
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'aTqo2eFkO2Bn0AGX008uKDV7-gzGzoHsz',
+        appKey: 'uJ6nxqW7RHWpAILCtttkJfJu',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
