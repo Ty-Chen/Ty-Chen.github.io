@@ -79,14 +79,14 @@
 
 
 
-<meta name="description" content="一. 简介">
+<meta name="description" content="一. 简介linux的时间戳是一个复杂的系统，本文翻译linux系统内核的说明，并加以解释、附上实际实践的经验代码实例。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="linux网络编程时间抽详解">
 <meta property="og:url" content="https://ty-chen.github.io/linuxts-md/index.html">
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
-<meta property="og:description" content="一. 简介">
+<meta property="og:description" content="一. 简介linux的时间戳是一个复杂的系统，本文翻译linux系统内核的说明，并加以解释、附上实际实践的经验代码实例。">
 <meta property="article:published_time" content="2024-04-18T12:15:19.000Z">
-<meta property="article:modified_time" content="2024-04-25T14:29:21.833Z">
+<meta property="article:modified_time" content="2024-04-28T14:47:17.561Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="linux">
 <meta property="article:tag" content="timestamp">
@@ -304,8 +304,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2024-04-25T22:29:21+08:00" content="2024-04-25">
-                2024-04-25
+              <time itemprop="dateUpdated" datetime="2024-04-28T22:47:17+08:00" content="2024-04-28">
+                2024-04-28
               </time>
             </span>
           
@@ -368,7 +368,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  7.7k
+                  7.8k
                 </span>
               
 
@@ -405,9 +405,10 @@
       
 
       
-        <h2 id="一-简介"><a href="#一-简介" class="headerlink" title="一. 简介"></a>一. 简介</h2> <a id="more"></a>
+        <h2 id="一-简介"><a href="#一-简介" class="headerlink" title="一. 简介"></a>一. 简介</h2><p>linux的时间戳是一个复杂的系统，本文翻译linux系统内核的说明，并加以解释、附上实际实践的经验代码实例。</p>
+ <a id="more"></a>
 
-<h1 id="Timestamping"><a href="#Timestamping" class="headerlink" title="Timestamping"></a>Timestamping</h1><h2 id="1-Control-Interfaces"><a href="#1-Control-Interfaces" class="headerlink" title="1. Control Interfaces"></a>1. Control Interfaces</h2><p>The interfaces for receiving network packages timestamps are:</p>
+<h2 id="二-控制接口"><a href="#二-控制接口" class="headerlink" title="二. 控制接口"></a>二. 控制接口</h2><h2 id="三-数据接口"><a href="#三-数据接口" class="headerlink" title="三. 数据接口"></a>三. 数据接口</h2><h2 id="四-硬件时间戳配置"><a href="#四-硬件时间戳配置" class="headerlink" title="四. 硬件时间戳配置"></a>四. 硬件时间戳配置</h2><h1 id="Timestamping"><a href="#Timestamping" class="headerlink" title="Timestamping"></a>Timestamping</h1><h2 id="1-Control-Interfaces"><a href="#1-Control-Interfaces" class="headerlink" title="1. Control Interfaces"></a>1. Control Interfaces</h2><p>The interfaces for receiving network packages timestamps are:</p>
 <ul>
 <li><p>SO_TIMESTAMP</p>
 <p>Generates a timestamp for each incoming packet in (not necessarily monotonic) system time. Reports the timestamp via recvmsg() in a control message in usec resolution. SO_TIMESTAMP is defined as SO_TIMESTAMP_NEW or SO_TIMESTAMP_OLD based on the architecture type and time_t representation of libc. Control message format is in struct __kernel_old_timeval for SO_TIMESTAMP_OLD and in struct __kernel_sock_timeval for SO_TIMESTAMP_NEW options respectively.</p>
@@ -889,7 +890,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Timestamping"><span class="nav-text">Timestamping</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Control-Interfaces"><span class="nav-text">1. Control Interfaces</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-SO-TIMESTAMP-also-SO-TIMESTAMP-OLD-and-SO-TIMESTAMP-NEW"><span class="nav-text">1.1 SO_TIMESTAMP (also SO_TIMESTAMP_OLD and SO_TIMESTAMP_NEW)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-SO-TIMESTAMPNS-also-SO-TIMESTAMPNS-OLD-and-SO-TIMESTAMPNS-NEW"><span class="nav-text">1.2 SO_TIMESTAMPNS (also SO_TIMESTAMPNS_OLD and SO_TIMESTAMPNS_NEW)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-SO-TIMESTAMPING-also-SO-TIMESTAMPING-OLD-and-SO-TIMESTAMPING-NEW"><span class="nav-text">1.3 SO_TIMESTAMPING (also SO_TIMESTAMPING_OLD and SO_TIMESTAMPING_NEW)</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-1-Timestamp-Generation"><span class="nav-text">1.3.1 Timestamp Generation</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-2-Timestamp-Reporting"><span class="nav-text">1.3.2 Timestamp Reporting</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-3-Timestamp-Options"><span class="nav-text">1.3.3 Timestamp Options</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-4-Enabling-timestamps-via-control-messages"><span class="nav-text">1.3.4. Enabling timestamps via control messages</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-Bytestream-Timestamps"><span class="nav-text">1.4 Bytestream Timestamps</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Data-Interfaces"><span class="nav-text">2 Data Interfaces</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-SCM-TIMESTAMPING-records"><span class="nav-text">2.1 SCM_TIMESTAMPING records</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-1-Transmit-timestamps-with-MSG-ERRQUEUE"><span class="nav-text">2.1.1 Transmit timestamps with MSG_ERRQUEUE</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#2-1-1-2-Timestamp-types"><span class="nav-text">2.1.1.2 Timestamp types</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-1-1-3-Fragmentation"><span class="nav-text">2.1.1.3 Fragmentation</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-1-1-4-Packet-Payload"><span class="nav-text">2.1.1.4 Packet Payload</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-1-1-5-Blocking-Read"><span class="nav-text">2.1.1.5 Blocking Read</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-2-Receive-timestamps"><span class="nav-text">2.1.2 Receive timestamps</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Hardware-Timestamping-configuration-SIOCSHWTSTAMP-and-SIOCGHWTSTAMP"><span class="nav-text">3. Hardware Timestamping configuration: SIOCSHWTSTAMP and SIOCGHWTSTAMP</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-Hardware-Timestamping-Implementation-Device-Drivers"><span class="nav-text">3.1 Hardware Timestamping Implementation: Device Drivers</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-Special-considerations-for-stacked-PTP-Hardware-Clocks"><span class="nav-text">3.2 Special considerations for stacked PTP Hardware Clocks</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-1-DSA-Distributed-Switch-Architecture-switches"><span class="nav-text">3.2.1 DSA (Distributed Switch Architecture) switches</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-2-Ethernet-PHYs"><span class="nav-text">3.2.2 Ethernet PHYs</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-3-MII-bus-snooping-devices"><span class="nav-text">3.2.3 MII bus snooping devices</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-4-Other-caveats-for-MAC-drivers"><span class="nav-text">3.2.4 Other caveats for MAC drivers</span></a></li></ol></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-控制接口"><span class="nav-text">二. 控制接口</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-数据接口"><span class="nav-text">三. 数据接口</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-硬件时间戳配置"><span class="nav-text">四. 硬件时间戳配置</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Timestamping"><span class="nav-text">Timestamping</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Control-Interfaces"><span class="nav-text">1. Control Interfaces</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-SO-TIMESTAMP-also-SO-TIMESTAMP-OLD-and-SO-TIMESTAMP-NEW"><span class="nav-text">1.1 SO_TIMESTAMP (also SO_TIMESTAMP_OLD and SO_TIMESTAMP_NEW)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-SO-TIMESTAMPNS-also-SO-TIMESTAMPNS-OLD-and-SO-TIMESTAMPNS-NEW"><span class="nav-text">1.2 SO_TIMESTAMPNS (also SO_TIMESTAMPNS_OLD and SO_TIMESTAMPNS_NEW)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-SO-TIMESTAMPING-also-SO-TIMESTAMPING-OLD-and-SO-TIMESTAMPING-NEW"><span class="nav-text">1.3 SO_TIMESTAMPING (also SO_TIMESTAMPING_OLD and SO_TIMESTAMPING_NEW)</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-1-Timestamp-Generation"><span class="nav-text">1.3.1 Timestamp Generation</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-2-Timestamp-Reporting"><span class="nav-text">1.3.2 Timestamp Reporting</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-3-Timestamp-Options"><span class="nav-text">1.3.3 Timestamp Options</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-4-Enabling-timestamps-via-control-messages"><span class="nav-text">1.3.4. Enabling timestamps via control messages</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-Bytestream-Timestamps"><span class="nav-text">1.4 Bytestream Timestamps</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Data-Interfaces"><span class="nav-text">2 Data Interfaces</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-SCM-TIMESTAMPING-records"><span class="nav-text">2.1 SCM_TIMESTAMPING records</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-1-Transmit-timestamps-with-MSG-ERRQUEUE"><span class="nav-text">2.1.1 Transmit timestamps with MSG_ERRQUEUE</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#2-1-1-2-Timestamp-types"><span class="nav-text">2.1.1.2 Timestamp types</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-1-1-3-Fragmentation"><span class="nav-text">2.1.1.3 Fragmentation</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-1-1-4-Packet-Payload"><span class="nav-text">2.1.1.4 Packet Payload</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-1-1-5-Blocking-Read"><span class="nav-text">2.1.1.5 Blocking Read</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-2-Receive-timestamps"><span class="nav-text">2.1.2 Receive timestamps</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Hardware-Timestamping-configuration-SIOCSHWTSTAMP-and-SIOCGHWTSTAMP"><span class="nav-text">3. Hardware Timestamping configuration: SIOCSHWTSTAMP and SIOCGHWTSTAMP</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-Hardware-Timestamping-Implementation-Device-Drivers"><span class="nav-text">3.1 Hardware Timestamping Implementation: Device Drivers</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-Special-considerations-for-stacked-PTP-Hardware-Clocks"><span class="nav-text">3.2 Special considerations for stacked PTP Hardware Clocks</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-1-DSA-Distributed-Switch-Architecture-switches"><span class="nav-text">3.2.1 DSA (Distributed Switch Architecture) switches</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-2-Ethernet-PHYs"><span class="nav-text">3.2.2 Ethernet PHYs</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-3-MII-bus-snooping-devices"><span class="nav-text">3.2.3 MII bus snooping devices</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-4-Other-caveats-for-MAC-drivers"><span class="nav-text">3.2.4 Other caveats for MAC drivers</span></a></li></ol></li></ol></li></ol></div>
             
 
           </div>
@@ -923,7 +924,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">210.7k</span>
+    <span title="Site words total count">210.8k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
