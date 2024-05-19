@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 简介linux的时间戳是一个复杂的系统，本文翻译linux系统内核的说明，并加以解释、附上实际实践的经验代码实例。">
 <meta property="article:published_time" content="2024-04-18T12:15:19.000Z">
-<meta property="article:modified_time" content="2024-05-18T14:49:04.930Z">
+<meta property="article:modified_time" content="2024-05-19T02:51:26.945Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="linux">
 <meta property="article:tag" content="timestamp">
@@ -304,8 +304,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2024-05-18T22:49:04+08:00" content="2024-05-18">
-                2024-05-18
+              <time itemprop="dateUpdated" datetime="2024-05-19T10:51:26+08:00" content="2024-05-19">
+                2024-05-19
               </time>
             </span>
           
@@ -384,7 +384,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  31
+                  30
                 </span>
               
             </div>
@@ -468,11 +468,11 @@
 </tr>
 <tr>
 <td>SOF_TIMESTAMPING_TX_SCHED</td>
-<td>Request tx timestamps prior to entering the packet scheduler. Kernel transmit latency is, if long, often dominated by queuing delay. The difference between this timestamp and one taken at SOF_TIMESTAMPING_TX_SOFTWARE will expose this latency independent of protocol processing. The latency incurred in protocol processing, if any, can be computed by subtracting a userspace timestamp taken immediately before send() from this timestamp. On machines with virtual devices where a transmitted packet travels through multiple devices and, hence, multiple packet schedulers, a timestamp is generated at each layer. This allows for fine grained measurement of queuing delay. This flag can be enabled via both socket options and control messages.</td>
+<td>获取TX数据包在进入调度队列之前的时间。内核的传输时延，大多数情况下都由于发送的队列延迟（queue delay）导致。因此，结合此标记位和上一个标记位，可以计算出内核处理数据包的耗时情况。而协议处理的耗时，则可以通过用户态时间戳和该时间戳的差值来得到。</td>
 </tr>
 <tr>
 <td>SOF_TIMESTAMPING_TX_ACK</td>
-<td>Request tx timestamps when all data in the send buffer has been acknowledged. This only makes sense for reliable protocols. It is currently only implemented for TCP. For that protocol, it may over-report measurement, because the timestamp is generated when all data up to and including the buffer at send() was acknowledged: the cumulative acknowledgment. The mechanism ignores SACK and FACK. This flag can be enabled via both socket options and control messages.</td>
+<td>该标记仅对TCP有效，返回的TX时间戳是发送缓冲区所有包都得到ACK的时间。</td>
 </tr>
 </tbody></table>
 <h3 id="2-2-时间戳报告标记"><a href="#2-2-时间戳报告标记" class="headerlink" title="2.2 时间戳报告标记"></a>2.2 时间戳报告标记</h3><h4 id="1-3-2-Timestamp-Reporting"><a href="#1-3-2-Timestamp-Reporting" class="headerlink" title="1.3.2 Timestamp Reporting"></a>1.3.2 Timestamp Reporting</h4><p>The other three bits control which timestamps will be reported in a generated control message. Changes to the bits take immediate effect at the timestamp reporting locations in the stack. Timestamps are only reported for packets that also have the relevant timestamp generation request set.</p>
@@ -935,7 +935,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">208.2k</span>
+    <span title="Site words total count">208.1k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
