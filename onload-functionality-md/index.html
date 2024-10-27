@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Ty-Chen&#39;s Home">
 <meta property="og:description" content="一. 简介Onload本质是采用了LD_PRELOAD加载sf的网络库，取代socket(), read(), write() 原本的glibc实现，避开了网络协议栈做到了网络加速的效果，由于其易于使用、不用额外开发API，所以非常的方便好用且效果拔群。本文记录onload的使用基础知识。">
 <meta property="article:published_time" content="2024-10-08T13:25:36.000Z">
-<meta property="article:modified_time" content="2024-10-20T08:59:44.704Z">
+<meta property="article:modified_time" content="2024-10-27T07:36:36.340Z">
 <meta property="article:author" content="Ty Chen">
 <meta property="article:tag" content="Onload">
 <meta name="twitter:card" content="summary">
@@ -303,8 +303,8 @@
           
             <span class="post-updated">
               &nbsp; | &nbsp; 更新于
-              <time itemprop="dateUpdated" datetime="2024-10-20T16:59:44+08:00" content="2024-10-20">
-                2024-10-20
+              <time itemprop="dateUpdated" datetime="2024-10-27T15:36:36+08:00" content="2024-10-27">
+                2024-10-27
               </time>
             </span>
           
@@ -367,7 +367,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  420
+                  534
                 </span>
               
 
@@ -420,7 +420,16 @@
 <li>如果多个套接字中存在某些未被onload加速的，则<code>poll(), select()</code>会有一个系统调用的损耗去判断是否该加速。</li>
 <li>如果没有文件描述符准备好，spining开启，onload会进入spin状态，避免了陷入内核。</li>
 </ul>
-<h3 id="数据包的传递顺序"><a href="#数据包的传递顺序" class="headerlink" title="数据包的传递顺序"></a>数据包的传递顺序</h3>
+<h3 id="数据包的传递顺序"><a href="#数据包的传递顺序" class="headerlink" title="数据包的传递顺序"></a>数据包的传递顺序</h3><p>TCP/UDP应用在多套接字同时工作的环境下时，很难保证到达的严格顺序，Onload提供了接口<code>onload_ordered_epoll_wait()</code>使用时间戳来还原包的顺序。为开启此功能，需要以下条件</p>
+<ul>
+<li>多套接字必须都是Onload栈工作才可以，通过<code>onload_fd_stat()</code>可以保证</li>
+<li>需要硬件时间戳</li>
+<li><code>EF_RX_TIMESTAMPING</code>设置为1</li>
+<li><code>EF_UL_EPOLL</code>设置为1或者3</li>
+<li><code>EPOLLET</code> 和 <code>ONESHOT</code> 禁用</li>
+<li><code>onload_ordered_epoll_wait()</code>多线程下不安全</li>
+</ul>
+<h3 id="栈共享"><a href="#栈共享" class="headerlink" title="栈共享"></a>栈共享</h3>
       
     </div>
     
@@ -712,7 +721,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-说明"><span class="nav-text">二. 说明</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Onload-Stacks"><span class="nav-text">Onload Stacks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Onload在多网卡下的表现"><span class="nav-text">Onload在多网卡下的表现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#接口控制"><span class="nav-text">接口控制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#支持的系统调用说明"><span class="nav-text">支持的系统调用说明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I-O复用的支持"><span class="nav-text">I&#x2F;O复用的支持</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数据包的传递顺序"><span class="nav-text">数据包的传递顺序</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-简介"><span class="nav-text">一. 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-说明"><span class="nav-text">二. 说明</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Onload-Stacks"><span class="nav-text">Onload Stacks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Onload在多网卡下的表现"><span class="nav-text">Onload在多网卡下的表现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#接口控制"><span class="nav-text">接口控制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#支持的系统调用说明"><span class="nav-text">支持的系统调用说明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I-O复用的支持"><span class="nav-text">I&#x2F;O复用的支持</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数据包的传递顺序"><span class="nav-text">数据包的传递顺序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#栈共享"><span class="nav-text">栈共享</span></a></li></ol></li></ol></div>
             
 
           </div>
@@ -746,7 +755,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">207.7k</span>
+    <span title="Site words total count">207.8k</span>
   
   <a href="http://www.beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备20071543号</a> 
 </div>
