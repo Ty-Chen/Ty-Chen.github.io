@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://ty-chen.github.io/vim/</loc>
+    <lastmod>2025-03-02</lastmod>
+  </url>
+  <url>
     <loc>https://ty-chen.github.io/onload-tcp-udp/</loc>
-    <lastmod>2024-11-10</lastmod>
+    <lastmod>2025-03-02</lastmod>
   </url>
   <url>
     <loc>https://ty-chen.github.io/onload-functionality-md/</loc>
